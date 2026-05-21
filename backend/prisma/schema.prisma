@@ -1,0 +1,55 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+model User {
+  id           String       @id @default(cuid())
+  email        String       @unique
+  username     String       @unique
+  passwordHash String
+  role         Role         @default(USER)
+  isBanned     Boolean      @default(false)
+  banReason    String?
+  createdAt    DateTime     @default(now())
+  lastActiveAt DateTime?
+  avatarColor  String       @default("#6C4FF6")
+  conversations Conversation[]
+  @@index([email])
+  @@index([username])
+}
+
+model Conversation {
+  id        String    @id @default(cuid())
+  userId    String
+  modelId   String
+  title     String
+  isStarred Boolean   @default(false)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages  Message[]
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model Message {
+  id             String   @id @default(cuid())
+  conversationId String
+  role           String
+  content        String
+  tokenCount     Int?
+  createdAt      DateTime @default(now())
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  @@index([conversationId])
+  @@index([createdAt])
+}

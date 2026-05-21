@@ -1,0 +1,6 @@
+.env
+node_modules/
+dist/
+backend/prisma/data.db
+backend/prisma/*.db
+*.tsbuildinfo

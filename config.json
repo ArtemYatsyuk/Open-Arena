@@ -1,0 +1,22 @@
+{
+  "models": [
+    {
+      "id": "owl-alpha",
+      "name": "Owl Alpha",
+      "baseUrl": "https://g4f.space/api/openrouter",
+      "endpoint": "/v1/chat/completions",
+      "modelId": "openrouter/owl-alpha",
+      "apiKeyEnv": "OPENROUTER_API_KEY",
+      "streaming": true,
+      "contextWindow": 128000,
+      "description": "Owl Alpha via OpenRouter"
+    }
+  ],
+  "defaultModelId": "owl-alpha",
+  "app": {
+    "name": "Open Arena",
+    "logoUrl": "/logo.svg",
+    "allowRegistration": true,
+    "maxConversationsPerUser": 200
+  }
+}

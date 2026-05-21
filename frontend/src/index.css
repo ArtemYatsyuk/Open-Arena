@@ -1,0 +1,98 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg-primary: #FFFFFF;
+  --bg-secondary: #F5F4F0;
+  --border-color: rgba(0, 0, 0, 0.12);
+  --text-primary: #1A1918;
+  --text-secondary: #706F6B;
+}
+
+.dark {
+  --bg-primary: #0F0F10;
+  --bg-secondary: #1A1A1B;
+  --border-color: rgba(255, 255, 255, 0.10);
+  --text-primary: #EDECE8;
+  --text-secondary: #A09E99;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-size: 15px;
+  color: var(--text-primary);
+  background: var(--bg-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-secondary);
+}
+
+::selection {
+  background: rgba(108, 79, 246, 0.25);
+}
+
+.markdown-content h1 { font-size: 1.5em; font-weight: 500; margin: 1em 0 0.5em; }
+.markdown-content h2 { font-size: 1.25em; font-weight: 500; margin: 1em 0 0.5em; }
+.markdown-content h3 { font-size: 1.1em; font-weight: 500; margin: 0.75em 0 0.5em; }
+.markdown-content p { margin: 0.5em 0; line-height: 1.6; }
+.markdown-content ul, .markdown-content ol { margin: 0.5em 0; padding-left: 1.5em; }
+.markdown-content li { margin: 0.25em 0; line-height: 1.6; }
+.markdown-content blockquote {
+  border-left: 3px solid var(--accent);
+  padding-left: 1em;
+  margin: 0.75em 0;
+  color: var(--text-secondary);
+}
+.markdown-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1em 0;
+}
+.markdown-content th, .markdown-content td {
+  padding: 0.5em 0.75em;
+  border: 1px solid var(--border-color);
+  text-align: left;
+}
+.markdown-content th { font-weight: 500; background: var(--bg-secondary); }
+.markdown-content a { color: var(--accent); text-decoration: underline; }
+.markdown-content hr { border: none; border-top: 1px solid var(--border-color); margin: 1em 0; }
+.markdown-content code:not(pre code) {
+  background: var(--bg-secondary);
+  padding: 0.15em 0.4em;
+  border-radius: 4px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.9em;
+}
+.markdown-content pre {
+  margin: 0.75em 0;
+  border-radius: 8px;
+  overflow: hidden;
+}
