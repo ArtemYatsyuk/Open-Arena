@@ -73,6 +73,7 @@ export async function streamChat(
     }
   } else {
     const isG4F = model.baseUrl.includes('g4f.space');
+    const isNVIDIA = model.baseUrl.includes('nvidia.com');
 
     const response = await fetch(`${model.baseUrl}${model.endpoint}`, {
       method: 'POST',
@@ -83,12 +84,19 @@ export async function streamChat(
           'HTTP-Referer': 'http://localhost:5173',
           'X-Title': 'Open Arena',
         }),
+        ...(isNVIDIA && {
+          'Accept': 'application/json',
+        }),
       },
       body: JSON.stringify({
         model: model.modelId,
         messages,
         stream: true,
         max_tokens: 8192,
+        ...(isNVIDIA && {
+          temperature: 0.7,
+          top_p: 1,
+        }),
       }),
       signal,
     });

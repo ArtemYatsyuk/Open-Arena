@@ -1,18 +1,18 @@
 {
   "models": [
     {
-      "id": "owl-alpha",
-      "name": "Owl Alpha",
-      "baseUrl": "https://g4f.space/api/openrouter",
+      "id": "nemotron-nano",
+      "name": "Nemotron Nano 30B",
+      "baseUrl": "https://integrate.api.nvidia.com",
       "endpoint": "/v1/chat/completions",
-      "modelId": "openrouter/owl-alpha",
-      "apiKeyEnv": "OPENROUTER_API_KEY",
+      "modelId": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning",
+      "apiKeyEnv": "NVIDIA_API_KEY",
       "streaming": true,
-      "contextWindow": 128000,
-      "description": "Owl Alpha via OpenRouter"
+      "contextWindow": 32000,
+      "description": "NVIDIA's Nemotron Nano 30B reasoning model"
     }
   ],
-  "defaultModelId": "owl-alpha",
+  "defaultModelId": "nemotron-nano",
   "app": {
     "name": "Open Arena",
     "logoUrl": "/logo.svg",

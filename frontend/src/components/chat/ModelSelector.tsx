@@ -25,7 +25,7 @@ export default function ModelSelector({ currentModelId }: { currentModelId?: str
       })
       .catch((e) => {
         console.error('Failed to load models:', e);
-        setModels([{ id: 'owl-alpha', name: 'Owl Alpha', contextWindow: 128000, description: 'Default model' }]);
+        setModels([{ id: 'nemotron-nano', name: 'Nemotron Nano 30B', contextWindow: 32000, description: 'NVIDIA reasoning model' }]);
       });
   }, [currentModelId]);
 
@@ -34,6 +34,7 @@ export default function ModelSelector({ currentModelId }: { currentModelId?: str
   const getProviderColor = (id: string) => {
     if (id.includes('gpt') || id.includes('openai')) return '#10A37F';
     if (id.includes('claude') || id.includes('anthropic')) return '#D97757';
+    if (id.includes('nemotron') || id.includes('nvidia')) return '#76B900';
     if (id.includes('owl') || id.includes('openrouter')) return '#6C4FF6';
     return '#6C4FF6';
   };
@@ -41,6 +42,7 @@ export default function ModelSelector({ currentModelId }: { currentModelId?: str
   const getProviderName = (id: string) => {
     if (id.includes('gpt') || id.includes('openai')) return 'OpenAI';
     if (id.includes('claude') || id.includes('anthropic')) return 'Anthropic';
+    if (id.includes('nemotron') || id.includes('nvidia')) return 'NVIDIA';
     if (id.includes('owl') || id.includes('openrouter')) return 'OpenRouter';
     return 'Custom';
   };

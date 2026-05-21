@@ -20,7 +20,7 @@ export default function ChatInput() {
     if (!input.trim() || isStreaming) return;
     const content = input.trim();
     setInput('');
-    const modelId = currentConv?.modelId || 'owl-alpha';
+    const modelId = currentConv?.modelId || 'nemotron-nano';
     await sendMessage(content, modelId, currentConv?.id);
   };
 
