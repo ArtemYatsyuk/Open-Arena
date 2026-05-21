@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useUIStore } from '../../stores/uiStore';
+import { Eye, Code, X } from 'lucide-react';
 
 export default function Workspace() {
   const workspaceTab = useUIStore((s) => s.workspaceTab);
@@ -11,36 +12,38 @@ export default function Workspace() {
   if (!workspaceOpen) return null;
 
   return (
-    <div className="flex flex-col h-full bg-bg-primary">
-      <div className="flex items-center justify-between px-3 py-2 border-b border-border">
-        <div className="flex gap-1">
+    <div className="flex flex-col h-full bg-bg-primary animate-fadeIn">
+      <div className="flex items-center justify-between px-4 py-2.5 border-b border-border">
+        <div className="flex gap-1 bg-bg-secondary p-1 rounded-xl">
           <button
             onClick={() => setWorkspaceTab('preview')}
-            className={`px-3 py-1.5 text-sm rounded-pill transition ${
+            className={`px-3 py-1.5 text-sm rounded-lg transition flex items-center gap-1.5 ${
               workspaceTab === 'preview'
-                ? 'bg-accent text-white'
-                : 'hover:bg-bg-secondary text-text-secondary'
+                ? 'bg-accent text-white shadow-sm'
+                : 'hover:bg-bg-tertiary text-text-secondary'
             }`}
           >
+            <Eye className="w-3.5 h-3.5" />
             Preview
           </button>
           <button
             onClick={() => setWorkspaceTab('code')}
-            className={`px-3 py-1.5 text-sm rounded-pill transition ${
+            className={`px-3 py-1.5 text-sm rounded-lg transition flex items-center gap-1.5 ${
               workspaceTab === 'code'
-                ? 'bg-accent text-white'
-                : 'hover:bg-bg-secondary text-text-secondary'
+                ? 'bg-accent text-white shadow-sm'
+                : 'hover:bg-bg-tertiary text-text-secondary'
             }`}
           >
+            <Code className="w-3.5 h-3.5" />
             Code
           </button>
         </div>
         <button
           onClick={() => setWorkspaceContent('')}
-          className="p-1.5 hover:bg-bg-secondary rounded transition text-text-secondary"
+          className="p-2 hover:bg-bg-secondary rounded-lg transition text-text-secondary"
           title="Close workspace"
         >
-          ×
+          <X className="w-4 h-4" />
         </button>
       </div>
 

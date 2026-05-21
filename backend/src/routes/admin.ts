@@ -13,6 +13,22 @@ const createUserSchema = z.object({
   role: z.enum(['USER', 'ADMIN']).default('USER'),
 });
 
+function getId(req: AuthRequest): string {
+  return Array.isArray(req.params.id) ? req.params.id[0] : (req.params.id as string);
+}
+
+function getQueryStr(req: AuthRequest, key: string): string {
+  const val = req.query[key];
+  if (Array.isArray(val)) return val[0] as string;
+  if (typeof val === 'string') return val;
+  return '';
+}
+
+function getQueryInt(req: AuthRequest, key: string, fallback: number): number {
+  const val = parseInt(getQueryStr(req, key));
+  return isNaN(val) ? fallback : val;
+}
+
 router.use(isAuthenticated, isNotBanned, isAdmin);
 
 router.get('/stats', async (req, res) => {
@@ -36,7 +52,7 @@ router.get('/stats', async (req, res) => {
 
   const topUsers = await prisma.user.findMany({
     take: 5,
-    orderBy: { _count: { conversations: 'desc' } },
+    orderBy: { createdAt: 'desc' },
     select: {
       id: true,
       username: true,
@@ -56,12 +72,12 @@ router.get('/stats', async (req, res) => {
 });
 
 router.get('/users', async (req: AuthRequest, res) => {
-  const page = parseInt(req.query.page as string) || 1;
+  const page = getQueryInt(req, 'page', 1);
   const limit = 50;
-  const search = (req.query.search as string) || '';
+  const search = getQueryStr(req, 'search');
   const skip = (page - 1) * limit;
 
-  const where = search
+  const where: any = search
     ? {
         OR: [
           { username: { contains: search } },
@@ -117,8 +133,9 @@ router.post('/users', async (req: AuthRequest, res) => {
 });
 
 router.get('/users/:id', async (req: AuthRequest, res) => {
+  const userId = getId(req);
   const user = await prisma.user.findUnique({
-    where: { id: req.params.id },
+    where: { id: userId },
     select: {
       id: true,
       email: true,
@@ -135,19 +152,20 @@ router.get('/users/:id', async (req: AuthRequest, res) => {
   if (!user) return res.status(404).json({ error: 'User not found' });
 
   const messageCount = await prisma.message.count({
-    where: { conversation: { userId: req.params.id } },
+    where: { conversation: { userId } },
   });
 
   res.json({ ...user, messageCount });
 });
 
 router.patch('/users/:id/ban', async (req: AuthRequest, res) => {
+  const userId = getId(req);
   const { ban, reason } = req.body as { ban: boolean; reason?: string };
-  const user = await prisma.user.findUnique({ where: { id: req.params.id } });
+  const user = await prisma.user.findUnique({ where: { id: userId } });
   if (!user) return res.status(404).json({ error: 'User not found' });
 
   const updated = await prisma.user.update({
-    where: { id: req.params.id },
+    where: { id: userId },
     data: { isBanned: ban, banReason: ban ? reason || null : null },
     select: { id: true, isBanned: true, banReason: true },
   });
@@ -155,16 +173,17 @@ router.patch('/users/:id/ban', async (req: AuthRequest, res) => {
 });
 
 router.patch('/users/:id/role', async (req: AuthRequest, res) => {
+  const userId = getId(req);
   const { role } = req.body as { role: 'USER' | 'ADMIN' };
   if (!role || !['USER', 'ADMIN'].includes(role)) {
     return res.status(400).json({ error: 'Invalid role' });
   }
 
-  const user = await prisma.user.findUnique({ where: { id: req.params.id } });
+  const user = await prisma.user.findUnique({ where: { id: userId } });
   if (!user) return res.status(404).json({ error: 'User not found' });
 
   const updated = await prisma.user.update({
-    where: { id: req.params.id },
+    where: { id: userId },
     data: { role },
     select: { id: true, role: true },
   });
@@ -172,17 +191,19 @@ router.patch('/users/:id/role', async (req: AuthRequest, res) => {
 });
 
 router.delete('/users/:id', async (req: AuthRequest, res) => {
-  const user = await prisma.user.findUnique({ where: { id: req.params.id } });
+  const userId = getId(req);
+  const user = await prisma.user.findUnique({ where: { id: userId } });
   if (!user) return res.status(404).json({ error: 'User not found' });
   if (user.id === req.userId) return res.status(400).json({ error: 'Cannot delete yourself' });
 
-  await prisma.user.delete({ where: { id: req.params.id } });
+  await prisma.user.delete({ where: { id: userId } });
   res.json({ success: true });
 });
 
 router.get('/users/:id/conversations', async (req: AuthRequest, res) => {
+  const userId = getId(req);
   const conversations = await prisma.conversation.findMany({
-    where: { userId: req.params.id },
+    where: { userId },
     orderBy: { updatedAt: 'desc' },
     include: {
       messages: { orderBy: { createdAt: 'asc' } },
@@ -192,12 +213,12 @@ router.get('/users/:id/conversations', async (req: AuthRequest, res) => {
 });
 
 router.get('/conversations', async (req: AuthRequest, res) => {
-  const page = parseInt(req.query.page as string) || 1;
+  const page = getQueryInt(req, 'page', 1);
   const limit = 50;
-  const search = (req.query.search as string) || '';
+  const search = getQueryStr(req, 'search');
   const skip = (page - 1) * limit;
 
-  const where = search
+  const where: any = search
     ? {
         OR: [
           { title: { contains: search } },

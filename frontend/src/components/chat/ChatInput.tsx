@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useChatStore } from '../../stores/chatStore';
+import { Paperclip, Send, Square } from 'lucide-react';
 
 export default function ChatInput() {
   const [input, setInput] = useState('');
@@ -43,40 +44,36 @@ export default function ChatInput() {
   }
 
   return (
-    <div className="px-4 py-4">
+    <div className="px-4 sm:px-6 py-4">
       <div className="max-w-3xl mx-auto">
-        <div className="relative bg-bg-secondary border border-border rounded-2xl focus-within:border-accent/50 focus-within:shadow-lg focus-within:shadow-accent/5 transition-all duration-200">
+        <div className="relative bg-bg-secondary border border-border rounded-2xl focus-within:border-accent/50 focus-within:ring-2 focus-within:ring-accent/20 focus-within:shadow-lg focus-within:shadow-accent/5 transition-all duration-200">
           <textarea
             ref={textareaRef}
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Message Open Arena..."
-            className="w-full bg-transparent text-sm text-text-primary resize-none focus:outline-none min-h-[44px] max-h-[240px] py-3.5 px-12 leading-relaxed placeholder:text-text-secondary/50"
+            className="w-full bg-transparent text-base text-text-primary resize-none focus:outline-none min-h-[56px] max-h-[240px] py-4 pl-16 pr-16 leading-relaxed placeholder:text-text-secondary/50"
             rows={1}
           />
           
           {/* Left action button */}
           <button
-            className="absolute left-3 top-1/2 -translate-y-1/2 p-2 hover:bg-bg-primary rounded-xl transition text-text-secondary hover:text-text-primary"
+            className="absolute left-4 top-1/2 -translate-y-1/2 p-2 hover:bg-bg-primary rounded-xl transition text-text-secondary hover:text-text-primary"
             title="Attach file"
           >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
-            </svg>
+            <Paperclip className="w-5 h-5" />
           </button>
 
           {/* Right action button */}
-          <div className="absolute right-3 top-1/2 -translate-y-1/2">
+          <div className="absolute right-4 top-1/2 -translate-y-1/2">
             {isStreaming ? (
               <button
                 onClick={stopStreaming}
                 className="p-2.5 bg-danger text-white rounded-xl hover:bg-danger/90 transition shadow-lg shadow-danger/20"
                 title="Stop generation"
               >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                  <rect x="6" y="6" width="12" height="12" rx="2" />
-                </svg>
+                <Square className="w-4 h-4" />
               </button>
             ) : (
               <button
@@ -85,16 +82,13 @@ export default function ChatInput() {
                 className="p-2.5 bg-accent text-white rounded-xl hover:bg-accent-hover transition disabled:opacity-30 disabled:cursor-not-allowed shadow-lg shadow-accent/20"
                 title="Send message"
               >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <line x1="12" y1="19" x2="12" y2="5" />
-                  <polyline points="5 12 12 5 19 12" />
-                </svg>
+                <Send className="w-4 h-4" />
               </button>
             )}
           </div>
         </div>
-        <p className="text-[11px] text-text-secondary/60 text-center mt-2.5">
-          Open Arena can make mistakes. Press <kbd className="px-1.5 py-0.5 bg-bg-secondary border border-border rounded text-[10px] font-mono">Enter</kbd> to send, <kbd className="px-1.5 py-0.5 bg-bg-secondary border border-border rounded text-[10px] font-mono">Shift+Enter</kbd> for new line.
+        <p className="text-sm text-text-secondary/60 text-center mt-3">
+          Open Arena can make mistakes. Press <kbd className="px-1.5 py-0.5 bg-bg-secondary border border-border rounded text-xs font-mono">Enter</kbd> to send, <kbd className="px-1.5 py-0.5 bg-bg-secondary border border-border rounded text-xs font-mono">Shift+Enter</kbd> for new line.
         </p>
       </div>
     </div>

@@ -15,6 +15,10 @@ const updateSchema = z.object({
   isStarred: z.boolean().optional(),
 });
 
+function getId(req: AuthRequest): string {
+  return Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+}
+
 router.get('/', isAuthenticated, isNotBanned, async (req: AuthRequest, res) => {
   const conversations = await prisma.conversation.findMany({
     where: { userId: req.userId! },
@@ -46,8 +50,9 @@ router.post('/', isAuthenticated, isNotBanned, async (req: AuthRequest, res) => 
 });
 
 router.get('/:id', isAuthenticated, isNotBanned, async (req: AuthRequest, res) => {
+  const id = getId(req);
   const conversation = await prisma.conversation.findFirst({
-    where: { id: req.params.id, userId: req.userId! },
+    where: { id, userId: req.userId! },
     select: {
       id: true,
       title: true,
@@ -64,14 +69,15 @@ router.get('/:id', isAuthenticated, isNotBanned, async (req: AuthRequest, res) =
 
 router.put('/:id', isAuthenticated, isNotBanned, async (req: AuthRequest, res) => {
   try {
+    const id = getId(req);
     const { title, isStarred } = updateSchema.parse(req.body);
     const conversation = await prisma.conversation.findFirst({
-      where: { id: req.params.id, userId: req.userId! },
+      where: { id, userId: req.userId! },
     });
     if (!conversation) return res.status(404).json({ error: 'Conversation not found' });
 
     const updated = await prisma.conversation.update({
-      where: { id: req.params.id },
+      where: { id },
       data: { ...(title && { title }), ...(isStarred !== undefined && { isStarred }) },
     });
     res.json(updated);
@@ -82,23 +88,25 @@ router.put('/:id', isAuthenticated, isNotBanned, async (req: AuthRequest, res) =
 });
 
 router.delete('/:id', isAuthenticated, isNotBanned, async (req: AuthRequest, res) => {
+  const id = getId(req);
   const conversation = await prisma.conversation.findFirst({
-    where: { id: req.params.id, userId: req.userId! },
+    where: { id, userId: req.userId! },
   });
   if (!conversation) return res.status(404).json({ error: 'Conversation not found' });
 
-  await prisma.conversation.delete({ where: { id: req.params.id } });
+  await prisma.conversation.delete({ where: { id } });
   res.json({ success: true });
 });
 
 router.get('/:id/messages', isAuthenticated, isNotBanned, async (req: AuthRequest, res) => {
+  const id = getId(req);
   const conversation = await prisma.conversation.findFirst({
-    where: { id: req.params.id, userId: req.userId! },
+    where: { id, userId: req.userId! },
   });
   if (!conversation) return res.status(404).json({ error: 'Conversation not found' });
 
   const messages = await prisma.message.findMany({
-    where: { conversationId: req.params.id },
+    where: { conversationId: id },
     orderBy: { createdAt: 'asc' },
   });
   res.json(messages);

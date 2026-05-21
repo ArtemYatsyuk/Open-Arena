@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import jwt from 'jsonwebtoken';
 import { z } from 'zod';
 import { prisma } from '../index.js';
 import { hashPassword, comparePassword, generateAccessToken, generateRefreshToken, setAuthCookies, clearAuthCookies } from '../services/authService.js';

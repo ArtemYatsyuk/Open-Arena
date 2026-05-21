@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Search, Eye, Ban, CheckCircle, Download, ChevronLeft, ChevronRight, Trash2 } from 'lucide-react';
 
 interface AdminUser {
   id: string;
@@ -118,49 +119,55 @@ export default function UsersTable() {
   if (error) return <div className="p-8 text-danger">{error}</div>;
 
   return (
-    <div className="p-6">
+    <div className="p-6 animate-fadeIn">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-heading font-medium">Users</h1>
+        <h1 className="text-xl font-semibold">Users</h1>
         <div className="flex gap-2">
           {selected.length > 0 && (
             <>
               <button
                 onClick={() => bulkAction('ban')}
-                className="px-3 py-1.5 text-sm bg-danger/10 text-danger rounded-pill hover:bg-danger/20 transition"
+                className="px-3 py-1.5 text-sm bg-danger/10 text-danger rounded-xl hover:bg-danger/20 transition flex items-center gap-1.5"
               >
-                Ban Selected ({selected.length})
+                <Ban className="w-4 h-4" />
+                Ban ({selected.length})
               </button>
               <button
                 onClick={() => bulkAction('delete')}
-                className="px-3 py-1.5 text-sm bg-danger/10 text-danger rounded-pill hover:bg-danger/20 transition"
+                className="px-3 py-1.5 text-sm bg-danger/10 text-danger rounded-xl hover:bg-danger/20 transition flex items-center gap-1.5"
               >
-                Delete Selected ({selected.length})
+                <Trash2 className="w-4 h-4" />
+                Delete ({selected.length})
               </button>
             </>
           )}
           <button
             onClick={exportCSV}
-            className="px-3 py-1.5 text-sm bg-bg-secondary border border-border rounded-pill hover:border-accent/50 transition"
+            className="px-3 py-1.5 text-sm bg-bg-secondary border border-border rounded-xl hover:border-accent/50 transition flex items-center gap-1.5"
           >
+            <Download className="w-4 h-4" />
             Export CSV
           </button>
         </div>
       </div>
 
       <div className="mb-4">
-        <input
-          type="text"
-          value={search}
-          onChange={(e) => {
-            setSearch(e.target.value);
-            setPage(1);
-          }}
-          placeholder="Search users..."
-          className="px-3 py-2 bg-bg-secondary border border-border rounded-input text-sm text-text-primary w-64 focus:outline-none focus:ring-2 focus:ring-accent"
-        />
+        <div className="relative w-64">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-secondary" />
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(1);
+            }}
+            placeholder="Search users..."
+            className="w-full pl-10 pr-3 py-2 bg-bg-secondary border border-border rounded-xl text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-accent/50"
+          />
+        </div>
       </div>
 
-      <div className="bg-bg-secondary border border-border rounded-card overflow-hidden">
+      <div className="bg-bg-secondary border border-border rounded-2xl overflow-hidden">
         <table className="w-full text-sm">
           <thead>
             <tr className="text-text-secondary border-b border-border">
@@ -204,8 +211,9 @@ export default function UsersTable() {
                     <div className="flex gap-1">
                       <button
                         onClick={() => navigate(`/admin/users/${u.id}`)}
-                        className="px-2 py-1 text-xs bg-bg-primary border border-border rounded hover:border-accent/50 transition"
+                        className="px-2 py-1 text-xs bg-bg-primary border border-border rounded-lg hover:border-accent/50 transition flex items-center gap-1"
                       >
+                        <Eye className="w-3 h-3" />
                         View
                       </button>
                       <button
@@ -216,12 +224,13 @@ export default function UsersTable() {
                           });
                           fetchUsers();
                         }}
-                        className={`px-2 py-1 text-xs rounded transition ${
+                        className={`px-2 py-1 text-xs rounded-lg transition flex items-center gap-1 ${
                           u.isBanned
                             ? 'bg-success/10 text-success hover:bg-success/20'
                             : 'bg-danger/10 text-danger hover:bg-danger/20'
                         }`}
                       >
+                        {u.isBanned ? <CheckCircle className="w-3 h-3" /> : <Ban className="w-3 h-3" />}
                         {u.isBanned ? 'Unban' : 'Ban'}
                       </button>
                     </div>
@@ -241,16 +250,18 @@ export default function UsersTable() {
           <button
             onClick={() => setPage((p) => Math.max(1, p - 1))}
             disabled={page === 1}
-            className="px-3 py-1.5 text-sm bg-bg-secondary border border-border rounded-pill disabled:opacity-30 hover:border-accent/50 transition"
+            className="px-3 py-1.5 text-sm bg-bg-secondary border border-border rounded-xl disabled:opacity-30 hover:border-accent/50 transition flex items-center gap-1"
           >
+            <ChevronLeft className="w-4 h-4" />
             Previous
           </button>
           <button
             onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
             disabled={page === totalPages}
-            className="px-3 py-1.5 text-sm bg-bg-secondary border border-border rounded-pill disabled:opacity-30 hover:border-accent/50 transition"
+            className="px-3 py-1.5 text-sm bg-bg-secondary border border-border rounded-xl disabled:opacity-30 hover:border-accent/50 transition flex items-center gap-1"
           >
             Next
+            <ChevronRight className="w-4 h-4" />
           </button>
         </div>
       </div>

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { isToday, isYesterday, subDays } from 'date-fns';
+import { Plus, Star, StarOff, Pencil, Trash2, Layers, Settings, PanelLeftClose } from 'lucide-react';
 import { useChatStore } from '../../stores/chatStore';
 import { useUIStore } from '../../stores/uiStore';
 import { useAuthStore } from '../../stores/authStore';
@@ -59,15 +60,15 @@ export default function Sidebar() {
   const renderGroup = (title: string, items: typeof conversations) => {
     if (items.length === 0) return null;
     return (
-      <div className="mb-1">
-        <h3 className="text-[11px] font-semibold text-text-secondary uppercase tracking-wider px-3 py-2">{title}</h3>
+      <div className="mb-2">
+        <h3 className="text-xs font-semibold text-text-secondary uppercase tracking-wider px-3 py-2">{title}</h3>
         {items.map((conv) => (
           <div
             key={conv.id}
-            className={`group flex items-center gap-2 px-3 py-2.5 mx-2 rounded-xl cursor-pointer transition-all duration-150 text-sm ${
+            className={`group flex items-center gap-2 px-3 py-2.5 mx-2 rounded-xl cursor-pointer transition-all duration-150 text-sm animate-fadeIn ${
               currentConv?.id === conv.id
-                ? 'bg-accent/10 text-accent'
-                : 'hover:bg-bg-primary/60'
+                ? 'bg-accent/10 text-accent ring-2 ring-accent/30'
+                : 'hover:bg-bg-primary/60 hover:translate-x-1'
             }`}
             onClick={() => selectConversation(conv.id)}
           >
@@ -85,7 +86,7 @@ export default function Sidebar() {
                   autoFocus
                 />
               ) : (
-                <p className="truncate font-medium text-[13px]">{conv.title}</p>
+                <p className="truncate font-medium text-sm">{conv.title}</p>
               )}
             </div>
             <div className="hidden group-hover:flex items-center gap-0.5 flex-shrink-0">
@@ -97,7 +98,7 @@ export default function Sidebar() {
                 className="p-1.5 hover:text-accent transition text-xs rounded-lg hover:bg-bg-primary/80"
                 title={conv.isStarred ? 'Unstar' : 'Star'}
               >
-                {conv.isStarred ? '★' : '☆'}
+                {conv.isStarred ? <Star className="w-3.5 h-3.5" /> : <StarOff className="w-3.5 h-3.5" />}
               </button>
               <button
                 onClick={(e) => {
@@ -107,7 +108,7 @@ export default function Sidebar() {
                 className="p-1.5 hover:text-accent transition text-xs rounded-lg hover:bg-bg-primary/80"
                 title="Rename"
               >
-                ✎
+                <Pencil className="w-3.5 h-3.5" />
               </button>
               <button
                 onClick={(e) => {
@@ -117,7 +118,7 @@ export default function Sidebar() {
                 className="p-1.5 hover:text-danger transition text-xs rounded-lg hover:bg-bg-primary/80"
                 title="Delete"
               >
-                ×
+                <Trash2 className="w-3.5 h-3.5" />
               </button>
             </div>
           </div>
@@ -140,10 +141,7 @@ export default function Sidebar() {
           onClick={handleNewChat}
           className="w-full py-2.5 bg-accent text-white rounded-xl text-sm font-medium hover:bg-accent-hover transition-all duration-150 shadow-lg shadow-accent/20 flex items-center justify-center gap-2"
         >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="12" y1="5" x2="12" y2="19" />
-            <line x1="5" y1="12" x2="19" y2="12" />
-          </svg>
+          <Plus className="w-4 h-4" />
           New conversation
         </button>
       </div>
@@ -161,7 +159,7 @@ export default function Sidebar() {
       <div className="p-3 border-t border-border flex-shrink-0">
         <div className="flex items-center gap-2">
           <div
-            className="w-9 h-9 rounded-xl flex items-center justify-center text-white text-xs font-semibold flex-shrink-0 shadow-md cursor-pointer hover:opacity-80 transition"
+            className="w-10 h-10 rounded-xl flex items-center justify-center text-white text-xs font-semibold flex-shrink-0 shadow-md cursor-pointer hover:opacity-80 transition"
             style={{ backgroundColor: user?.avatarColor || '#6C4FF6' }}
             onClick={() => setSettingsOpen(true)}
           >
@@ -169,7 +167,7 @@ export default function Sidebar() {
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium truncate">{user?.username}</p>
-            <p className="text-[11px] text-text-secondary truncate">{user?.email}</p>
+            <p className="text-xs text-text-secondary truncate">{user?.email}</p>
           </div>
           <div className="flex items-center gap-0.5 flex-shrink-0">
             {user?.role === 'ADMIN' && (
@@ -178,11 +176,7 @@ export default function Sidebar() {
                 className="p-2 hover:bg-bg-primary rounded-xl transition text-accent"
                 title="Admin Panel"
               >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M12 2L2 7l10 5 10-5-10-5z" />
-                  <path d="M2 17l10 5 10-5" />
-                  <path d="M2 12l10 5 10-5" />
-                </svg>
+                <Layers className="w-4 h-4" />
               </button>
             )}
             <button
@@ -190,19 +184,14 @@ export default function Sidebar() {
               className="p-2 hover:bg-bg-primary rounded-xl transition"
               title="Settings"
             >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="12" r="3" />
-                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
-              </svg>
+              <Settings className="w-4 h-4" />
             </button>
             <button
               onClick={toggleSidebar}
               className="p-2 hover:bg-bg-primary rounded-xl transition"
               title="Close sidebar"
             >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="15 18 9 12 15 6" />
-              </svg>
+              <PanelLeftClose className="w-4 h-4" />
             </button>
           </div>
         </div>

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Search, MessageSquare, X, ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface Conversation {
   id: string;
@@ -79,23 +80,26 @@ export default function ConversationsBrowser() {
   if (error) return <div className="p-8 text-danger">{error}</div>;
 
   return (
-    <div className="p-6">
-      <h1 className="text-heading font-medium mb-6">Conversations</h1>
+    <div className="p-6 animate-fadeIn">
+      <h1 className="text-xl font-semibold mb-6">Conversations</h1>
 
       <div className="mb-4">
-        <input
-          type="text"
-          value={search}
-          onChange={(e) => {
-            setSearch(e.target.value);
-            setPage(1);
-          }}
-          placeholder="Search by title or username..."
-          className="px-3 py-2 bg-bg-secondary border border-border rounded-input text-sm text-text-primary w-80 focus:outline-none focus:ring-2 focus:ring-accent"
-        />
+        <div className="relative w-80">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-secondary" />
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(1);
+            }}
+            placeholder="Search by title or username..."
+            className="w-full pl-10 pr-3 py-2 bg-bg-secondary border border-border rounded-xl text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-accent/50"
+          />
+        </div>
       </div>
 
-      <div className="bg-bg-secondary border border-border rounded-card overflow-hidden">
+      <div className="bg-bg-secondary border border-border rounded-2xl overflow-hidden">
         <table className="w-full text-sm">
           <thead>
             <tr className="text-text-secondary border-b border-border">
@@ -130,42 +134,47 @@ export default function ConversationsBrowser() {
           <button
             onClick={() => setPage((p) => Math.max(1, p - 1))}
             disabled={page === 1}
-            className="px-3 py-1.5 text-sm bg-bg-secondary border border-border rounded-pill disabled:opacity-30 hover:border-accent/50 transition"
+            className="px-3 py-1.5 text-sm bg-bg-secondary border border-border rounded-xl disabled:opacity-30 hover:border-accent/50 transition flex items-center gap-1"
           >
+            <ChevronLeft className="w-4 h-4" />
             Previous
           </button>
           <button
             onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
             disabled={page === totalPages}
-            className="px-3 py-1.5 text-sm bg-bg-secondary border border-border rounded-pill disabled:opacity-30 hover:border-accent/50 transition"
+            className="px-3 py-1.5 text-sm bg-bg-secondary border border-border rounded-xl disabled:opacity-30 hover:border-accent/50 transition flex items-center gap-1"
           >
             Next
+            <ChevronRight className="w-4 h-4" />
           </button>
         </div>
       </div>
 
       {selectedConv && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-8" onClick={() => setSelectedConv(null)}>
-          <div className="bg-bg-primary border border-border rounded-card w-full max-w-3xl max-h-[80vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-8 animate-fadeIn" onClick={() => setSelectedConv(null)}>
+          <div className="bg-bg-primary border border-border rounded-2xl w-full max-w-3xl max-h-[80vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between p-4 border-b border-border">
               <div>
-                <h3 className="text-heading font-medium">{selectedConv.title}</h3>
+                <h3 className="text-lg font-semibold flex items-center gap-2">
+                  <MessageSquare className="w-5 h-5 text-accent" />
+                  {selectedConv.title}
+                </h3>
                 <p className="text-xs text-text-secondary">
                   {selectedConv.user.username} · {selectedConv.modelId}
                 </p>
               </div>
               <button
                 onClick={() => setSelectedConv(null)}
-                className="p-2 hover:bg-bg-secondary rounded transition"
+                className="p-2 hover:bg-bg-secondary rounded-xl transition"
               >
-                ×
+                <X className="w-5 h-5" />
               </button>
             </div>
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
               {messages.map((msg) => (
                 <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                   <div
-                    className={`max-w-[80%] p-3 rounded-card text-sm ${
+                    className={`max-w-[80%] p-3 rounded-xl text-sm ${
                       msg.role === 'user'
                         ? 'bg-accent-light text-text-primary'
                         : 'bg-bg-secondary border border-border'

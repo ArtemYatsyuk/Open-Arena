@@ -12,13 +12,13 @@ export function comparePassword(password: string, hash: string): boolean {
 export function generateAccessToken(userId: string, role: string): string {
   return jwt.sign({ userId, role }, process.env.JWT_ACCESS_SECRET!, {
     expiresIn: process.env.JWT_ACCESS_EXPIRES_IN || '1h',
-  });
+  } as jwt.SignOptions);
 }
 
 export function generateRefreshToken(userId: string, role: string): string {
   return jwt.sign({ userId, role }, process.env.JWT_REFRESH_SECRET!, {
     expiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '30d',
-  });
+  } as jwt.SignOptions);
 }
 
 export function setAuthCookies(res: any, accessToken: string, refreshToken: string) {

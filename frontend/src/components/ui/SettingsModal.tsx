@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuthStore } from '../../stores/authStore';
 import { useUIStore } from '../../stores/uiStore';
+import { Settings, Palette, Database, Sun, Moon, Trash2, X } from 'lucide-react';
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -13,14 +14,14 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   const setTheme = useUIStore((s) => s.setTheme);
   const addToast = useUIStore((s) => s.addToast);
   const [avatarColor, setAvatarColor] = useState(user?.avatarColor || '#6C4FF6');
-  const [fontSize, setFontSize] = useState(parseInt(localStorage.getItem('fontSize') || '15'));
+  const [fontSize, setFontSize] = useState(parseInt(localStorage.getItem('fontSize') || '16'));
   const [compactMode, setCompactMode] = useState(localStorage.getItem('compactMode') === 'true');
   const [activeTab, setActiveTab] = useState<'general' | 'appearance' | 'data'>('general');
 
   useEffect(() => {
     if (isOpen) {
       setAvatarColor(user?.avatarColor || '#6C4FF6');
-      setFontSize(parseInt(localStorage.getItem('fontSize') || '15'));
+      setFontSize(parseInt(localStorage.getItem('fontSize') || '16'));
       setCompactMode(localStorage.getItem('compactMode') === 'true');
       setActiveTab('general');
     }
@@ -56,13 +57,13 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   };
 
   const tabs = [
-    { id: 'general', label: 'General', icon: '⚙' },
-    { id: 'appearance', label: 'Appearance', icon: '🎨' },
-    { id: 'data', label: 'Data', icon: '💾' },
+    { id: 'general', label: 'General', icon: <Settings className="w-4 h-4" /> },
+    { id: 'appearance', label: 'Appearance', icon: <Palette className="w-4 h-4" /> },
+    { id: 'data', label: 'Data', icon: <Database className="w-4 h-4" /> },
   ];
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={onClose}>
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn" onClick={onClose}>
       <div
         className="bg-bg-primary border border-border rounded-2xl w-full max-w-lg max-h-[90vh] flex flex-col shadow-2xl"
         onClick={(e) => e.stopPropagation()}
@@ -71,7 +72,7 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
         <div className="flex items-center justify-between p-5 border-b border-border">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center">
-              <span className="text-lg"></span>
+              <Settings className="w-5 h-5 text-accent" />
             </div>
             <div>
               <h2 className="text-lg font-semibold">Settings</h2>
@@ -82,10 +83,7 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
             onClick={onClose}
             className="p-2 hover:bg-bg-secondary rounded-xl transition"
           >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="18" y1="6" x2="6" y2="18" />
-              <line x1="6" y1="6" x2="18" y2="18" />
-            </svg>
+            <X className="w-5 h-5" />
           </button>
         </div>
 
@@ -101,7 +99,7 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                   : 'text-text-secondary hover:text-text-primary hover:bg-bg-secondary/50'
               }`}
             >
-              <span>{tab.icon}</span>
+              {tab.icon}
               {tab.label}
             </button>
           ))}
@@ -181,7 +179,7 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                     }`}
                   >
                     <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-white to-gray-100 border border-border mx-auto mb-2 flex items-center justify-center">
-                      <span className="text-lg">☀</span>
+                      <Sun className="w-5 h-5 text-yellow-500" />
                     </div>
                     <p className="text-sm font-medium">Light</p>
                     <p className="text-xs text-text-secondary">Clean & bright</p>
@@ -195,7 +193,7 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                     }`}
                   >
                     <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-gray-900 to-gray-800 border border-border mx-auto mb-2 flex items-center justify-center">
-                      <span className="text-lg">☾</span>
+                      <Moon className="w-5 h-5 text-blue-400" />
                     </div>
                     <p className="text-sm font-medium">Dark</p>
                     <p className="text-xs text-text-secondary">Easy on eyes</p>
@@ -281,10 +279,7 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                     onClick={handleClearData}
                     className="w-full py-3 text-sm font-medium text-danger bg-danger/10 rounded-xl hover:bg-danger/20 transition flex items-center justify-center gap-2"
                   >
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <polyline points="3 6 5 6 21 6" />
-                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-                    </svg>
+                    <Trash2 className="w-4 h-4" />
                     Clear Local Data
                   </button>
                 </div>

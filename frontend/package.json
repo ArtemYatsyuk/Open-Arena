@@ -15,6 +15,7 @@
     "@radix-ui/react-tooltip": "^1.1.8",
     "date-fns": "^4.1.0",
     "katex": "^0.16.21",
+    "lucide-react": "^1.16.0",
     "mermaid": "^11.4.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",

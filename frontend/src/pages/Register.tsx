@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
+import { Mail, User, Lock, AlertCircle, Loader2, Check } from 'lucide-react';
 
 export default function Register() {
   const [email, setEmail] = useState('');
@@ -39,54 +40,71 @@ export default function Register() {
   };
 
   return (
-    <div className="flex items-center justify-center h-screen bg-bg-primary">
+    <div className="flex items-center justify-center h-screen bg-bg-primary animate-fadeIn">
       <div className="w-full max-w-sm p-8">
-        <h1 className="text-2xl font-medium text-center mb-2">Create account</h1>
-        <p className="text-text-secondary text-center text-sm mb-8">Join Open Arena</p>
+        <div className="text-center mb-8">
+          <div className="w-16 h-16 rounded-2xl bg-accent flex items-center justify-center mx-auto mb-4 shadow-lg shadow-accent/20">
+            <span className="text-white text-2xl font-bold">OA</span>
+          </div>
+          <h1 className="text-2xl font-semibold mb-1">Create account</h1>
+          <p className="text-text-secondary text-sm">Join Open Arena</p>
+        </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {error && (
-            <div className="p-3 bg-danger/10 text-danger text-sm rounded">{error}</div>
+            <div className="p-3 bg-danger/10 text-danger text-sm rounded-xl border border-danger/20 flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 flex-shrink-0" />
+              {error}
+            </div>
           )}
           <div>
-            <label className="block text-ui text-text-secondary mb-1">Email</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-3 py-2 bg-bg-secondary border border-border rounded-input text-text-primary text-sm focus:outline-none focus:ring-2 focus:ring-accent"
-              required
-            />
+            <label className="block text-sm text-text-secondary mb-1.5">Email</label>
+            <div className="relative">
+              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-secondary" />
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full pl-10 pr-3 py-2.5 bg-bg-secondary border border-border rounded-xl text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-accent/50"
+                required
+              />
+            </div>
           </div>
           <div>
-            <label className="block text-ui text-text-secondary mb-1">Username</label>
-            <input
-              type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              pattern="^[a-zA-Z0-9_]+$"
-              minLength={3}
-              maxLength={30}
-              className="w-full px-3 py-2 bg-bg-secondary border border-border rounded-input text-text-primary text-sm focus:outline-none focus:ring-2 focus:ring-accent"
-              required
-            />
+            <label className="block text-sm text-text-secondary mb-1.5">Username</label>
+            <div className="relative">
+              <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-secondary" />
+              <input
+                type="text"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                pattern="^[a-zA-Z0-9_]+$"
+                minLength={3}
+                maxLength={30}
+                className="w-full pl-10 pr-3 py-2.5 bg-bg-secondary border border-border rounded-xl text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-accent/50"
+                required
+              />
+            </div>
           </div>
           <div>
-            <label className="block text-ui text-text-secondary mb-1">Password</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-3 py-2 bg-bg-secondary border border-border rounded-input text-text-primary text-sm focus:outline-none focus:ring-2 focus:ring-accent"
-              required
-            />
+            <label className="block text-sm text-text-secondary mb-1.5">Password</label>
+            <div className="relative">
+              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-secondary" />
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full pl-10 pr-3 py-2.5 bg-bg-secondary border border-border rounded-xl text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-accent/50"
+                required
+              />
+            </div>
             {password && (
               <div className="mt-2">
                 <div className="flex gap-1">
                   {[...Array(5)].map((_, i) => (
                     <div
                       key={i}
-                      className={`h-1 flex-1 rounded-full transition ${
+                      className={`h-1.5 flex-1 rounded-full transition ${
                         i < score ? scoreColors[score - 1] : 'bg-border'
                       }`}
                     />
@@ -99,15 +117,25 @@ export default function Register() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-2.5 bg-accent text-white rounded-pill text-sm font-medium hover:bg-accent-hover transition disabled:opacity-50"
+            className="w-full py-3 bg-accent text-white rounded-xl text-sm font-medium hover:bg-accent-hover transition disabled:opacity-50 shadow-lg shadow-accent/20 flex items-center justify-center gap-2"
           >
-            {loading ? 'Creating account...' : 'Create account'}
+            {loading ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Creating account...
+              </>
+            ) : (
+              <>
+                <Check className="w-4 h-4" />
+                Create account
+              </>
+            )}
           </button>
         </form>
 
         <p className="text-center text-sm text-text-secondary mt-6">
           Already have an account?{' '}
-          <Link to="/login" className="text-accent hover:underline">
+          <Link to="/login" className="text-accent hover:underline font-medium">
             Sign in
           </Link>
         </p>

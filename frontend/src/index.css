@@ -8,6 +8,7 @@
   --border-color: rgba(0, 0, 0, 0.08);
   --text-primary: #1A1918;
   --text-secondary: #706F6B;
+  --font-size-base: 16px;
 }
 
 .dark {
@@ -31,11 +32,25 @@ html, body, #root {
 
 body {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  font-size: 15px;
+  font-size: var(--font-size-base);
+  line-height: 1.6;
   color: var(--text-primary);
   background: var(--bg-primary);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* Ensure minimum touch target size for interactive elements */
+button, a, input, select, textarea, [role="button"] {
+  min-height: 44px;
+  touch-action: manipulation;
+}
+
+/* Focus visible styles for accessibility */
+*:focus-visible {
+  outline: 2px solid #6C4FF6;
+  outline-offset: 2px;
+  border-radius: 4px;
 }
 
 ::-webkit-scrollbar {
@@ -115,6 +130,15 @@ body {
 
 .animate-fadeIn {
   animation: fadeIn 200ms ease-out;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
 }
 
 /* Line clamp utility */

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useChatStore } from '../../stores/chatStore';
+import { ChevronDown, Check } from 'lucide-react';
 
 interface Model {
   id: string;
@@ -96,15 +97,13 @@ export default function ModelSelector({ currentModelId }: { currentModelId?: str
           </div>
         )}
         <span className="font-medium">{selected?.name || 'Select model'}</span>
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-text-secondary">
-          <polyline points="6 9 12 15 18 9" />
-        </svg>
+        <ChevronDown className="w-4 h-4 text-text-secondary" />
       </button>
 
       {open && (
         <>
           <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
-          <div className="absolute right-0 top-full mt-2 w-80 bg-bg-primary border border-border rounded-2xl shadow-2xl z-20 overflow-hidden">
+          <div className="absolute right-0 top-full mt-2 w-80 bg-bg-primary border border-border rounded-2xl shadow-2xl z-20 overflow-hidden animate-fadeIn">
             <div className="p-2">
               <div className="px-3 py-2 text-xs font-semibold text-text-secondary uppercase tracking-wider">
                 Available Models
@@ -145,7 +144,7 @@ export default function ModelSelector({ currentModelId }: { currentModelId?: str
                       <div className="flex items-center gap-2">
                         <span className="text-sm font-semibold">{model.name}</span>
                         <span
-                          className="text-[10px] px-1.5 py-0.5 rounded-full font-medium"
+                          className="text-xs px-1.5 py-0.5 rounded-full font-medium"
                           style={{
                             backgroundColor: getProviderColor(model.id) + '15',
                             color: getProviderColor(model.id),
@@ -155,15 +154,13 @@ export default function ModelSelector({ currentModelId }: { currentModelId?: str
                         </span>
                       </div>
                       <p className="text-xs text-text-secondary mt-0.5 line-clamp-1">{model.description}</p>
-                      <p className="text-[11px] text-text-secondary/70 mt-0.5">
+                      <p className="text-xs text-text-secondary/70 mt-0.5">
                         {model.contextWindow.toLocaleString()} context window
                       </p>
                     </div>
                     {selectedId === model.id && (
                       <div className="flex-shrink-0 text-accent">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                          <polyline points="20 6 9 17 4 12" />
-                        </svg>
+                        <Check className="w-4 h-4" />
                       </div>
                     )}
                   </button>

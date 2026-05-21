@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } from 'recharts';
+import { Users, Activity, MessageSquare, Pencil, BarChart3, UserX } from 'lucide-react';
 
 interface Stats {
   totalUsers: number;
@@ -67,7 +68,7 @@ export default function Dashboard() {
     return (
       <div className="flex items-center justify-center h-full">
         <div className="text-center">
-          <div className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+          <div className="w-10 h-10 border-3 border-accent border-t-transparent rounded-full animate-spin mx-auto mb-3" />
           <p className="text-text-secondary text-sm">Loading dashboard...</p>
         </div>
       </div>
@@ -100,15 +101,17 @@ export default function Dashboard() {
         messages: 0,
       }));
 
+  const hasData = stats.last30Days.length > 0 || stats.messagesToday > 0;
+
   const statCards = [
-    { label: 'Total Users', value: stats.totalUsers, icon: '👥', color: 'from-blue-500/10 to-blue-500/5' },
-    { label: 'Active Today', value: stats.activeToday, icon: '🟢', color: 'from-green-500/10 to-green-500/5' },
-    { label: 'Conversations', value: stats.totalConversations, icon: '💬', color: 'from-purple-500/10 to-purple-500/5' },
-    { label: 'Messages Today', value: stats.messagesToday, icon: '️', color: 'from-orange-500/10 to-orange-500/5' },
+    { label: 'Total Users', value: stats.totalUsers, icon: <Users className="w-6 h-6 text-blue-500" />, color: 'from-blue-500/10 to-blue-500/5' },
+    { label: 'Active Today', value: stats.activeToday, icon: <Activity className="w-6 h-6 text-green-500" />, color: 'from-green-500/10 to-green-500/5' },
+    { label: 'Conversations', value: stats.totalConversations, icon: <MessageSquare className="w-6 h-6 text-purple-500" />, color: 'from-purple-500/10 to-purple-500/5' },
+    { label: 'Messages Today', value: stats.messagesToday, icon: <Pencil className="w-6 h-6 text-orange-500" />, color: 'from-orange-500/10 to-orange-500/5' },
   ];
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
+    <div className="p-6 max-w-7xl mx-auto animate-fadeIn">
       <div className="mb-8">
         <h1 className="text-2xl font-semibold mb-1">Dashboard</h1>
         <p className="text-text-secondary text-sm">Overview of your Open Arena instance</p>
@@ -120,11 +123,13 @@ export default function Dashboard() {
             key={card.label}
             className={`bg-gradient-to-br ${card.color} border border-border rounded-2xl p-5 hover:shadow-lg transition-all duration-200`}
           >
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-2xl">{card.icon}</span>
+            <div className="flex items-center justify-between mb-4">
+              <div className="w-12 h-12 flex items-center justify-center">
+                {card.icon}
+              </div>
               <span className="text-xs text-text-secondary font-medium uppercase tracking-wider">{card.label}</span>
             </div>
-            <p className="text-3xl font-bold">{card.value.toLocaleString()}</p>
+            <p className="text-4xl font-bold">{card.value.toLocaleString()}</p>
           </div>
         ))}
       </div>
@@ -135,34 +140,44 @@ export default function Dashboard() {
             <span className="w-2 h-2 bg-accent rounded-full" />
             Messages Activity (Last 30 Days)
           </h2>
-          <ResponsiveContainer width="100%" height={280}>
-            <AreaChart data={chartData}>
-              <defs>
-                <linearGradient id="colorMessages" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#6C4FF6" stopOpacity={0.3} />
-                  <stop offset="95%" stopColor="#6C4FF6" stopOpacity={0} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" vertical={false} />
-              <XAxis dataKey="date" tick={{ fontSize: 11 }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fontSize: 11 }} axisLine={false} tickLine={false} />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: 'var(--bg-primary)',
-                  border: '1px solid var(--border-color)',
-                  borderRadius: '12px',
-                  fontSize: '12px',
-                }}
-              />
-              <Area
-                type="monotone"
-                dataKey="messages"
-                stroke="#6C4FF6"
-                strokeWidth={2}
-                fill="url(#colorMessages)"
-              />
-            </AreaChart>
-          </ResponsiveContainer>
+          {hasData ? (
+            <ResponsiveContainer width="100%" height={280}>
+              <AreaChart data={chartData}>
+                <defs>
+                  <linearGradient id="colorMessages" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#6C4FF6" stopOpacity={0.3} />
+                    <stop offset="95%" stopColor="#6C4FF6" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" vertical={false} />
+                <XAxis dataKey="date" tick={{ fontSize: 11 }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fontSize: 11 }} axisLine={false} tickLine={false} domain={[0, 'auto']} tickCount={5} />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: 'var(--bg-primary)',
+                    border: '1px solid var(--border-color)',
+                    borderRadius: '12px',
+                    fontSize: '12px',
+                  }}
+                />
+                <Area
+                  type="monotone"
+                  dataKey="messages"
+                  stroke="#6C4FF6"
+                  strokeWidth={2}
+                  fill="url(#colorMessages)"
+                  dot={{ r: 4, fill: '#6C4FF6' }}
+                  activeDot={{ r: 6 }}
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="flex flex-col items-center justify-center h-64 text-center">
+              <BarChart3 className="w-12 h-12 text-text-secondary/50 mb-3" />
+              <p className="text-text-secondary text-sm mb-1">No message activity yet</p>
+              <p className="text-text-secondary/70 text-xs">Data will appear once users start sending messages</p>
+            </div>
+          )}
         </div>
 
         <div className="bg-bg-secondary border border-border rounded-2xl p-6">
@@ -172,7 +187,7 @@ export default function Dashboard() {
           </h2>
           {stats.topUsers.length === 0 ? (
             <div className="text-center py-8 text-text-secondary text-sm">
-              <p className="text-3xl mb-2">👤</p>
+              <UserX className="w-12 h-12 text-text-secondary/50 mx-auto mb-2" />
               <p>No users yet</p>
             </div>
           ) : (
