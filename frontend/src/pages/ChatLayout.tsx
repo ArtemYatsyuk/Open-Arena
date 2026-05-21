@@ -36,30 +36,33 @@ export default function ChatLayout() {
   }, [handleKeyDown]);
 
   return (
-    <div className="flex h-screen bg-bg-primary">
-      {sidebarOpen && (
-        <div
-          className="flex-shrink-0 border-r border-border transition-all duration-200 hidden md:block"
-          style={{ width: sidebarWidth }}
-        >
-          <Sidebar />
-        </div>
-      )}
+    <div className="flex h-screen bg-bg-primary overflow-hidden">
+      {/* Sidebar */}
+      <div
+        className={`flex-shrink-0 border-r border-border transition-all duration-200 ease-out hidden md:block ${
+          sidebarOpen ? 'w-[260px]' : 'w-0 overflow-hidden'
+        }`}
+      >
+        <Sidebar />
+      </div>
 
+      {/* Main content */}
       <div className="flex-1 flex min-w-0">
         <div className="flex-1 min-w-0">
           <ChatArea />
         </div>
 
+        {/* Workspace panel */}
         {workspaceOpen && (
           <div
-            className="flex-shrink-0 border-l border-border"
+            className="flex-shrink-0 border-l border-border transition-all duration-250 ease-out"
             style={{ width: workspaceWidth }}
           >
             <Workspace />
           </div>
         )}
       </div>
+
       <ToastContainer />
     </div>
   );

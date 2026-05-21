@@ -39,12 +39,16 @@ export default function ChatArea() {
   return (
     <div className="flex flex-col h-full bg-bg-primary">
       {/* Top bar */}
-      <div className="flex items-center gap-3 px-4 py-3 border-b border-border bg-bg-primary flex-shrink-0">
+      <div className="flex items-center gap-3 px-4 py-3 border-b border-border bg-bg-primary/80 backdrop-blur-xl flex-shrink-0">
         <button
           onClick={toggleSidebar}
-          className="p-2 hover:bg-bg-secondary rounded-lg transition md:hidden"
+          className="p-2 hover:bg-bg-secondary rounded-xl transition md:hidden"
         >
-          
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="3" y1="12" x2="21" y2="12" />
+            <line x1="3" y1="6" x2="21" y2="6" />
+            <line x1="3" y1="18" x2="21" y2="18" />
+          </svg>
         </button>
         {editingTitle ? (
           <input
@@ -55,12 +59,12 @@ export default function ChatArea() {
               if (e.key === 'Enter') saveTitle();
               if (e.key === 'Escape') setEditingTitle(false);
             }}
-            className="flex-1 bg-bg-secondary border border-border rounded-lg px-3 py-1.5 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-accent/50"
+            className="flex-1 bg-bg-secondary border border-border rounded-xl px-3 py-2 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-accent/50"
             autoFocus
           />
         ) : (
           <h2
-            className="flex-1 text-sm font-medium truncate cursor-pointer hover:text-accent transition px-2 py-1 rounded-lg hover:bg-bg-secondary/50"
+            className="flex-1 text-sm font-medium truncate cursor-pointer hover:text-accent transition px-2 py-1.5 rounded-xl hover:bg-bg-secondary/50"
             onClick={() => setEditingTitle(true)}
           >
             {currentConv?.title || 'New conversation'}
@@ -74,7 +78,7 @@ export default function ChatArea() {
         {messages.length === 0 && !streamingContent ? (
           <EmptyState />
         ) : (
-          <div className="max-w-3xl mx-auto px-4 py-6 space-y-6">
+          <div className="max-w-3xl mx-auto px-4 py-8 space-y-8">
             {messages.map((msg) => (
               <MessageBubble key={msg.id} message={msg} initials={initials} />
             ))}
@@ -98,14 +102,14 @@ export default function ChatArea() {
 
       {/* Error banner */}
       {error && (
-        <div className="mx-4 mb-2 p-3 bg-danger/10 text-danger text-sm rounded-lg flex items-center justify-between flex-shrink-0">
+        <div className="mx-4 mb-3 p-3 bg-danger/10 text-danger text-sm rounded-xl flex items-center justify-between flex-shrink-0 border border-danger/20">
           <span>{error}</span>
           <button onClick={() => setError(null)} className="ml-2 hover:opacity-70">×</button>
         </div>
       )}
 
       {/* Input area */}
-      <div className="flex-shrink-0 border-t border-border bg-bg-primary">
+      <div className="flex-shrink-0 border-t border-border bg-bg-primary/80 backdrop-blur-xl">
         <ChatInput />
       </div>
     </div>
@@ -114,26 +118,29 @@ export default function ChatArea() {
 
 function EmptyState() {
   const prompts = [
-    'Explain quantum computing in simple terms',
-    'Write a Python function to sort a list',
-    'Help me debug a React component',
-    'Summarize the latest AI research',
+    { icon: '💡', text: 'Explain quantum computing in simple terms' },
+    { icon: '💻', text: 'Write a Python function to sort a list' },
+    { icon: '🐛', text: 'Help me debug a React component' },
+    { icon: '📚', text: 'Summarize the latest AI research' },
   ];
 
   return (
     <div className="flex flex-col items-center justify-center h-full text-center px-4">
-      <div className="w-16 h-16 rounded-2xl bg-accent/10 flex items-center justify-center mb-4">
-        <span className="text-2xl">✦</span>
+      <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-accent/20 to-accent/5 flex items-center justify-center mb-6 shadow-lg">
+        <span className="text-3xl">✦</span>
       </div>
-      <h1 className="text-xl font-semibold mb-2">How can I help you today?</h1>
-      <p className="text-text-secondary text-sm mb-8">Start a conversation or try one of these prompts</p>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-lg w-full">
+      <h1 className="text-2xl font-semibold mb-2">How can I help you today?</h1>
+      <p className="text-text-secondary text-sm mb-10 max-w-md">
+        Start a conversation or try one of these suggestions below
+      </p>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-xl w-full">
         {prompts.map((p) => (
           <button
-            key={p}
-            className="p-4 text-sm text-left bg-bg-secondary border border-border rounded-xl hover:border-accent/50 hover:bg-accent/5 transition-all duration-150"
+            key={p.text}
+            className="p-4 text-sm text-left bg-bg-secondary border border-border rounded-2xl hover:border-accent/50 hover:bg-accent/5 transition-all duration-200 group"
           >
-            {p}
+            <span className="text-xl mb-2 block">{p.icon}</span>
+            <span className="text-text-secondary group-hover:text-text-primary transition">{p.text}</span>
           </button>
         ))}
       </div>

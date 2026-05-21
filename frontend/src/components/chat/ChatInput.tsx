@@ -43,52 +43,58 @@ export default function ChatInput() {
   }
 
   return (
-    <div className="px-4 py-3">
+    <div className="px-4 py-4">
       <div className="max-w-3xl mx-auto">
-        <div className="flex items-end gap-2 bg-bg-secondary border border-border rounded-card p-2 focus-within:border-accent/50 transition">
-          <button
-            className="p-2 hover:bg-bg-primary rounded transition flex-shrink-0 text-text-secondary"
-            title="Attach file"
-          >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
-            </svg>
-          </button>
+        <div className="relative bg-bg-secondary border border-border rounded-2xl focus-within:border-accent/50 focus-within:shadow-lg focus-within:shadow-accent/5 transition-all duration-200">
           <textarea
             ref={textareaRef}
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Message Open Arena..."
-            className="flex-1 bg-transparent text-sm text-text-primary resize-none focus:outline-none min-h-[36px] max-h-[240px] py-1.5 leading-relaxed"
+            className="w-full bg-transparent text-sm text-text-primary resize-none focus:outline-none min-h-[44px] max-h-[240px] py-3.5 px-12 leading-relaxed placeholder:text-text-secondary/50"
             rows={1}
           />
-          {isStreaming ? (
-            <button
-              onClick={stopStreaming}
-              className="p-2 bg-danger text-white rounded-full hover:opacity-90 transition flex-shrink-0 w-8 h-8 flex items-center justify-center"
-              title="Stop generation"
-            >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-                <rect x="6" y="6" width="12" height="12" rx="2" />
-              </svg>
-            </button>
-          ) : (
-            <button
-              onClick={handleSubmit}
-              disabled={!input.trim()}
-              className="p-2 bg-accent text-white rounded-full hover:bg-accent-hover transition disabled:opacity-30 flex-shrink-0 w-8 h-8 flex items-center justify-center"
-              title="Send"
-            >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="12" y1="19" x2="12" y2="5" />
-                <polyline points="5 12 12 5 19 12" />
-              </svg>
-            </button>
-          )}
+          
+          {/* Left action button */}
+          <button
+            className="absolute left-3 top-1/2 -translate-y-1/2 p-2 hover:bg-bg-primary rounded-xl transition text-text-secondary hover:text-text-primary"
+            title="Attach file"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
+            </svg>
+          </button>
+
+          {/* Right action button */}
+          <div className="absolute right-3 top-1/2 -translate-y-1/2">
+            {isStreaming ? (
+              <button
+                onClick={stopStreaming}
+                className="p-2.5 bg-danger text-white rounded-xl hover:bg-danger/90 transition shadow-lg shadow-danger/20"
+                title="Stop generation"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                  <rect x="6" y="6" width="12" height="12" rx="2" />
+                </svg>
+              </button>
+            ) : (
+              <button
+                onClick={handleSubmit}
+                disabled={!input.trim()}
+                className="p-2.5 bg-accent text-white rounded-xl hover:bg-accent-hover transition disabled:opacity-30 disabled:cursor-not-allowed shadow-lg shadow-accent/20"
+                title="Send message"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="12" y1="19" x2="12" y2="5" />
+                  <polyline points="5 12 12 5 19 12" />
+                </svg>
+              </button>
+            )}
+          </div>
         </div>
-        <p className="text-xs text-text-secondary text-center mt-2">
-          Open Arena can make mistakes. Press Enter to send, Shift+Enter for new line.
+        <p className="text-[11px] text-text-secondary/60 text-center mt-2.5">
+          Open Arena can make mistakes. Press <kbd className="px-1.5 py-0.5 bg-bg-secondary border border-border rounded text-[10px] font-mono">Enter</kbd> to send, <kbd className="px-1.5 py-0.5 bg-bg-secondary border border-border rounded text-[10px] font-mono">Shift+Enter</kbd> for new line.
         </p>
       </div>
     </div>
