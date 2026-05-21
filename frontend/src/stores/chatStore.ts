@@ -40,6 +40,33 @@ interface ChatState {
 
 let abortController: AbortController | null = null;
 
+async function fetchJson(url: string, options: RequestInit = {}) {
+  const res = await fetch(url, {
+    ...options,
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
+  });
+
+  if (!res.ok) {
+    let errorData;
+    try {
+      errorData = await res.json();
+    } catch {
+      errorData = { error: `Server error: ${res.status}` };
+    }
+    throw new Error(errorData.error || `Request failed with status ${res.status}`);
+  }
+
+  try {
+    return await res.json();
+  } catch {
+    throw new Error('Invalid JSON response from server');
+  }
+}
+
 export const useChatStore = create<ChatState>((set, get) => ({
   conversations: [],
   currentConversation: null,
@@ -50,52 +77,41 @@ export const useChatStore = create<ChatState>((set, get) => ({
   error: null,
 
   fetchConversations: async () => {
-    set({ isLoading: true });
+    set({ isLoading: true, error: null });
     try {
-      const res = await fetch('/api/conversations', { credentials: 'include' });
-      if (res.ok) {
-        const data = await res.json();
-        set({ conversations: data });
-      }
-    } catch {
-      set({ error: 'Failed to load conversations' });
+      const data = await fetchJson('/api/conversations');
+      set({ conversations: data });
+    } catch (e: any) {
+      set({ error: e.message });
     }
     set({ isLoading: false });
   },
 
   selectConversation: async (id) => {
-    set({ isLoading: true, currentConversation: null, messages: [] });
+    set({ isLoading: true, currentConversation: null, messages: [], error: null });
     try {
-      const [convRes, msgRes] = await Promise.all([
-        fetch(`/api/conversations/${id}`, { credentials: 'include' }),
-        fetch(`/api/conversations/${id}/messages`, { credentials: 'include' }),
+      const [conv, messages] = await Promise.all([
+        fetchJson(`/api/conversations/${id}`),
+        fetchJson(`/api/conversations/${id}/messages`),
       ]);
-      if (convRes.ok && msgRes.ok) {
-        const conv = await convRes.json();
-        const messages = await msgRes.json();
-        set({ currentConversation: conv, messages });
-      }
-    } catch {
-      set({ error: 'Failed to load conversation' });
+      set({ currentConversation: conv, messages });
+    } catch (e: any) {
+      set({ error: e.message });
     }
     set({ isLoading: false });
   },
 
   createConversation: async (title, modelId) => {
-    const res = await fetch('/api/conversations', {
+    const conv = await fetchJson('/api/conversations', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ title, modelId }),
-      credentials: 'include',
     });
-    if (!res.ok) throw new Error('Failed to create conversation');
-    const conv = await res.json();
     set((state) => ({ conversations: [conv, ...state.conversations] }));
     return conv.id;
   },
 
   deleteConversation: async (id) => {
-    await fetch(`/api/conversations/${id}`, { method: 'DELETE', credentials: 'include' });
+    await fetchJson(`/api/conversations/${id}`, { method: 'DELETE' });
     set((state) => ({
       conversations: state.conversations.filter((c) => c.id !== id),
       ...(state.currentConversation?.id === id
@@ -105,14 +121,10 @@ export const useChatStore = create<ChatState>((set, get) => ({
   },
 
   updateConversation: async (id, data) => {
-    const res = await fetch(`/api/conversations/${id}`, {
+    const updated = await fetchJson(`/api/conversations/${id}`, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
-      credentials: 'include',
     });
-    if (!res.ok) throw new Error('Failed to update conversation');
-    const updated = await res.json();
     set((state) => ({
       conversations: state.conversations.map((c) =>
         c.id === id ? { ...c, ...updated } : c
@@ -153,8 +165,13 @@ export const useChatStore = create<ChatState>((set, get) => ({
       });
 
       if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error || 'Chat failed');
+        let errorData;
+        try {
+          errorData = await res.json();
+        } catch {
+          errorData = { error: 'Chat failed' };
+        }
+        throw new Error(errorData.error || 'Chat failed');
       }
 
       const reader = res.body!.getReader();
@@ -188,7 +205,11 @@ export const useChatStore = create<ChatState>((set, get) => ({
             } else if (parsed.type === 'done') {
               break;
             }
-          } catch {}
+          } catch (e: any) {
+            if (e.message && !e.message.includes('JSON')) {
+              throw e;
+            }
+          }
         }
       }
 

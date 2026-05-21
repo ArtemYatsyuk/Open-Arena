@@ -1,19 +1,52 @@
 import { useState, useEffect } from 'react';
 
+async function fetchJson(url: string, options: RequestInit = {}) {
+  const res = await fetch(url, {
+    ...options,
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
+  });
+
+  if (!res.ok) {
+    let errorData;
+    try {
+      errorData = await res.json();
+    } catch {
+      errorData = { error: `Server error: ${res.status}` };
+    }
+    throw new Error(errorData.error || `Request failed with status ${res.status}`);
+  }
+
+  try {
+    return await res.json();
+  } catch {
+    throw new Error('Invalid JSON response from server');
+  }
+}
+
 export default function ConfigViewer() {
   const [config, setConfig] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch('/api/models', { credentials: 'include' })
-      .then((r) => r.json())
+    fetchJson('/api/models')
       .then((data) => {
         setConfig(data);
+        setLoading(false);
+      })
+      .catch((e) => {
+        setError(e.message);
         setLoading(false);
       });
   }, []);
 
   if (loading) return <div className="p-8 text-text-secondary">Loading...</div>;
+  if (error) return <div className="p-8 text-danger">{error}</div>;
+  if (!config) return <div className="p-8 text-danger">No config available</div>;
 
   return (
     <div className="p-6">

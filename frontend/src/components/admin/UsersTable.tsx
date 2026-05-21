@@ -14,25 +14,55 @@ interface AdminUser {
   _count: { conversations: number };
 }
 
+async function fetchJson(url: string, options: RequestInit = {}) {
+  const res = await fetch(url, {
+    ...options,
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
+  });
+
+  if (!res.ok) {
+    let errorData;
+    try {
+      errorData = await res.json();
+    } catch {
+      errorData = { error: `Server error: ${res.status}` };
+    }
+    throw new Error(errorData.error || `Request failed with status ${res.status}`);
+  }
+
+  try {
+    return await res.json();
+  } catch {
+    throw new Error('Invalid JSON response from server');
+  }
+}
+
 export default function UsersTable() {
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [selected, setSelected] = useState<string[]>([]);
   const navigate = useNavigate();
 
-  const fetchUsers = () => {
+  const fetchUsers = async () => {
     setLoading(true);
-    const params = new URLSearchParams({ page: String(page), search });
-    fetch(`/api/admin/users?${params}`, { credentials: 'include' })
-      .then((r) => r.json())
-      .then((data) => {
-        setUsers(data.users);
-        setTotalPages(data.totalPages);
-        setLoading(false);
-      });
+    setError(null);
+    try {
+      const params = new URLSearchParams({ page: String(page), search });
+      const data = await fetchJson(`/api/admin/users?${params}`);
+      setUsers(data.users);
+      setTotalPages(data.totalPages);
+    } catch (e: any) {
+      setError(e.message);
+    }
+    setLoading(false);
   };
 
   useEffect(() => {
@@ -52,14 +82,12 @@ export default function UsersTable() {
   const bulkAction = async (action: 'ban' | 'delete') => {
     for (const id of selected) {
       if (action === 'ban') {
-        await fetch(`/api/admin/users/${id}/ban`, {
+        await fetchJson(`/api/admin/users/${id}/ban`, {
           method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ ban: true, reason: 'Bulk ban' }),
-          credentials: 'include',
         });
       } else {
-        await fetch(`/api/admin/users/${id}`, { method: 'DELETE', credentials: 'include' });
+        await fetchJson(`/api/admin/users/${id}`, { method: 'DELETE' });
       }
     }
     setSelected([]);
@@ -87,6 +115,7 @@ export default function UsersTable() {
   };
 
   if (loading) return <div className="p-8 text-text-secondary">Loading...</div>;
+  if (error) return <div className="p-8 text-danger">{error}</div>;
 
   return (
     <div className="p-6">
@@ -181,11 +210,9 @@ export default function UsersTable() {
                       </button>
                       <button
                         onClick={async () => {
-                          await fetch(`/api/admin/users/${u.id}/ban`, {
+                          await fetchJson(`/api/admin/users/${u.id}/ban`, {
                             method: 'PATCH',
-                            headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ ban: !u.isBanned, reason: 'Banned by admin' }),
-                            credentials: 'include',
                           });
                           fetchUsers();
                         }}

@@ -10,20 +10,52 @@ interface Stats {
   topUsers: { id: string; username: string; email: string; _count: { conversations: number } }[];
 }
 
+async function fetchJson(url: string, options: RequestInit = {}) {
+  const res = await fetch(url, {
+    ...options,
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
+  });
+
+  if (!res.ok) {
+    let errorData;
+    try {
+      errorData = await res.json();
+    } catch {
+      errorData = { error: `Server error: ${res.status}` };
+    }
+    throw new Error(errorData.error || `Request failed with status ${res.status}`);
+  }
+
+  try {
+    return await res.json();
+  } catch {
+    throw new Error('Invalid JSON response from server');
+  }
+}
+
 export default function Dashboard() {
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch('/api/admin/stats', { credentials: 'include' })
-      .then((r) => r.json())
+    fetchJson('/api/admin/stats')
       .then((data) => {
         setStats(data);
+        setLoading(false);
+      })
+      .catch((e) => {
+        setError(e.message);
         setLoading(false);
       });
   }, []);
 
   if (loading) return <div className="p-8 text-text-secondary">Loading...</div>;
+  if (error) return <div className="p-8 text-danger">{error}</div>;
   if (!stats) return <div className="p-8 text-danger">Failed to load stats</div>;
 
   const chartData = stats.last30Days.map((d) => ({

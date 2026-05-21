@@ -11,14 +11,21 @@ interface Model {
 export default function ModelSelector({ currentModelId }: { currentModelId?: string }) {
   const [models, setModels] = useState<Model[]>([]);
   const [open, setOpen] = useState(false);
-  const [selectedId, setSelectedId] = useState(currentModelId || '');
+  const [selectedId, setSelectedId] = useState(currentModelId || 'owl-alpha');
 
   useEffect(() => {
     fetch('/api/models', { credentials: 'include' })
-      .then((r) => r.json())
+      .then((r) => {
+        if (!r.ok) throw new Error('Failed to fetch models');
+        return r.json();
+      })
       .then((data) => {
         setModels(data.models);
-        setSelectedId(currentModelId || data.defaultModelId);
+        setSelectedId(currentModelId || data.defaultModelId || 'owl-alpha');
+      })
+      .catch((e) => {
+        console.error('Failed to load models:', e);
+        setModels([{ id: 'owl-alpha', name: 'Owl Alpha', contextWindow: 128000, description: 'Default model' }]);
       });
   }, [currentModelId]);
 
@@ -27,12 +34,14 @@ export default function ModelSelector({ currentModelId }: { currentModelId?: str
   const getProviderColor = (id: string) => {
     if (id.includes('gpt') || id.includes('openai')) return '#10A37F';
     if (id.includes('claude') || id.includes('anthropic')) return '#D97757';
+    if (id.includes('owl') || id.includes('openrouter')) return '#6C4FF6';
     return '#6C4FF6';
   };
 
   const getProviderName = (id: string) => {
     if (id.includes('gpt') || id.includes('openai')) return 'OpenAI';
     if (id.includes('claude') || id.includes('anthropic')) return 'Anthropic';
+    if (id.includes('owl') || id.includes('openrouter')) return 'OpenRouter';
     return 'Custom';
   };
 
@@ -46,7 +55,7 @@ export default function ModelSelector({ currentModelId }: { currentModelId?: str
           className="w-2 h-2 rounded-full"
           style={{ backgroundColor: getProviderColor(selectedId) }}
         />
-        <span>{selected?.name || 'Select model'}</span>
+        <span>{selected?.name || 'Owl Alpha'}</span>
         <span className="text-text-secondary">▾</span>
       </button>
 

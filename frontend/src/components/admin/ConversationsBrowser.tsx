@@ -10,25 +10,55 @@ interface Conversation {
   _count: { messages: number };
 }
 
+async function fetchJson(url: string, options: RequestInit = {}) {
+  const res = await fetch(url, {
+    ...options,
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
+  });
+
+  if (!res.ok) {
+    let errorData;
+    try {
+      errorData = await res.json();
+    } catch {
+      errorData = { error: `Server error: ${res.status}` };
+    }
+    throw new Error(errorData.error || `Request failed with status ${res.status}`);
+  }
+
+  try {
+    return await res.json();
+  } catch {
+    throw new Error('Invalid JSON response from server');
+  }
+}
+
 export default function ConversationsBrowser() {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [selectedConv, setSelectedConv] = useState<Conversation | null>(null);
   const [messages, setMessages] = useState<any[]>([]);
 
-  const fetchConversations = () => {
+  const fetchConversations = async () => {
     setLoading(true);
-    const params = new URLSearchParams({ page: String(page), search });
-    fetch(`/api/admin/conversations?${params}`, { credentials: 'include' })
-      .then((r) => r.json())
-      .then((data) => {
-        setConversations(data.conversations);
-        setTotalPages(data.totalPages);
-        setLoading(false);
-      });
+    setError(null);
+    try {
+      const params = new URLSearchParams({ page: String(page), search });
+      const data = await fetchJson(`/api/admin/conversations?${params}`);
+      setConversations(data.conversations);
+      setTotalPages(data.totalPages);
+    } catch (e: any) {
+      setError(e.message);
+    }
+    setLoading(false);
   };
 
   useEffect(() => {
@@ -37,12 +67,16 @@ export default function ConversationsBrowser() {
 
   const loadMessages = async (conv: Conversation) => {
     setSelectedConv(conv);
-    const res = await fetch(`/api/conversations/${conv.id}/messages`, { credentials: 'include' });
-    const data = await res.json();
-    setMessages(data);
+    try {
+      const data = await fetchJson(`/api/conversations/${conv.id}/messages`);
+      setMessages(data);
+    } catch (e: any) {
+      console.error('Failed to load messages:', e);
+    }
   };
 
   if (loading) return <div className="p-8 text-text-secondary">Loading...</div>;
+  if (error) return <div className="p-8 text-danger">{error}</div>;
 
   return (
     <div className="p-6">
@@ -111,8 +145,8 @@ export default function ConversationsBrowser() {
       </div>
 
       {selectedConv && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-8">
-          <div className="bg-bg-primary border border-border rounded-card w-full max-w-3xl max-h-[80vh] flex flex-col">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-8" onClick={() => setSelectedConv(null)}>
+          <div className="bg-bg-primary border border-border rounded-card w-full max-w-3xl max-h-[80vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between p-4 border-b border-border">
               <div>
                 <h3 className="text-heading font-medium">{selectedConv.title}</h3>
