@@ -41,6 +41,7 @@ export default function Sidebar() {
   const groups = groupConversations();
 
   const handleNewChat = () => {
+    navigate('/');
     useChatStore.getState().selectConversation('');
     useChatStore.setState({ currentConversation: null, messages: [] });
   };
@@ -70,7 +71,7 @@ export default function Sidebar() {
                 ? 'bg-accent/10 text-accent ring-2 ring-accent/30'
                 : 'hover:bg-bg-primary/60 hover:translate-x-1'
             }`}
-            onClick={() => selectConversation(conv.id)}
+            onClick={() => navigate('/c/' + conv.id)}
           >
             <div className="flex-1 min-w-0">
               {editingId === conv.id ? (
@@ -156,13 +157,6 @@ export default function Sidebar() {
       {/* Footer */}
       <div className="p-3 border-t border-border flex-shrink-0">
         <div className="flex items-center gap-2">
-          <div
-            className="w-10 h-10 rounded-xl flex items-center justify-center text-white text-xs font-semibold flex-shrink-0 shadow-md cursor-pointer hover:opacity-80 transition"
-            style={{ backgroundColor: user?.avatarColor || '#6C4FF6' }}
-            onClick={() => setSettingsOpen(true)}
-          >
-            {user?.username?.slice(0, 2).toUpperCase()}
-          </div>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium truncate">{user?.username}</p>
             <p className="text-xs text-text-secondary truncate">{user?.email}</p>

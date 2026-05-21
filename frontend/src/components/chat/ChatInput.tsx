@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useChatStore } from '../../stores/chatStore';
-import { Send, Square, Globe } from 'lucide-react';
+import { Send, Square, Globe, Brain } from 'lucide-react';
 
 export default function ChatInput() {
   const [input, setInput] = useState('');
@@ -11,6 +11,8 @@ export default function ChatInput() {
   const currentConv = useChatStore((s) => s.currentConversation);
   const webSearchEnabled = useChatStore((s) => s.webSearchEnabled);
   const toggleWebSearch = useChatStore((s) => s.toggleWebSearch);
+  const reasoningEnabled = useChatStore((s) => s.reasoningEnabled);
+  const setReasoningEnabled = useChatStore((s) => s.setReasoningEnabled);
 
   useEffect(() => {
     if (textareaRef.current) {
@@ -54,10 +56,10 @@ export default function ChatInput() {
             : 'border-border focus-within:border-accent/50 focus-within:ring-2 focus-within:ring-accent/20 focus-within:shadow-lg focus-within:shadow-accent/5'
         }`}>
           {isStreaming && (
-            <div className="absolute -top-0.5 left-0 right-0 h-0.5 bg-gradient-to-r from-accent via-purple-500 to-accent rounded-full animate-gradient" />
+            <div className="absolute -top-0.5 left-0 right-0 h-0.5 bg-gradient-to-r from-accent/20 via-accent to-accent/20 rounded-full animate-gradient" />
           )}
-          {/* Web search toggle */}
-          <div className="absolute left-3 top-1/2 -translate-y-1/2">
+          {/* Toggles */}
+          <div className="absolute left-3 top-1/2 -translate-y-1/2 flex gap-1">
             <button
               onClick={toggleWebSearch}
               disabled={isStreaming}
@@ -70,6 +72,18 @@ export default function ChatInput() {
             >
               <Globe className="w-4 h-4" />
             </button>
+            <button
+              onClick={() => setReasoningEnabled(!reasoningEnabled)}
+              disabled={isStreaming}
+              title={reasoningEnabled ? 'Reasoning enabled' : 'Reasoning disabled'}
+              className={`p-2 rounded-xl transition ${
+                reasoningEnabled
+                  ? 'bg-accent/15 text-accent shadow-sm'
+                  : 'text-text-secondary/50 hover:text-text-secondary hover:bg-bg-primary/50'
+              } disabled:opacity-30`}
+            >
+              <Brain className="w-4 h-4" />
+            </button>
           </div>
 
           <textarea
@@ -78,7 +92,7 @@ export default function ChatInput() {
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder={isStreaming ? 'AI is generating...' : 'Message Open Arena...'}
-            className="w-full bg-transparent text-base text-text-primary resize-none focus:outline-none min-h-[56px] max-h-[240px] py-4 pl-14 pr-14 leading-relaxed placeholder:text-text-secondary/50"
+            className="w-full bg-transparent text-base text-text-primary resize-none focus:outline-none min-h-[56px] max-h-[240px] py-4 pl-20 pr-14 leading-relaxed placeholder:text-text-secondary/50"
             rows={1}
             disabled={isStreaming}
           />

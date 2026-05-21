@@ -4,38 +4,69 @@ import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
-import { Copy, Check, Clock, Bot, User, Brain, Globe, ChevronDown, ChevronRight, ExternalLink } from 'lucide-react';
+import { Copy, Check, Clock, Brain, Globe, ChevronDown, ChevronRight, ChevronLeft, RotateCcw, ExternalLink } from 'lucide-react';
+import { useChatStore } from '../../stores/chatStore';
 import type { Message } from '../../stores/chatStore';
+
+function tryExtract(str: string, quote: string): string | null {
+  const escaped = quote === '"' ? '\\"' : "'";
+  const pattern = new RegExp(
+    `^\\s*\\[\\s*\\{?['"]type['"]\\s*:\\s*['"]text['"]\\s*,\\s*['"]text['"]\\s*:\\s*${quote}((?:[^${escaped}\\\\]|\\\\.)*)${quote}\\s*\\}?\\s*\\]\\s*$`,
+    'gm'
+  );
+  const matches = [...str.matchAll(pattern)];
+  if (matches.length === 0) return null;
+  return matches.map((m) => m[1]).join('\n\n').trim();
+}
 
 function cleanContent(str: string): string {
   if (!str) return str;
-  const blockPattern = /^\s*\[\s*\{?['"]type['"]\s*:\s*['"]text['"]\s*,\s*['"]text['"]\s*:\s*"((?:[^"\\]|\\.)*)"\s*\}?\s*\]\s*$/gm;
-  const matches = [...str.matchAll(blockPattern)];
-  if (matches.length === 0) return str;
-  return matches.map((m) => m[1]).join('\n\n').trim() || str;
+  return tryExtract(str, '"') || tryExtract(str, "'") || str;
 }
 
 interface Props {
   message: Message;
-  initials: string;
   isStreaming?: boolean;
 }
 
-export default function MessageBubble({ message, initials, isStreaming }: Props) {
+export default function MessageBubble({ message, isStreaming }: Props) {
   const isUser = message.role === 'user';
   const [copied, setCopied] = useState(false);
-  const [thoughtOpen, setThoughtOpen] = useState(true);
-  const [searchResultsOpen, setSearchResultsOpen] = useState(true);
+  const [thoughtOpen, setThoughtOpen] = useState(isStreaming);
+  const [searchResultsOpen, setSearchResultsOpen] = useState(isStreaming);
+  const [versionIdx, setVersionIdx] = useState(0);
+  const regenerateMessage = useChatStore((s) => s.regenerateMessage);
+  const isRegenerating = useChatStore((s) => s.isStreaming);
+
+  const allVersions = useMemo(() => {
+    const current = { content: message.content, reasoning: message.reasoning || undefined };
+    try {
+      const alts = message.alternatives ? JSON.parse(message.alternatives) : [];
+      return [...alts, current];
+    } catch {
+      return [current];
+    }
+  }, [message.content, message.reasoning, message.alternatives]);
+
+  const currentVersion = useMemo(() => {
+    const v = allVersions[versionIdx] || allVersions[allVersions.length - 1];
+    return v;
+  }, [allVersions, versionIdx]);
+
   const displayContent = useMemo(() => {
-    const raw = cleanContent(isStreaming ? message.content || '' : message.content);
-    if (!message.webSearchSources?.length) return raw;
+    const raw = cleanContent(isStreaming ? message.content || '' : currentVersion.content);
+    const sources = Array.isArray(message.webSearchSources) ? message.webSearchSources : [];
+    if (!sources.length) return raw;
     let result = raw;
-    for (const src of message.webSearchSources) {
+    for (const src of sources) {
       result = result.replace(new RegExp(`\\[${src.index}\\]`, 'g'), `[${src.index}](${src.url})`);
     }
     return result;
-  }, [message.content, message.webSearchSources, isStreaming]);
-  const displayReasoning = useMemo(() => message.reasoning ? cleanContent(message.reasoning) : null, [message.reasoning]);
+  }, [message.content, message.webSearchSources, isStreaming, currentVersion.content]);
+  const displayReasoning = useMemo(() => {
+    const r = currentVersion.reasoning || message.reasoning;
+    return r ? cleanContent(r) : null;
+  }, [message.reasoning, currentVersion.reasoning]);
 
   const handleCopy = async () => {
     await navigator.clipboard.writeText(displayContent);
@@ -62,12 +93,6 @@ export default function MessageBubble({ message, initials, isStreaming }: Props)
             >
               {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
             </button>
-            <div
-              className="w-7 h-7 rounded-lg flex items-center justify-center text-white text-xs font-semibold shadow-sm"
-              style={{ backgroundColor: '#6C4FF6' }}
-            >
-              <User className="w-3.5 h-3.5" />
-            </div>
           </div>
         </div>
       </div>
@@ -78,9 +103,6 @@ export default function MessageBubble({ message, initials, isStreaming }: Props)
 
   return (
     <div className="flex gap-4 group animate-slideUp">
-      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-accent via-accent/90 to-purple-500 flex-shrink-0 flex items-center justify-center text-white shadow-lg flex-none">
-        <Bot className="w-5 h-5" />
-      </div>
       <div className="flex-1 min-w-0">
         {hasReasoning && (
           <div className="mb-2">
@@ -92,7 +114,7 @@ export default function MessageBubble({ message, initials, isStreaming }: Props)
                 <Brain className="w-4 h-4 text-amber-500" />
               </div>
               <span className="text-sm font-medium text-amber-600 dark:text-amber-400 flex-1">
-                {isStreaming ? 'Thinking...' : 'Thought process'}
+                {isStreaming ? 'Thinking...' : 'Thinking Process'}
               </span>
               {thoughtOpen ? (
                 <ChevronDown className="w-4 h-4 text-amber-400" />
@@ -214,28 +236,59 @@ export default function MessageBubble({ message, initials, isStreaming }: Props)
           )}
         </div>
 
-        <div className="flex items-center gap-3 mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="flex items-center gap-2 mt-2 opacity-0 group-hover:opacity-100 transition-opacity flex-wrap">
           <span className="flex items-center gap-1 text-xs text-text-secondary">
             <Clock className="w-3 h-3" />
             {isStreaming ? 'Generating...' : formatTime(message.createdAt)}
           </span>
+          {allVersions.length > 1 && (
+            <div className="flex items-center gap-1 px-2 py-1 bg-bg-secondary rounded-lg text-xs text-text-secondary">
+              <button
+                onClick={() => setVersionIdx(Math.max(0, versionIdx - 1))}
+                disabled={versionIdx === 0}
+                className="p-0.5 hover:text-text-primary disabled:opacity-30 transition"
+                title="Previous version"
+              >
+                <ChevronLeft className="w-3.5 h-3.5" />
+              </button>
+              <span className="font-medium tabular-nums min-w-[2rem] text-center">{versionIdx + 1}/{allVersions.length}</span>
+              <button
+                onClick={() => setVersionIdx(Math.min(allVersions.length - 1, versionIdx + 1))}
+                disabled={versionIdx === allVersions.length - 1}
+                className="p-0.5 hover:text-text-primary disabled:opacity-30 transition"
+                title="Next version"
+              >
+                <ChevronRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          )}
           {!isStreaming && (
-            <button
-              onClick={handleCopy}
-              className="flex items-center gap-1.5 px-2 py-1 text-xs text-text-secondary hover:text-text-primary hover:bg-bg-secondary rounded-lg transition"
-            >
-              {copied ? (
-                <>
-                  <Check className="w-3 h-3" />
-                  Copied
-                </>
-              ) : (
-                <>
-                  <Copy className="w-3 h-3" />
-                  Copy
-                </>
-              )}
-            </button>
+            <>
+              <button
+                onClick={() => regenerateMessage(message.id)}
+                disabled={isRegenerating}
+                className="flex items-center gap-1 px-2 py-1 text-xs text-text-secondary hover:text-text-primary hover:bg-bg-secondary rounded-lg transition disabled:opacity-30"
+                title="Regenerate response"
+              >
+                <RotateCcw className="w-3 h-3" />
+              </button>
+              <button
+                onClick={handleCopy}
+                className="flex items-center gap-1.5 px-2 py-1 text-xs text-text-secondary hover:text-text-primary hover:bg-bg-secondary rounded-lg transition"
+              >
+                {copied ? (
+                  <>
+                    <Check className="w-3 h-3" />
+                    Copied
+                  </>
+                ) : (
+                  <>
+                    <Copy className="w-3 h-3" />
+                    Copy
+                  </>
+                )}
+              </button>
+            </>
           )}
         </div>
       </div>

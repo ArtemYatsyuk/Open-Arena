@@ -1,20 +1,24 @@
 # Open Arena
 
-A modern AI chatbot platform with multi-model support, real-time code workspace, and an admin panel for user management and analytics.
+A modern AI chatbot platform with multi-model support, web search with citations, a filter/hooks system, and an admin panel for user management and analytics.
 
-![Version](https://img.shields.io/badge/version-1.0.5-blue)
+![GitHub Release](https://img.shields.io/github/v/release/ArtemYatsyuk/Open-Arena)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
 ## Features
 
 - **Multi-Model AI Chat** — Switch between AI models seamlessly with a polished chat interface
-- **Real-Time Code Workspace** — Preview and edit code with live HTML/JSX rendering
+- **Regenerate & Version History** — Re-generate AI responses; all versions are preserved and navigable via `‹ 1/2 ›` arrows below each response
+- **Conversation URLs** — Each chat has a unique URL (`/c/:uuid`) for direct linking and browser navigation
+- **Reasoning Toggle** — Enable/disable model reasoning (thinking) per-session via the Brain toggle in the input bar
+- **Web Search & Citations** — Toggle web search per-message; results are cited with clickable `[1]`, `[2]` source links and a collapsible search-results panel
+- **Filter System** — Admin-defined JavaScript hooks (`inlet`/`outlet`) that intercept every chat request — rate limiting, moderation, analytics, etc.
 - **Markdown & Math Rendering** — Full support for Markdown, LaTeX math, and syntax-highlighted code blocks
 - **Mermaid Diagrams** — Render flowcharts, sequence diagrams, and more inline
-- **Admin Panel** — User management, conversation browser, analytics dashboard, and system configuration
-- **Role-Based Access** — User, moderator, and admin roles with ban/unban functionality
+- **Admin Panel** — User management, conversation browser, analytics dashboard, config editor, and filter manager
+- **In-App Docs** — Comprehensive documentation with chapter navigation in Settings → Docs
+- **Role-Based Access** — User and admin roles with ban/unban functionality
 - **Responsive Design** — Built with Tailwind CSS, optimized for all screen sizes
-- **Accessibility** — 44px touch targets, visible focus states, and proper ARIA labels
 
 ## Tech Stack
 
@@ -27,14 +31,16 @@ A modern AI chatbot platform with multi-model support, real-time code workspace,
 - Lucide React (icons)
 - Recharts (analytics)
 - React Markdown + KaTeX + Mermaid
+- Prism syntax highlighting
 
 ### Backend
 - Node.js + Express
 - TypeScript
-- Prisma ORM
+- Prisma ORM (SQLite)
 - JWT authentication
 - bcryptjs password hashing
 - Zod validation
+- VM sandbox (filter engine)
 
 ## Getting Started
 
@@ -92,7 +98,7 @@ npm run start:prod
 | `npm run dev` | Start frontend and backend in development mode |
 | `npm run dev:frontend` | Start frontend only |
 | `npm run dev:backend` | Start backend only |
-| `npm run build` | Build both frontend and backend |
+| `npm run build` | Build both frontend and backend (run after filter changes) |
 | `npm run start:prod` | Start production server |
 | `npm run db:generate` | Generate Prisma client |
 | `npm run db:push` | Push schema to database |
@@ -119,8 +125,8 @@ Open-Arena/
 │   └── package.json
 ├── backend/
 │   ├── src/
-│   │   ├── routes/           # Express route handlers
-│   │   ├── services/         # Business logic
+│   │   ├── routes/           # Express route handlers (auth, chat, admin, filters...)
+│   │   ├── services/         # Business logic (chat, auth, web search, filter engine)
 │   │   ├── middleware/       # Auth and error middleware
 │   │   └── index.ts          # Server entry point
 │   ├── prisma/

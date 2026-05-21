@@ -258,10 +258,13 @@ router.get('/conversations/:id/messages', async (req: AuthRequest, res) => {
     const conversation = await prisma.conversation.findUnique({ where: { id: convId } });
     if (!conversation) return res.status(404).json({ error: 'Conversation not found' });
 
-    const messages = await prisma.message.findMany({
+    const messages = (await prisma.message.findMany({
       where: { conversationId: convId },
       orderBy: { createdAt: 'asc' },
-    });
+    })).map(m => ({
+      ...m,
+      webSearchSources: m.webSearchSources ? JSON.parse(m.webSearchSources) : null,
+    }));
     res.json(messages);
   } catch (e: any) {
     res.status(500).json({ error: 'Failed to load messages: ' + e.message });

@@ -1,4 +1,5 @@
 import { useEffect, useCallback } from 'react';
+import { useParams } from 'react-router-dom';
 import Sidebar from '../components/sidebar/Sidebar';
 import ChatArea from '../components/chat/ChatArea';
 import Workspace from '../components/workspace/Workspace';
@@ -8,16 +9,27 @@ import { useChatStore } from '../stores/chatStore';
 import { PanelRightOpen } from 'lucide-react';
 
 export default function ChatLayout() {
+  const { id } = useParams();
   const sidebarOpen = useUIStore((s) => s.sidebarOpen);
   const sidebarWidth = useUIStore((s) => s.sidebarWidth);
   const workspaceOpen = useUIStore((s) => s.workspaceOpen);
   const workspaceWidth = useUIStore((s) => s.workspaceWidth);
   const toggleSidebar = useUIStore((s) => s.toggleSidebar);
   const fetchConversations = useChatStore((s) => s.fetchConversations);
+  const selectConversation = useChatStore((s) => s.selectConversation);
 
   useEffect(() => {
     fetchConversations();
   }, [fetchConversations]);
+
+  useEffect(() => {
+    if (id) {
+      selectConversation(id);
+    } else {
+      useChatStore.getState().selectConversation('');
+      useChatStore.setState({ currentConversation: null, messages: [] });
+    }
+  }, [id, selectConversation]);
 
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
     if ((e.metaKey || e.ctrlKey) && e.key === 'k') {

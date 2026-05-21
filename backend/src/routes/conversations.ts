@@ -105,10 +105,13 @@ router.get('/:id/messages', isAuthenticated, isNotBanned, async (req: AuthReques
   });
   if (!conversation) return res.status(404).json({ error: 'Conversation not found' });
 
-  const messages = await prisma.message.findMany({
+  const messages = (await prisma.message.findMany({
     where: { conversationId: id },
     orderBy: { createdAt: 'asc' },
-  });
+  })).map(m => ({
+    ...m,
+    webSearchSources: m.webSearchSources ? JSON.parse(m.webSearchSources) : null,
+  }));
   res.json(messages);
 });
 

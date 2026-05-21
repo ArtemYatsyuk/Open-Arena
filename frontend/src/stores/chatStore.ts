@@ -14,6 +14,7 @@ export interface Message {
   content: string;
   reasoning?: string | null;
   webSearchSources?: WebSearchSource[] | null;
+  alternatives?: string | null;
   tokenCount?: number;
   createdAt: string;
 }
@@ -37,6 +38,7 @@ interface ChatState {
   streamingContent: string;
   reasoningContent: string;
   webSearchEnabled: boolean;
+  reasoningEnabled: boolean;
   webSearchCount: number;
   pendingWebSearchSources: WebSearchSource[] | null;
   error: string | null;
@@ -47,7 +49,9 @@ interface ChatState {
   deleteConversation: (id: string) => Promise<void>;
   updateConversation: (id: string, data: { title?: string; isStarred?: boolean }) => Promise<void>;
   sendMessage: (content: string, modelId: string, conversationId?: string) => Promise<void>;
+  regenerateMessage: (messageId: string) => Promise<void>;
   toggleWebSearch: () => void;
+  setReasoningEnabled: (val: boolean) => void;
   stopStreaming: () => void;
   setError: (error: string | null) => void;
 }
@@ -90,6 +94,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
   streamingContent: '',
   reasoningContent: '',
   webSearchEnabled: false,
+  reasoningEnabled: true,
   webSearchCount: 0,
   pendingWebSearchSources: null,
   error: null,
@@ -181,7 +186,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ conversationId: convId, content, modelId, webSearch: get().webSearchEnabled }),
+        body: JSON.stringify({ conversationId: convId, content, modelId, webSearch: get().webSearchEnabled, reasoning: get().reasoningEnabled }),
         credentials: 'include',
         signal: abortController.signal,
       });
@@ -202,6 +207,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
       let assistantContent = '';
       let assistantReasoning = '';
       let newConvId: string | null = null;
+      let doneMessageId: string | null = null;
 
       while (true) {
         const { done, value } = await reader.read();
@@ -230,13 +236,14 @@ export const useChatStore = create<ChatState>((set, get) => ({
               newConvId = parsed.id;
             } else if (parsed.type === 'error') {
               throw new Error(parsed.message);
-            } else if (parsed.type === 'done') {
-              break;
-            }
-          } catch (e: any) {
-            if (e.message && !e.message.includes('JSON')) {
-              throw e;
-            }
+              } else if (parsed.type === 'done') {
+                doneMessageId = parsed.messageId || null;
+                break;
+              }
+            } catch (e: any) {
+              if (e.message && !e.message.includes('JSON')) {
+                throw e;
+              }
           }
         }
       }
@@ -244,7 +251,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
       const pendingSources = get().pendingWebSearchSources;
 
       const assistantMsg: Message = {
-        id: `temp-asst-${Date.now()}`,
+        id: doneMessageId || `temp-asst-${Date.now()}`,
         conversationId: newConvId || convId || '',
         role: 'assistant',
         content: assistantContent,
@@ -277,6 +284,91 @@ export const useChatStore = create<ChatState>((set, get) => ({
     }
   },
 
+  regenerateMessage: async (messageId) => {
+    const state = get();
+    const msg = state.messages.find(m => m.id === messageId);
+    if (!msg || msg.role !== 'assistant') return;
+    const msgIndex = state.messages.indexOf(msg);
+    const userMsg = msgIndex > 0 && state.messages[msgIndex - 1].role === 'user' ? state.messages[msgIndex - 1] : null;
+    if (!userMsg) return;
+
+    set({ isStreaming: true, streamingContent: '', reasoningContent: '', error: null });
+    abortController = new AbortController();
+
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          conversationId: state.currentConversation?.id,
+          content: userMsg.content,
+          modelId: state.currentConversation?.modelId,
+          webSearch: false,
+          reasoning: get().reasoningEnabled,
+          regenerateMessageId: messageId,
+        }),
+        credentials: 'include',
+        signal: abortController!.signal,
+      });
+
+      if (!res.ok) {
+        let errorData;
+        try { errorData = await res.json(); } catch { errorData = { error: 'Regenerate failed' }; }
+        throw new Error(errorData.error || 'Regenerate failed');
+      }
+
+      const reader = res.body!.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || '';
+
+        for (const line of lines) {
+          const trimmed = line.trim();
+          if (!trimmed.startsWith('data: ')) continue;
+          const data = trimmed.slice(6);
+          try {
+            const parsed = JSON.parse(data);
+            if (parsed.type === 'alternative') {
+              set((s) => ({
+                messages: s.messages.map((m) => {
+                  if (m.id === parsed.messageId) {
+                    let alts: { content: string; reasoning?: string }[] = m.alternatives ? (() => { try { return JSON.parse(m.alternatives); } catch { return []; } })() : [];
+                    alts.push({ content: m.content, reasoning: m.reasoning || undefined });
+                    return { ...m, content: parsed.content, reasoning: parsed.reasoning || null, alternatives: JSON.stringify(alts) };
+                  }
+                  return m;
+                }),
+                streamingContent: '',
+                reasoningContent: '',
+              }));
+            } else if (parsed.type === 'chunk') {
+              // ignore chunks during regenerate (content comes via 'alternative')
+            } else if (parsed.type === 'error') {
+              throw new Error(parsed.message);
+            } else if (parsed.type === 'done') {
+              break;
+            }
+          } catch (e: any) {
+            if (e.message && !e.message.includes('JSON')) throw e;
+          }
+        }
+      }
+    } catch (e: any) {
+      if (e.name === 'AbortError') {
+        set({ isStreaming: false });
+      } else {
+        set({ error: e.message, isStreaming: false });
+      }
+    }
+    set({ isStreaming: false });
+  },
+
   stopStreaming: () => {
     abortController?.abort();
     set({ isStreaming: false, streamingContent: '', reasoningContent: '' });
@@ -285,4 +377,5 @@ export const useChatStore = create<ChatState>((set, get) => ({
   setError: (error) => set({ error }),
 
   toggleWebSearch: () => set((state) => ({ webSearchEnabled: !state.webSearchEnabled })),
+  setReasoningEnabled: (val) => set({ reasoningEnabled: val }),
 }));

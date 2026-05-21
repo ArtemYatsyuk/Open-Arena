@@ -12,6 +12,7 @@ import modelRoutes from './routes/models.js';
 import chatRoutes from './routes/chat.js';
 import conversationRoutes from './routes/conversations.js';
 import adminRoutes from './routes/admin.js';
+import filterRoutes from './routes/filters.js';
 
 dotenv.config();
 
@@ -44,6 +45,7 @@ app.use('/api/models', modelRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/conversations', conversationRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/filters', filterRoutes);
 
 // Serve frontend static files in production
 if (!isDev) {

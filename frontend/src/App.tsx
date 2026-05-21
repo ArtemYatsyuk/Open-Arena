@@ -48,6 +48,14 @@ export default function App() {
         }
       />
       <Route
+        path="/c/:id"
+        element={
+          <ProtectedRoute>
+            <ChatLayout />
+          </ProtectedRoute>
+        }
+      />
+      <Route
         path="/admin/*"
         element={
           <AdminRoute>

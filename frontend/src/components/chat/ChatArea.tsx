@@ -1,8 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useChatStore } from '../../stores/chatStore';
 import { useUIStore } from '../../stores/uiStore';
-import { useAuthStore } from '../../stores/authStore';
-import { Menu, AlertCircle, X, Sparkles, MessageSquare, Zap, Code, Atom, Search, Globe } from 'lucide-react';
+import { Menu, AlertCircle, X, MessageSquare, Zap, Code, Atom, Globe, Search } from 'lucide-react';
 import MessageBubble from './MessageBubble';
 import ChatInput from './ChatInput';
 import ModelSelector from './ModelSelector';
@@ -17,7 +16,6 @@ export default function ChatArea() {
   const webSearchCount = useChatStore((s) => s.webSearchCount);
   const error = useChatStore((s) => s.error);
   const setError = useChatStore((s) => s.setError);
-  const user = useAuthStore((s) => s.user);
   const toggleSidebar = useUIStore((s) => s.toggleSidebar);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [editingTitle, setEditingTitle] = useState(false);
@@ -37,8 +35,6 @@ export default function ChatArea() {
     }
     setEditingTitle(false);
   };
-
-  const initials = user?.username?.slice(0, 2).toUpperCase() || '?';
 
   return (
     <div className="flex flex-col h-full bg-bg-primary">
@@ -101,7 +97,7 @@ export default function ChatArea() {
         ) : (
           <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8 space-y-8">
             {messages.map((msg) => (
-              <MessageBubble key={msg.id} message={msg} initials={initials} />
+              <MessageBubble key={msg.id} message={msg} />
             ))}
             {isStreaming && streamingContent && (
               <MessageBubble
@@ -113,14 +109,13 @@ export default function ChatArea() {
                   reasoning: reasoningContent || null,
                   createdAt: new Date().toISOString(),
                 }}
-                initials={initials}
                 isStreaming
               />
             )}
             {isStreaming && !streamingContent && (
               <div className="flex gap-4 animate-slideUp">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-accent via-accent/90 to-purple-500 flex-shrink-0 flex items-center justify-center text-white shadow-lg">
-                  <Sparkles className="w-5 h-5" />
+                <div className="w-10 h-10 rounded-xl bg-bg-secondary border border-border flex-shrink-0 flex items-center justify-center shadow-lg">
+                  <img src="/favicon.png" alt="Open Arena" className="w-6 h-6 rounded-lg" />
                 </div>
                 <div className="flex items-center gap-2 px-5 py-4 bg-bg-secondary/50 border border-border/50 rounded-2xl">
                   <span className="w-2 h-2 bg-accent rounded-full animate-typingDot" style={{ animationDelay: '0ms' }} />
@@ -165,8 +160,8 @@ function EmptyState() {
 
   return (
     <div className="flex flex-col items-center justify-center h-full text-center px-4 sm:px-6 animate-fadeIn">
-      <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-accent via-accent/80 to-purple-500 flex items-center justify-center mb-5 shadow-lg shadow-accent/20 animate-pulseGlow">
-        <Sparkles className="w-8 h-8 text-white" />
+      <div className="w-20 h-20 rounded-2xl bg-bg-secondary border border-border flex items-center justify-center mb-5 shadow-lg">
+        <img src="/favicon.png" alt="Open Arena" className="w-12 h-12 rounded-xl" />
       </div>
       <h1 className="text-2xl sm:text-3xl font-semibold mb-2 tracking-tight">How can I help you today?</h1>
       <p className="text-text-secondary text-sm sm:text-base mb-8 max-w-md">

@@ -11,9 +11,9 @@ export default {
         },
         border: 'var(--border-color)',
         accent: {
-          DEFAULT: '#6C4FF6',
-          hover: '#5A3DE0',
-          light: 'rgba(108, 79, 246, 0.12)',
+          DEFAULT: 'rgb(var(--color-accent) / <alpha-value>)',
+          hover: 'rgb(var(--color-accent-hover) / <alpha-value>)',
+          light: 'rgb(var(--color-accent-light) / <alpha-value>)',
         },
         text: {
           primary: 'var(--text-primary)',

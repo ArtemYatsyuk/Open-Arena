@@ -9,6 +9,9 @@
   --text-primary: #1A1918;
   --text-secondary: #706F6B;
   --font-size-base: 16px;
+  --color-accent: 26 26 26;
+  --color-accent-hover: 0 0 0;
+  --color-accent-light: 26 26 26;
 }
 
 .dark {
@@ -17,6 +20,9 @@
   --border-color: rgba(255, 255, 255, 0.08);
   --text-primary: #EDECE8;
   --text-secondary: #A09E99;
+  --color-accent: 229 229 229;
+  --color-accent-hover: 255 255 255;
+  --color-accent-light: 229 229 229;
 }
 
 * {
@@ -48,7 +54,7 @@ button, a, input, select, textarea, [role="button"] {
 
 /* Focus visible styles for accessibility */
 *:focus-visible {
-  outline: 2px solid #6C4FF6;
+  outline: 2px solid rgb(var(--color-accent));
   outline-offset: 2px;
   border-radius: 4px;
 }
@@ -72,7 +78,7 @@ button, a, input, select, textarea, [role="button"] {
 }
 
 ::selection {
-  background: rgba(108, 79, 246, 0.25);
+  background: rgb(var(--color-accent) / 0.15);
 }
 
 /* Markdown content styling */
@@ -82,9 +88,9 @@ button, a, input, select, textarea, [role="button"] {
 .markdown-content p { margin: 0.5em 0; line-height: 1.7; }
 .markdown-content ul, .markdown-content ol { margin: 0.5em 0; padding-left: 1.5em; }
 .markdown-content li { margin: 0.25em 0; line-height: 1.7; }
-.markdown-content li::marker { color: var(--accent); }
+.markdown-content li::marker { color: rgb(var(--color-accent) / 0.6); }
 .markdown-content blockquote {
-  border-left: 3px solid var(--accent);
+  border-left: 3px solid rgb(var(--color-accent) / 0.3);
   padding: 0.5em 1em;
   margin: 0.75em 0;
   color: var(--text-secondary);
@@ -105,8 +111,8 @@ button, a, input, select, textarea, [role="button"] {
   text-align: left;
 }
 .markdown-content th { font-weight: 600; background: var(--bg-secondary); }
-.markdown-content a { color: var(--accent); text-decoration: none; border-bottom: 1px solid transparent; transition: border-color 150ms; }
-.markdown-content a:hover { border-bottom-color: var(--accent); }
+.markdown-content a { color: rgb(var(--color-accent)); text-decoration: none; border-bottom: 1px solid transparent; transition: border-color 150ms; }
+.markdown-content a:hover { border-bottom-color: rgb(var(--color-accent)); }
 .markdown-content hr { border: none; border-top: 1px solid var(--border-color); margin: 1.5em 0; }
 .markdown-content code:not(pre code) {
   background: var(--bg-secondary);
@@ -151,8 +157,8 @@ button, a, input, select, textarea, [role="button"] {
 }
 
 @keyframes pulseGlow {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(108, 79, 246, 0.3); }
-  50% { box-shadow: 0 0 0 6px rgba(108, 79, 246, 0); }
+  0%, 100% { box-shadow: 0 0 0 0 rgb(var(--color-accent) / 0.3); }
+  50% { box-shadow: 0 0 0 6px rgb(var(--color-accent) / 0); }
 }
 
 .animate-pulseGlow {
@@ -216,7 +222,7 @@ button, a, input, select, textarea, [role="button"] {
 .streaming-cursor::after {
   content: '▍';
   animation: blink 0.8s step-end infinite;
-  color: #6C4FF6;
+  color: rgb(var(--color-accent));
   margin-left: 1px;
 }
 

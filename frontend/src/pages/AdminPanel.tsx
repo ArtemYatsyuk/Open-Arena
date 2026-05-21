@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Users, MessageSquare, Settings, ArrowLeft } from 'lucide-react';
+import { LayoutDashboard, Users, MessageSquare, Settings, Filter, ArrowLeft } from 'lucide-react';
 import Dashboard from '../components/admin/Dashboard';
 import UsersTable from '../components/admin/UsersTable';
 import UserDetail from '../components/admin/UserDetail';
 import ConversationsBrowser from '../components/admin/ConversationsBrowser';
 import ConfigViewer from '../components/admin/ConfigViewer';
+import FiltersManager from '../components/admin/FiltersManager';
 
 export default function AdminPanel() {
   const navigate = useNavigate();
@@ -16,6 +17,7 @@ export default function AdminPanel() {
     { path: '/admin/users', label: 'Users', icon: <Users className="h-5 w-5" /> },
     { path: '/admin/conversations', label: 'Conversations', icon: <MessageSquare className="h-5 w-5" /> },
     { path: '/admin/config', label: 'Config', icon: <Settings className="h-5 w-5" /> },
+    { path: '/admin/filters', label: 'Filters', icon: <Filter className="h-5 w-5" /> },
   ];
 
   return (
@@ -72,6 +74,7 @@ export default function AdminPanel() {
           <Route path="/conversations" element={<ConversationsBrowser />} />
           <Route path="/conversations/:id" element={<ConversationsBrowser />} />
           <Route path="/config" element={<ConfigViewer />} />
+          <Route path="/filters" element={<FiltersManager />} />
         </Routes>
       </div>
     </div>
