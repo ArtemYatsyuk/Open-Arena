@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useChatStore } from '../../stores/chatStore';
-import { Paperclip, Send, Square } from 'lucide-react';
+import { Send, Square, Globe } from 'lucide-react';
 
 export default function ChatInput() {
   const [input, setInput] = useState('');
@@ -9,6 +9,8 @@ export default function ChatInput() {
   const stopStreaming = useChatStore((s) => s.stopStreaming);
   const sendMessage = useChatStore((s) => s.sendMessage);
   const currentConv = useChatStore((s) => s.currentConversation);
+  const webSearchEnabled = useChatStore((s) => s.webSearchEnabled);
+  const toggleWebSearch = useChatStore((s) => s.toggleWebSearch);
 
   useEffect(() => {
     if (textareaRef.current) {
@@ -46,31 +48,47 @@ export default function ChatInput() {
   return (
     <div className="px-4 sm:px-6 py-4">
       <div className="max-w-3xl mx-auto">
-        <div className="relative bg-bg-secondary border border-border rounded-2xl focus-within:border-accent/50 focus-within:ring-2 focus-within:ring-accent/20 focus-within:shadow-lg focus-within:shadow-accent/5 transition-all duration-200">
+        <div className={`relative bg-bg-secondary border rounded-2xl transition-all duration-200 ${
+          isStreaming
+            ? 'border-accent/40 ring-2 ring-accent/10 animate-pulseGlow'
+            : 'border-border focus-within:border-accent/50 focus-within:ring-2 focus-within:ring-accent/20 focus-within:shadow-lg focus-within:shadow-accent/5'
+        }`}>
+          {isStreaming && (
+            <div className="absolute -top-0.5 left-0 right-0 h-0.5 bg-gradient-to-r from-accent via-purple-500 to-accent rounded-full animate-gradient" />
+          )}
+          {/* Web search toggle */}
+          <div className="absolute left-3 top-1/2 -translate-y-1/2">
+            <button
+              onClick={toggleWebSearch}
+              disabled={isStreaming}
+              title={webSearchEnabled ? 'Web search enabled' : 'Web search disabled'}
+              className={`p-2 rounded-xl transition ${
+                webSearchEnabled
+                  ? 'bg-accent/15 text-accent shadow-sm'
+                  : 'text-text-secondary/50 hover:text-text-secondary hover:bg-bg-primary/50'
+              } disabled:opacity-30`}
+            >
+              <Globe className="w-4 h-4" />
+            </button>
+          </div>
+
           <textarea
             ref={textareaRef}
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Message Open Arena..."
-            className="w-full bg-transparent text-base text-text-primary resize-none focus:outline-none min-h-[56px] max-h-[240px] py-4 pl-16 pr-16 leading-relaxed placeholder:text-text-secondary/50"
+            placeholder={isStreaming ? 'AI is generating...' : 'Message Open Arena...'}
+            className="w-full bg-transparent text-base text-text-primary resize-none focus:outline-none min-h-[56px] max-h-[240px] py-4 pl-14 pr-14 leading-relaxed placeholder:text-text-secondary/50"
             rows={1}
+            disabled={isStreaming}
           />
-          
-          {/* Left action button */}
-          <button
-            className="absolute left-4 top-1/2 -translate-y-1/2 p-2 hover:bg-bg-primary rounded-xl transition text-text-secondary hover:text-text-primary"
-            title="Attach file"
-          >
-            <Paperclip className="w-5 h-5" />
-          </button>
 
           {/* Right action button */}
-          <div className="absolute right-4 top-1/2 -translate-y-1/2">
+          <div className="absolute right-3 top-1/2 -translate-y-1/2">
             {isStreaming ? (
               <button
                 onClick={stopStreaming}
-                className="p-2.5 bg-danger text-white rounded-xl hover:bg-danger/90 transition shadow-lg shadow-danger/20"
+                className="p-2.5 bg-danger text-white rounded-xl hover:bg-danger/90 transition shadow-lg shadow-danger/20 flex items-center gap-1.5 text-sm font-medium"
                 title="Stop generation"
               >
                 <Square className="w-4 h-4" />
@@ -87,8 +105,8 @@ export default function ChatInput() {
             )}
           </div>
         </div>
-        <p className="text-sm text-text-secondary/60 text-center mt-3">
-          Open Arena can make mistakes. Press <kbd className="px-1.5 py-0.5 bg-bg-secondary border border-border rounded text-xs font-mono">Enter</kbd> to send, <kbd className="px-1.5 py-0.5 bg-bg-secondary border border-border rounded text-xs font-mono">Shift+Enter</kbd> for new line.
+        <p className="text-xs text-text-secondary/60 text-center mt-3">
+          Open Arena Can Make Mistakes. Verify Important Information
         </p>
       </div>
     </div>

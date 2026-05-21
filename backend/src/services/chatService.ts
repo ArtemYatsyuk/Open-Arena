@@ -6,7 +6,8 @@ export async function streamChat(
   messages: { role: string; content: string }[],
   onChunk: (chunk: string) => void,
   onComplete: (tokenCount?: { prompt: number; completion: number }) => void,
-  signal: AbortSignal
+  signal: AbortSignal,
+  onReasoning?: (chunk: string) => void
 ) {
   const model = getModelById(modelId);
   if (!model) throw new Error(`Model ${modelId} not found`);
@@ -109,6 +110,7 @@ export async function streamChat(
     const reader = response.body!.getReader();
     const decoder = new TextDecoder();
     let buffer = '';
+    let fullReasoning = '';
 
     while (true) {
       const { done, value } = await reader.read();
@@ -126,7 +128,13 @@ export async function streamChat(
 
         try {
           const parsed = JSON.parse(data);
-          const content = parsed.choices?.[0]?.delta?.content;
+          const delta = parsed.choices?.[0]?.delta;
+          const reasoningContent = delta?.reasoning_content;
+          if (reasoningContent) {
+            fullReasoning += reasoningContent;
+            onReasoning?.(reasoningContent);
+          }
+          const content = delta?.content;
           if (content) {
             fullContent += content;
             onChunk(content);

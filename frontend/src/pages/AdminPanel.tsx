@@ -1,10 +1,9 @@
 import { useState } from 'react';
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Users, UserPlus, MessageSquare, Settings, ArrowLeft } from 'lucide-react';
+import { LayoutDashboard, Users, MessageSquare, Settings, ArrowLeft } from 'lucide-react';
 import Dashboard from '../components/admin/Dashboard';
 import UsersTable from '../components/admin/UsersTable';
 import UserDetail from '../components/admin/UserDetail';
-import AddUser from '../components/admin/AddUser';
 import ConversationsBrowser from '../components/admin/ConversationsBrowser';
 import ConfigViewer from '../components/admin/ConfigViewer';
 
@@ -15,7 +14,6 @@ export default function AdminPanel() {
   const navItems = [
     { path: '/admin', label: 'Dashboard', icon: <LayoutDashboard className="h-5 w-5" /> },
     { path: '/admin/users', label: 'Users', icon: <Users className="h-5 w-5" /> },
-    { path: '/admin/users/new', label: 'Add User', icon: <UserPlus className="h-5 w-5" /> },
     { path: '/admin/conversations', label: 'Conversations', icon: <MessageSquare className="h-5 w-5" /> },
     { path: '/admin/config', label: 'Config', icon: <Settings className="h-5 w-5" /> },
   ];
@@ -26,9 +24,7 @@ export default function AdminPanel() {
       <div className="w-64 bg-bg-secondary border-r border-border flex-shrink-0 flex flex-col">
         <div className="p-5 border-b border-border">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-accent flex items-center justify-center">
-              <span className="text-white text-sm font-bold">OA</span>
-            </div>
+            <img src="/favicon.png" alt="Open Arena" className="w-10 h-10 rounded-xl" />
             <div>
               <h1 className="text-base font-semibold">Admin Panel</h1>
               <p className="text-xs text-text-secondary">Manage your instance</p>
@@ -72,9 +68,9 @@ export default function AdminPanel() {
         <Routes>
           <Route path="/" element={<Dashboard />} />
           <Route path="/users" element={<UsersTable />} />
-          <Route path="/users/new" element={<AddUser />} />
           <Route path="/users/:id" element={<UserDetail />} />
           <Route path="/conversations" element={<ConversationsBrowser />} />
+          <Route path="/conversations/:id" element={<ConversationsBrowser />} />
           <Route path="/config" element={<ConfigViewer />} />
         </Routes>
       </div>

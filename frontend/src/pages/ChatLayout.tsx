@@ -5,12 +5,14 @@ import Workspace from '../components/workspace/Workspace';
 import ToastContainer from '../components/ui/ToastContainer';
 import { useUIStore } from '../stores/uiStore';
 import { useChatStore } from '../stores/chatStore';
+import { PanelRightOpen } from 'lucide-react';
 
 export default function ChatLayout() {
   const sidebarOpen = useUIStore((s) => s.sidebarOpen);
   const sidebarWidth = useUIStore((s) => s.sidebarWidth);
   const workspaceOpen = useUIStore((s) => s.workspaceOpen);
   const workspaceWidth = useUIStore((s) => s.workspaceWidth);
+  const toggleSidebar = useUIStore((s) => s.toggleSidebar);
   const fetchConversations = useChatStore((s) => s.fetchConversations);
 
   useEffect(() => {
@@ -45,6 +47,17 @@ export default function ChatLayout() {
       >
         <Sidebar />
       </div>
+
+      {/* Floating reopen button */}
+      {!sidebarOpen && (
+        <button
+          onClick={toggleSidebar}
+          className="fixed left-0 top-1/2 -translate-y-1/2 z-30 hidden md:flex items-center justify-center w-8 h-12 bg-bg-secondary border border-l-0 border-border rounded-r-xl text-text-secondary hover:text-accent hover:bg-accent/5 transition-all duration-200 group"
+          title="Open sidebar (Ctrl+/)"
+        >
+          <PanelRightOpen className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+        </button>
+      )}
 
       {/* Main content */}
       <div className="flex-1 flex min-w-0">

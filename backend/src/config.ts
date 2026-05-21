@@ -25,10 +25,17 @@ export interface AppConfig {
   maxConversationsPerUser: number;
 }
 
+export interface WebSearchConfig {
+  enabled: boolean;
+  provider: string;
+  searxngUrl: string;
+}
+
 export interface FullConfig {
   models: ModelConfig[];
   defaultModelId: string;
   app: AppConfig;
+  webSearch?: WebSearchConfig;
 }
 
 let config: FullConfig;
@@ -56,6 +63,10 @@ export function getDefaultModelId(): string {
 
 export function onConfigChange(fn: (cfg: FullConfig) => void) {
   watchers.push(fn);
+}
+
+export function reloadConfig() {
+  loadConfig();
 }
 
 export function initConfigWatcher() {

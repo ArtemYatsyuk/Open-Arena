@@ -1,10 +1,19 @@
 import { create } from 'zustand';
 
+export interface WebSearchSource {
+  index: number;
+  title: string;
+  url: string;
+  snippet: string;
+}
+
 export interface Message {
   id: string;
   conversationId: string;
   role: 'user' | 'assistant';
   content: string;
+  reasoning?: string | null;
+  webSearchSources?: WebSearchSource[] | null;
   tokenCount?: number;
   createdAt: string;
 }
@@ -26,6 +35,10 @@ interface ChatState {
   isLoading: boolean;
   isStreaming: boolean;
   streamingContent: string;
+  reasoningContent: string;
+  webSearchEnabled: boolean;
+  webSearchCount: number;
+  pendingWebSearchSources: WebSearchSource[] | null;
   error: string | null;
 
   fetchConversations: () => Promise<void>;
@@ -34,6 +47,7 @@ interface ChatState {
   deleteConversation: (id: string) => Promise<void>;
   updateConversation: (id: string, data: { title?: string; isStarred?: boolean }) => Promise<void>;
   sendMessage: (content: string, modelId: string, conversationId?: string) => Promise<void>;
+  toggleWebSearch: () => void;
   stopStreaming: () => void;
   setError: (error: string | null) => void;
 }
@@ -74,6 +88,10 @@ export const useChatStore = create<ChatState>((set, get) => ({
   isLoading: false,
   isStreaming: false,
   streamingContent: '',
+  reasoningContent: '',
+  webSearchEnabled: false,
+  webSearchCount: 0,
+  pendingWebSearchSources: null,
   error: null,
 
   fetchConversations: async () => {
@@ -88,6 +106,10 @@ export const useChatStore = create<ChatState>((set, get) => ({
   },
 
   selectConversation: async (id) => {
+    if (!id) {
+      set({ currentConversation: null, messages: [], isLoading: false, error: null });
+      return;
+    }
     set({ isLoading: true, currentConversation: null, messages: [], error: null });
     try {
       const [conv, messages] = await Promise.all([
@@ -159,7 +181,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ conversationId: convId, content, modelId }),
+        body: JSON.stringify({ conversationId: convId, content, modelId, webSearch: get().webSearchEnabled }),
         credentials: 'include',
         signal: abortController.signal,
       });
@@ -178,6 +200,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
       const decoder = new TextDecoder();
       let buffer = '';
       let assistantContent = '';
+      let assistantReasoning = '';
       let newConvId: string | null = null;
 
       while (true) {
@@ -195,9 +218,14 @@ export const useChatStore = create<ChatState>((set, get) => ({
 
           try {
             const parsed = JSON.parse(data);
-            if (parsed.type === 'chunk') {
+            if (parsed.type === 'reasoning') {
+              assistantReasoning += parsed.content;
+              set({ reasoningContent: assistantReasoning });
+            } else if (parsed.type === 'chunk') {
               assistantContent += parsed.content;
               set({ streamingContent: assistantContent });
+            } else if (parsed.type === 'websearch') {
+              set({ webSearchCount: parsed.count, pendingWebSearchSources: parsed.sources || null });
             } else if (parsed.type === 'conversation') {
               newConvId = parsed.id;
             } else if (parsed.type === 'error') {
@@ -213,11 +241,15 @@ export const useChatStore = create<ChatState>((set, get) => ({
         }
       }
 
+      const pendingSources = get().pendingWebSearchSources;
+
       const assistantMsg: Message = {
         id: `temp-asst-${Date.now()}`,
         conversationId: newConvId || convId || '',
         role: 'assistant',
         content: assistantContent,
+        reasoning: assistantReasoning || null,
+        webSearchSources: pendingSources,
         createdAt: new Date().toISOString(),
       };
 
@@ -225,6 +257,9 @@ export const useChatStore = create<ChatState>((set, get) => ({
         messages: [...state.messages, assistantMsg],
         isStreaming: false,
         streamingContent: '',
+        reasoningContent: '',
+        webSearchCount: 0,
+        pendingWebSearchSources: null,
       }));
 
       if (newConvId) {
@@ -235,17 +270,19 @@ export const useChatStore = create<ChatState>((set, get) => ({
       }
     } catch (e: any) {
       if (e.name === 'AbortError') {
-        set({ isStreaming: false, streamingContent: '' });
+        set({ isStreaming: false, streamingContent: '', webSearchCount: 0, pendingWebSearchSources: null });
       } else {
-        set({ error: e.message, isStreaming: false, streamingContent: '' });
+        set({ error: e.message, isStreaming: false, streamingContent: '', webSearchCount: 0, pendingWebSearchSources: null });
       }
     }
   },
 
   stopStreaming: () => {
     abortController?.abort();
-    set({ isStreaming: false, streamingContent: '' });
+    set({ isStreaming: false, streamingContent: '', reasoningContent: '' });
   },
 
   setError: (error) => set({ error }),
+
+  toggleWebSearch: () => set((state) => ({ webSearchEnabled: !state.webSearchEnabled })),
 }));

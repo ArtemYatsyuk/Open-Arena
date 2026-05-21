@@ -132,9 +132,7 @@ export default function Sidebar() {
       {/* Header */}
       <div className="p-4 border-b border-border flex-shrink-0">
         <div className="flex items-center gap-2 mb-4">
-          <div className="w-8 h-8 rounded-lg bg-accent flex items-center justify-center">
-            <span className="text-white text-sm font-bold">OA</span>
-          </div>
+          <img src="/favicon.png" alt="Open Arena" className="w-8 h-8 rounded-lg" />
           <h1 className="text-base font-semibold tracking-tight">Open Arena</h1>
         </div>
         <button
