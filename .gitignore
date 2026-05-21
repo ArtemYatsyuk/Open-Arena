@@ -4,3 +4,5 @@ dist/
 backend/prisma/data.db
 backend/prisma/*.db
 *.tsbuildinfo
+backend/node_modules/
+frontend/node_modules/
