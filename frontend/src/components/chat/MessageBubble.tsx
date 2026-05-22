@@ -4,7 +4,7 @@ import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
-import { Copy, Check, Clock, Brain, Globe, ChevronDown, ChevronRight, ChevronLeft, RotateCcw, ExternalLink } from 'lucide-react';
+import { Copy, Check, Clock, Brain, Globe, ChevronDown, ChevronRight, ChevronLeft, RotateCcw, ExternalLink, Speaker, ThumbsUp, ThumbsDown, Bot } from 'lucide-react';
 import { useChatStore } from '../../stores/chatStore';
 import type { Message } from '../../stores/chatStore';
 
@@ -24,19 +24,100 @@ function cleanContent(str: string): string {
   return tryExtract(str, '"') || tryExtract(str, "'") || str;
 }
 
+function speak(text: string) {
+  if (!window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+
+  const clean = text
+    .replace(/```[\s\S]*?```/g, '')
+    .replace(/`([^`]+)`/g, '$1')
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+    .replace(/[*#_~>|`\-]/g, '')
+    .replace(/\n{2,}/g, '. ')
+    .replace(/\n/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  if (!clean) return;
+
+  const utterance = new SpeechSynthesisUtterance(clean);
+  utterance.rate = 0.92;
+  utterance.pitch = 1.05;
+  utterance.volume = 1;
+
+  const voiceId = localStorage.getItem('ttsVoice');
+  if (voiceId) {
+    const voices = window.speechSynthesis.getVoices();
+    const voice = voices.find((v) => v.voiceURI === voiceId);
+    if (voice) utterance.voice = voice;
+  } else {
+    const voices = window.speechSynthesis.getVoices();
+    const preferred = voices.find(
+      (v) => v.lang.startsWith('en') && (v.name.includes('Google') || v.name.includes('Natural'))
+    );
+    if (preferred) utterance.voice = preferred;
+  }
+
+  window.speechSynthesis.speak(utterance);
+}
+
+function formatModelId(id: string): string {
+  return id
+    .split('-')
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(' ');
+}
+
 interface Props {
   message: Message;
   isStreaming?: boolean;
+  modelName?: string;
+  modelImage?: string;
 }
 
-export default function MessageBubble({ message, isStreaming }: Props) {
+function CodeBlock({ language, code }: { language: string; code: string }) {
+  const [copied, setCopied] = useState(false);
+  return (
+    <div className="relative my-4 rounded-xl overflow-hidden border border-border shadow-lg">
+      <div className="flex items-center justify-between px-4 py-2 bg-[#1e1e1e] text-xs text-text-secondary">
+        <span className="font-mono">{language}</span>
+        <button
+          onClick={() => {
+            navigator.clipboard.writeText(code);
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000);
+          }}
+          className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg hover:bg-white/10 transition text-xs"
+        >
+          {copied ? (
+            <><Check className="w-3 h-3" /> Copied!</>
+          ) : (
+            <><Copy className="w-3 h-3" /> Copy</>
+          )}
+        </button>
+      </div>
+      <SyntaxHighlighter
+        style={vscDarkPlus as any}
+        language={language}
+        PreTag="div"
+        customStyle={{ margin: 0, borderRadius: '0' }}
+      >
+        {code}
+      </SyntaxHighlighter>
+    </div>
+  );
+}
+
+export default function MessageBubble({ message, isStreaming, modelName, modelImage }: Props) {
   const isUser = message.role === 'user';
   const [copied, setCopied] = useState(false);
   const [thoughtOpen, setThoughtOpen] = useState(isStreaming);
   const [searchResultsOpen, setSearchResultsOpen] = useState(isStreaming);
   const [versionIdx, setVersionIdx] = useState(0);
+  const [thumbs, setThumbs] = useState<'up' | 'down' | null>(null);
   const regenerateMessage = useChatStore((s) => s.regenerateMessage);
   const isRegenerating = useChatStore((s) => s.isStreaming);
+  const currentConv = useChatStore((s) => s.currentConversation);
 
   const allVersions = useMemo(() => {
     const current = { content: message.content, reasoning: message.reasoning || undefined };
@@ -74,24 +155,26 @@ export default function MessageBubble({ message, isStreaming }: Props) {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const displayModelName = modelName || formatModelId(currentConv?.modelId || '');
+
   if (isUser) {
     return (
       <div className="flex gap-3 justify-end group animate-slideUp">
         <div className="max-w-[85%] sm:max-w-[75%]">
-          <div className="relative bg-accent/10 border border-accent/20 rounded-2xl rounded-br-sm px-5 py-4 shadow-sm bubble-tail-user">
-            <p className="text-base whitespace-pre-wrap leading-relaxed">{displayContent}</p>
+          <div className="relative bg-bg-secondary border border-border/60 rounded-2xl px-4 py-3">
+            <p className="text-sm whitespace-pre-wrap leading-relaxed">{displayContent}</p>
           </div>
-          <div className="flex items-center gap-2 mt-2 justify-end opacity-0 group-hover:opacity-100 transition-opacity">
-            <span className="flex items-center gap-1 text-xs text-text-secondary">
+          <div className="flex items-center gap-2 mt-1.5 justify-end">
+            <span className="flex items-center gap-1 text-[11px] text-text-secondary/60">
               <Clock className="w-3 h-3" />
               {formatTime(message.createdAt)}
             </span>
             <button
               onClick={handleCopy}
-              className="p-1.5 hover:bg-bg-secondary rounded-lg transition text-text-secondary hover:text-text-primary"
+              className="p-1 hover:bg-white/[0.06] rounded-lg transition text-text-secondary/60 hover:text-text-secondary"
               title="Copy"
             >
-              {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+              {copied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
             </button>
           </div>
         </div>
@@ -102,28 +185,42 @@ export default function MessageBubble({ message, isStreaming }: Props) {
   const hasReasoning = !!(displayReasoning || (isStreaming && message.reasoning));
 
   return (
-    <div className="flex gap-4 group animate-slideUp">
+    <div className="flex group animate-slideUp">
       <div className="flex-1 min-w-0">
+        {/* AI model header */}
+        <div className="flex items-center gap-2 mb-2">
+          {modelImage ? (
+            <img src={modelImage} alt="" className="w-6 h-6 rounded object-contain" />
+          ) : (
+            <div className="w-6 h-6 rounded-md bg-bg-secondary border border-border flex items-center justify-center">
+              <Bot className="w-3.5 h-3.5 text-text-secondary" />
+            </div>
+          )}
+          <span className="text-sm font-medium text-text-primary">
+            {displayModelName}
+          </span>
+        </div>
+
         {hasReasoning && (
           <div className="mb-2">
             <button
               onClick={() => setThoughtOpen(!thoughtOpen)}
-              className="flex items-center gap-2 w-full text-left px-4 py-2.5 bg-amber-500/5 border border-amber-500/20 rounded-xl hover:bg-amber-500/10 transition group/reason"
+              className="flex items-center gap-2 w-full text-left px-4 py-2 bg-accent/5 border border-accent/20 rounded-xl hover:bg-accent/10 transition group/reason"
             >
-              <div className="w-7 h-7 rounded-lg bg-amber-500/10 flex items-center justify-center flex-shrink-0">
-                <Brain className="w-4 h-4 text-amber-500" />
+              <div className="w-6 h-6 rounded-lg bg-accent/10 flex items-center justify-center flex-shrink-0">
+                <Brain className="w-3.5 h-3.5 text-accent" />
               </div>
-              <span className="text-sm font-medium text-amber-600 dark:text-amber-400 flex-1">
+              <span className="text-sm font-medium text-accent flex-1">
                 {isStreaming ? 'Thinking...' : 'Thinking Process'}
               </span>
               {thoughtOpen ? (
-                <ChevronDown className="w-4 h-4 text-amber-400" />
+                <ChevronDown className="w-4 h-4 text-accent" />
               ) : (
-                <ChevronRight className="w-4 h-4 text-amber-400" />
+                <ChevronRight className="w-4 h-4 text-accent" />
               )}
             </button>
             {thoughtOpen && (
-              <div className="mt-1 ml-1 p-4 bg-amber-500/[0.03] border border-amber-500/10 rounded-xl text-sm text-text-secondary leading-relaxed whitespace-pre-wrap animate-slideUp">
+              <div className="mt-1 p-3 bg-accent/[0.03] border border-accent/10 rounded-xl text-sm text-text-secondary leading-relaxed whitespace-pre-wrap animate-slideUp">
                 {displayReasoning}
               </div>
             )}
@@ -133,10 +230,10 @@ export default function MessageBubble({ message, isStreaming }: Props) {
           <div className="mb-2">
             <button
               onClick={() => setSearchResultsOpen(!searchResultsOpen)}
-              className="flex items-center gap-2 w-full text-left px-4 py-2.5 bg-blue-500/5 border border-blue-500/20 rounded-xl hover:bg-blue-500/10 transition group/reason"
+              className="flex items-center gap-2 w-full text-left px-4 py-2 bg-blue-500/5 border border-blue-500/20 rounded-xl hover:bg-blue-500/10 transition group/reason"
             >
-              <div className="w-7 h-7 rounded-lg bg-blue-500/10 flex items-center justify-center flex-shrink-0">
-                <Globe className="w-4 h-4 text-blue-500" />
+              <div className="w-6 h-6 rounded-lg bg-blue-500/10 flex items-center justify-center flex-shrink-0">
+                <Globe className="w-3.5 h-3.5 text-blue-500" />
               </div>
               <span className="text-sm font-medium text-blue-600 dark:text-blue-400 flex-1">
                 Search results ({message.webSearchSources.length})
@@ -148,7 +245,7 @@ export default function MessageBubble({ message, isStreaming }: Props) {
               )}
             </button>
             {searchResultsOpen && (
-              <div className="mt-1 ml-1 space-y-2 animate-slideUp">
+              <div className="mt-1 space-y-2 animate-slideUp">
                 {message.webSearchSources.map((src) => (
                   <a
                     key={src.index}
@@ -171,52 +268,32 @@ export default function MessageBubble({ message, isStreaming }: Props) {
             )}
           </div>
         ) : null}
-        <div className="relative bg-bg-secondary/50 border border-border/50 rounded-2xl rounded-bl-sm px-5 py-4 shadow-sm bubble-tail-assistant">
-          <div className="markdown-content text-base leading-relaxed">
+        <div className="relative bg-bg-secondary/50 border border-border/50 rounded-2xl pl-3 pr-5 py-3 shadow-sm">
+          <div className="markdown-content text-sm leading-relaxed">
             <ReactMarkdown
               remarkPlugins={[remarkGfm, remarkMath]}
               components={{
+                a({ href, children, ...props }: any) {
+                  const text = Array.isArray(children) ? children.join('') : String(children || '');
+                  if (href && /^https?:\/\//.test(href) && /^\[\d+\]$/.test(text)) {
+                    const num = text.replace(/[\[\]]/g, '');
+                    return (
+                      <a href={href} target="_blank" rel="noopener noreferrer"
+                         className="inline-flex items-center justify-center w-5 h-5 rounded bg-blue-500/10 text-blue-500 text-xs font-bold mx-0.5 hover:bg-blue-500/20 hover:scale-110 transition-all"
+                      >
+                        {num}
+                      </a>
+                    );
+                  }
+                  return <a href={href} {...props}>{children}</a>;
+                },
                 code({ className, children, ...props }: any) {
                   const match = /language-(\w+)/.exec(className || '');
                   const codeStr = String(children).replace(/\n$/, '');
                   const isBlock = className?.includes('language-');
 
                   if (isBlock && match) {
-                    return (
-                      <div className="relative my-4 rounded-xl overflow-hidden border border-border shadow-lg">
-                        <div className="flex items-center justify-between px-4 py-2.5 bg-[#1e1e1e] text-xs text-text-secondary">
-                          <span className="font-mono">{match[1]}</span>
-                          <button
-                            onClick={() => {
-                              navigator.clipboard.writeText(codeStr);
-                              setCopied(true);
-                              setTimeout(() => setCopied(false), 2000);
-                            }}
-                            className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg hover:bg-white/10 transition text-xs"
-                          >
-                            {copied ? (
-                              <>
-                                <Check className="w-3 h-3" />
-                                Copied!
-                              </>
-                            ) : (
-                              <>
-                                <Copy className="w-3 h-3" />
-                                Copy
-                              </>
-                            )}
-                          </button>
-                        </div>
-                        <SyntaxHighlighter
-                          style={vscDarkPlus as any}
-                          language={match[1]}
-                          PreTag="div"
-                          customStyle={{ margin: 0, borderRadius: '0' }}
-                        >
-                          {codeStr}
-                        </SyntaxHighlighter>
-                      </div>
-                    );
+                    return <CodeBlock language={match[1]} code={codeStr} />;
                   }
 
                   return (
@@ -236,60 +313,76 @@ export default function MessageBubble({ message, isStreaming }: Props) {
           )}
         </div>
 
-        <div className="flex items-center gap-2 mt-2 opacity-0 group-hover:opacity-100 transition-opacity flex-wrap">
-          <span className="flex items-center gap-1 text-xs text-text-secondary">
-            <Clock className="w-3 h-3" />
-            {isStreaming ? 'Generating...' : formatTime(message.createdAt)}
-          </span>
+        {/* Toolbar - appears on hover */}
+        <div className="flex items-center gap-1 mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
+          <button
+            onClick={handleCopy}
+            className="p-1.5 rounded-lg hover:bg-white/[0.06] transition text-text-secondary/60 hover:text-text-secondary"
+            title="Copy"
+          >
+            {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+          </button>
+          <button
+            onClick={() => speak(displayContent)}
+            className="p-1.5 rounded-lg hover:bg-white/[0.06] transition text-text-secondary/60 hover:text-text-secondary"
+            title="Read aloud"
+          >
+            <Speaker className="w-3.5 h-3.5" />
+          </button>
+          <button
+            onClick={() => setThumbs(thumbs === 'up' ? null : 'up')}
+            className={`p-1.5 rounded-lg transition ${
+              thumbs === 'up'
+                ? 'text-accent bg-accent/10'
+                : 'text-text-secondary/60 hover:text-text-secondary hover:bg-white/[0.06]'
+            }`}
+            title="Good response"
+          >
+            <ThumbsUp className="w-3.5 h-3.5" />
+          </button>
+          <button
+            onClick={() => setThumbs(thumbs === 'down' ? null : 'down')}
+            className={`p-1.5 rounded-lg transition ${
+              thumbs === 'down'
+                ? 'text-danger bg-danger/10'
+                : 'text-text-secondary/60 hover:text-text-secondary hover:bg-white/[0.06]'
+            }`}
+            title="Bad response"
+          >
+            <ThumbsDown className="w-3.5 h-3.5" />
+          </button>
+          <button
+            onClick={() => regenerateMessage(message.id)}
+            disabled={isRegenerating}
+            className="p-1.5 rounded-lg hover:bg-white/[0.06] transition text-text-secondary/60 hover:text-text-secondary disabled:opacity-30"
+            title="Regenerate"
+          >
+            <RotateCcw className="w-3.5 h-3.5" />
+          </button>
           {allVersions.length > 1 && (
-            <div className="flex items-center gap-1 px-2 py-1 bg-bg-secondary rounded-lg text-xs text-text-secondary">
+            <div className="flex items-center gap-0.5 ml-2 px-1.5 py-0.5 bg-bg-secondary rounded-md">
               <button
                 onClick={() => setVersionIdx(Math.max(0, versionIdx - 1))}
                 disabled={versionIdx === 0}
                 className="p-0.5 hover:text-text-primary disabled:opacity-30 transition"
-                title="Previous version"
               >
-                <ChevronLeft className="w-3.5 h-3.5" />
+                <ChevronLeft className="w-3 h-3" />
               </button>
-              <span className="font-medium tabular-nums min-w-[2rem] text-center">{versionIdx + 1}/{allVersions.length}</span>
+              <span className="text-[11px] font-medium tabular-nums min-w-[1.5rem] text-center text-text-secondary">
+                {versionIdx + 1}/{allVersions.length}
+              </span>
               <button
                 onClick={() => setVersionIdx(Math.min(allVersions.length - 1, versionIdx + 1))}
                 disabled={versionIdx === allVersions.length - 1}
                 className="p-0.5 hover:text-text-primary disabled:opacity-30 transition"
-                title="Next version"
               >
-                <ChevronRight className="w-3.5 h-3.5" />
+                <ChevronRight className="w-3 h-3" />
               </button>
             </div>
           )}
-          {!isStreaming && (
-            <>
-              <button
-                onClick={() => regenerateMessage(message.id)}
-                disabled={isRegenerating}
-                className="flex items-center gap-1 px-2 py-1 text-xs text-text-secondary hover:text-text-primary hover:bg-bg-secondary rounded-lg transition disabled:opacity-30"
-                title="Regenerate response"
-              >
-                <RotateCcw className="w-3 h-3" />
-              </button>
-              <button
-                onClick={handleCopy}
-                className="flex items-center gap-1.5 px-2 py-1 text-xs text-text-secondary hover:text-text-primary hover:bg-bg-secondary rounded-lg transition"
-              >
-                {copied ? (
-                  <>
-                    <Check className="w-3 h-3" />
-                    Copied
-                  </>
-                ) : (
-                  <>
-                    <Copy className="w-3 h-3" />
-                    Copy
-                  </>
-                )}
-              </button>
-            </>
-          )}
+          <span className="ml-auto text-[11px] text-text-secondary/60">
+            {isStreaming ? 'Generating...' : formatTime(message.createdAt)}
+          </span>
         </div>
       </div>
     </div>

@@ -52,7 +52,7 @@ export default function Workspace() {
           <iframe
             srcDoc={extractHtml(workspaceContent)}
             className="w-full h-full border-0"
-            sandbox="allow-scripts allow-same-origin"
+            sandbox="allow-scripts"
             title="Preview"
           />
         ) : (

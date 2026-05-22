@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { LayoutDashboard, Users, MessageSquare, Settings, Filter, ArrowLeft } from 'lucide-react';
+import { useUIStore } from '../stores/uiStore';
 import Dashboard from '../components/admin/Dashboard';
 import UsersTable from '../components/admin/UsersTable';
 import UserDetail from '../components/admin/UserDetail';
@@ -11,6 +12,7 @@ import FiltersManager from '../components/admin/FiltersManager';
 export default function AdminPanel() {
   const navigate = useNavigate();
   const location = useLocation();
+  const theme = useUIStore((s) => s.theme);
 
   const navItems = [
     { path: '/admin', label: 'Dashboard', icon: <LayoutDashboard className="h-5 w-5" /> },
@@ -26,7 +28,7 @@ export default function AdminPanel() {
       <div className="w-64 bg-bg-secondary border-r border-border flex-shrink-0 flex flex-col">
         <div className="p-5 border-b border-border">
           <div className="flex items-center gap-3">
-            <img src="/favicon.png" alt="Open Arena" className="w-10 h-10 rounded-xl" />
+            <img src={theme === 'dark' ? '/OpenArena-Black.png' : '/favicon.png'} alt="Open Arena" className="w-10 h-10 rounded-xl" />
             <div>
               <h1 className="text-base font-semibold">Admin Panel</h1>
               <p className="text-xs text-text-secondary">Manage your instance</p>

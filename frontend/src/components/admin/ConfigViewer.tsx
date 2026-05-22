@@ -132,8 +132,9 @@ export default function ConfigViewer() {
   const handleRemoveModel = (index: number) => {
     try {
       const parsed = JSON.parse(jsonText);
+      const removedId = parsed.models[index]?.id;
       parsed.models.splice(index, 1);
-      if (parsed.defaultModelId === parsed.models[index]?.id) {
+      if (removedId && parsed.defaultModelId === removedId) {
         parsed.defaultModelId = parsed.models[0]?.id || '';
       }
       setJsonText(JSON.stringify(parsed, null, 2));

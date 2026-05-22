@@ -22,21 +22,31 @@ const filterSchema = z.object({
 
 // User-facing: list active global filters (read-only)
 router.get('/', isAuthenticated, isNotBanned, async (req: AuthRequest, res) => {
-  const filters = await prisma.filter.findMany({
-    where: { isActive: true, isGlobal: true },
-    orderBy: { priority: 'asc' },
-    select: { id: true, name: true, description: true, priority: true },
-  });
-  res.json(filters);
+  try {
+    const filters = await prisma.filter.findMany({
+      where: { isActive: true, isGlobal: true },
+      orderBy: { priority: 'asc' },
+      select: { id: true, name: true, description: true, priority: true },
+    });
+    res.json(filters);
+  } catch (e: any) {
+    console.error('[Filters] User list error:', e);
+    res.status(500).json({ error: 'Failed to load filters' });
+  }
 });
 
 // Admin: list all filters
 router.get('/admin', isAuthenticated, isNotBanned, isAdmin, async (req: AuthRequest, res) => {
-  const filters = await prisma.filter.findMany({
-    orderBy: { priority: 'asc' },
-    include: { author: { select: { username: true } } },
-  });
-  res.json(filters);
+  try {
+    const filters = await prisma.filter.findMany({
+      orderBy: { priority: 'asc' },
+      include: { author: { select: { username: true } } },
+    });
+    res.json(filters);
+  } catch (e: any) {
+    console.error('[Filters] Admin list error:', e);
+    res.status(500).json({ error: 'Failed to load filters' });
+  }
 });
 
 // Admin: create filter

@@ -18,9 +18,8 @@ function createSandbox(): any {
     console: { log: console.log, error: console.error, warn: console.warn },
     setTimeout, clearTimeout, Math, Date, JSON,
     parseInt, parseFloat, isNaN, isFinite,
-    String, Number, Boolean, Array, Object, Map, Set, RegExp,
+    String, Number, Boolean, Map, Set, RegExp,
     Error, TypeError, RangeError, Promise,
-    globalThis: {} as any,
   };
 }
 
@@ -115,6 +114,7 @@ function callFilter(context: vm.Context, fnName: 'inlet' | 'outlet', body: any, 
 
   const script = new vm.Script(wrapped);
   const resultJson = script.runInContext(context, { timeout: 10000 });
+  if (typeof resultJson !== 'string') return null;
   return JSON.parse(resultJson);
 }
 

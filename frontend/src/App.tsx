@@ -34,6 +34,13 @@ export default function App() {
     document.documentElement.classList.toggle('dark', theme === 'dark');
   }, [theme]);
 
+  useEffect(() => {
+    const storedFontSize = localStorage.getItem('fontSize');
+    if (storedFontSize) {
+      document.documentElement.style.fontSize = `${storedFontSize}px`;
+    }
+  }, []);
+
   return (
     <Routes>
       <Route path="/login" element={<Login />} />

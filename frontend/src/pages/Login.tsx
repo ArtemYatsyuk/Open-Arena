@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
+import { useUIStore } from '../stores/uiStore';
 import { Mail, Lock, AlertCircle, Loader2 } from 'lucide-react';
 
 export default function Login() {
+  const theme = useUIStore((s) => s.theme);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -19,7 +21,7 @@ export default function Login() {
       await login(email, password);
       navigate('/');
     } catch (err: any) {
-      if (err.message === 'Account banned') {
+      if (err.message && err.message.toLowerCase().includes('banned')) {
         navigate('/banned');
       } else {
         setError(err.message);
@@ -32,8 +34,8 @@ export default function Login() {
     <div className="flex items-center justify-center h-screen bg-bg-primary animate-fadeIn">
       <div className="w-full max-w-sm p-8">
         <div className="text-center mb-8">
-          <div className="w-16 h-16 rounded-2xl bg-accent flex items-center justify-center mx-auto mb-4 shadow-lg shadow-accent/20">
-            <span className="text-white text-2xl font-bold">OA</span>
+          <div className="w-16 h-16 rounded-2xl bg-bg-secondary border border-border flex items-center justify-center mx-auto mb-4 shadow-lg">
+            <img src={theme === 'dark' ? '/OpenArena-Black.png' : '/favicon.png'} alt="Open Arena" className="w-10 h-10 rounded-xl" />
           </div>
           <h1 className="text-2xl font-semibold mb-1">Welcome back</h1>
           <p className="text-text-secondary text-sm">Sign in to Open Arena</p>

@@ -42,6 +42,7 @@ interface ChatState {
   webSearchCount: number;
   pendingWebSearchSources: WebSearchSource[] | null;
   error: string | null;
+  selectedModelId: string;
 
   fetchConversations: () => Promise<void>;
   selectConversation: (id: string) => Promise<void>;
@@ -52,6 +53,7 @@ interface ChatState {
   regenerateMessage: (messageId: string) => Promise<void>;
   toggleWebSearch: () => void;
   setReasoningEnabled: (val: boolean) => void;
+  setSelectedModelId: (id: string) => void;
   stopStreaming: () => void;
   setError: (error: string | null) => void;
 }
@@ -98,12 +100,13 @@ export const useChatStore = create<ChatState>((set, get) => ({
   webSearchCount: 0,
   pendingWebSearchSources: null,
   error: null,
+  selectedModelId: 'nemotron-nano',
 
   fetchConversations: async () => {
     set({ isLoading: true, error: null });
     try {
       const data = await fetchJson('/api/conversations');
-      set({ conversations: data });
+      set({ conversations: data.conversations || data });
     } catch (e: any) {
       set({ error: e.message });
     }
@@ -129,37 +132,51 @@ export const useChatStore = create<ChatState>((set, get) => ({
   },
 
   createConversation: async (title, modelId) => {
-    const conv = await fetchJson('/api/conversations', {
-      method: 'POST',
-      body: JSON.stringify({ title, modelId }),
-    });
-    set((state) => ({ conversations: [conv, ...state.conversations] }));
-    return conv.id;
+    try {
+      const conv = await fetchJson('/api/conversations', {
+        method: 'POST',
+        body: JSON.stringify({ title, modelId }),
+      });
+      if (!conv) throw new Error('Failed to create conversation');
+      set((state) => ({ conversations: [conv, ...state.conversations] }));
+      return conv.id;
+    } catch (e: any) {
+      set({ error: e.message });
+      throw e;
+    }
   },
 
   deleteConversation: async (id) => {
-    await fetchJson(`/api/conversations/${id}`, { method: 'DELETE' });
-    set((state) => ({
-      conversations: state.conversations.filter((c) => c.id !== id),
-      ...(state.currentConversation?.id === id
-        ? { currentConversation: null, messages: [] }
-        : {}),
-    }));
+    try {
+      await fetchJson(`/api/conversations/${id}`, { method: 'DELETE' });
+      set((state) => ({
+        conversations: state.conversations.filter((c) => c.id !== id),
+        ...(state.currentConversation?.id === id
+          ? { currentConversation: null, messages: [] }
+          : {}),
+      }));
+    } catch (e: any) {
+      set({ error: e.message });
+    }
   },
 
   updateConversation: async (id, data) => {
-    const updated = await fetchJson(`/api/conversations/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    });
-    set((state) => ({
-      conversations: state.conversations.map((c) =>
-        c.id === id ? { ...c, ...updated } : c
-      ),
-      ...(state.currentConversation?.id === id
-        ? { currentConversation: { ...state.currentConversation, ...updated } }
-        : {}),
-    }));
+    try {
+      const updated = await fetchJson(`/api/conversations/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(data),
+      });
+      set((state) => ({
+        conversations: state.conversations.map((c) =>
+          c.id === id ? { ...c, ...updated } : c
+        ),
+        ...(state.currentConversation?.id === id
+          ? { currentConversation: { ...state.currentConversation, ...updated } }
+          : {}),
+      }));
+    } catch (e: any) {
+      set({ error: e.message });
+    }
   },
 
   sendMessage: async (content, modelId, conversationId) => {
@@ -191,6 +208,11 @@ export const useChatStore = create<ChatState>((set, get) => ({
         signal: abortController.signal,
       });
 
+      if (res.status === 401) {
+        set({ isStreaming: false, streamingContent: '', error: 'Session expired' });
+        window.location.href = '/login';
+        return;
+      }
       if (!res.ok) {
         let errorData;
         try {
@@ -201,7 +223,8 @@ export const useChatStore = create<ChatState>((set, get) => ({
         throw new Error(errorData.error || 'Chat failed');
       }
 
-      const reader = res.body!.getReader();
+      if (!res.body) throw new Error('Chat response body is null');
+      const reader = res.body.getReader();
       const decoder = new TextDecoder();
       let buffer = '';
       let assistantContent = '';
@@ -270,8 +293,9 @@ export const useChatStore = create<ChatState>((set, get) => ({
       }));
 
       if (newConvId) {
+        window.history.pushState(null, '', '/c/' + newConvId);
+        set({ currentConversation: { id: newConvId, title: '', modelId, isStarred: false, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() } });
         await get().fetchConversations();
-        await get().selectConversation(newConvId);
       } else {
         await get().fetchConversations();
       }
@@ -311,13 +335,19 @@ export const useChatStore = create<ChatState>((set, get) => ({
         signal: abortController!.signal,
       });
 
+      if (res.status === 401) {
+        set({ isStreaming: false, streamingContent: '', error: 'Session expired' });
+        window.location.href = '/login';
+        return;
+      }
       if (!res.ok) {
         let errorData;
         try { errorData = await res.json(); } catch { errorData = { error: 'Regenerate failed' }; }
         throw new Error(errorData.error || 'Regenerate failed');
       }
 
-      const reader = res.body!.getReader();
+      if (!res.body) throw new Error('Regenerate response body is null');
+      const reader = res.body.getReader();
       const decoder = new TextDecoder();
       let buffer = '';
 
@@ -378,4 +408,5 @@ export const useChatStore = create<ChatState>((set, get) => ({
 
   toggleWebSearch: () => set((state) => ({ webSearchEnabled: !state.webSearchEnabled })),
   setReasoningEnabled: (val) => set({ reasoningEnabled: val }),
+  setSelectedModelId: (id) => set({ selectedModelId: id }),
 }));

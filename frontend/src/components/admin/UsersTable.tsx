@@ -202,18 +202,22 @@ export default function UsersTable() {
   };
 
   const bulkAction = async (action: 'ban' | 'delete') => {
-    for (const id of selected) {
-      if (action === 'ban') {
-        await fetchJson(`/api/admin/users/${id}/ban`, {
-          method: 'PATCH',
-          body: JSON.stringify({ ban: true, reason: 'Bulk ban' }),
-        });
-      } else {
-        await fetchJson(`/api/admin/users/${id}`, { method: 'DELETE' });
+    try {
+      for (const id of selected) {
+        if (action === 'ban') {
+          await fetchJson(`/api/admin/users/${id}/ban`, {
+            method: 'PATCH',
+            body: JSON.stringify({ ban: true, reason: 'Bulk ban' }),
+          });
+        } else {
+          await fetchJson(`/api/admin/users/${id}`, { method: 'DELETE' });
+        }
       }
+      setSelected([]);
+      fetchUsers();
+    } catch (e: any) {
+      setError(e.message);
     }
-    setSelected([]);
-    fetchUsers();
   };
 
   const exportCSV = () => {

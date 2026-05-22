@@ -2,8 +2,8 @@ import { useUIStore } from '../../stores/uiStore';
 import { X, CheckCircle, AlertCircle, Info } from 'lucide-react';
 
 export default function ToastContainer() {
-  const toasts = useUIStore((s: any) => s.toasts);
-  const removeToast = useUIStore((s: any) => s.removeToast);
+  const toasts = useUIStore((s) => s.toasts);
+  const removeToast = useUIStore((s) => s.removeToast);
 
   const getIcon = (type: string) => {
     switch (type) {
@@ -15,7 +15,7 @@ export default function ToastContainer() {
 
   return (
     <div className="fixed top-4 right-4 z-50 space-y-2 max-w-sm">
-      {toasts.map((toast: any) => (
+      {toasts.map((toast) => (
         <div
           key={toast.id}
           className={`p-4 rounded-xl shadow-lg text-sm text-white flex items-center gap-3 animate-fadeIn ${

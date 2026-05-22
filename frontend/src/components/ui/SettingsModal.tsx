@@ -13,32 +13,28 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   const theme = useUIStore((s) => s.theme);
   const setTheme = useUIStore((s) => s.setTheme);
   const addToast = useUIStore((s) => s.addToast);
-  const [avatarColor, setAvatarColor] = useState(user?.avatarColor || '#6C4FF6');
   const [fontSize, setFontSize] = useState(parseInt(localStorage.getItem('fontSize') || '16'));
   const [compactMode, setCompactMode] = useState(localStorage.getItem('compactMode') === 'true');
   const [activeTab, setActiveTab] = useState<'general' | 'appearance' | 'data' | 'docs'>('general');
+  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
 
   useEffect(() => {
     if (isOpen) {
-      setAvatarColor(user?.avatarColor || '#6C4FF6');
       setFontSize(parseInt(localStorage.getItem('fontSize') || '16'));
       setCompactMode(localStorage.getItem('compactMode') === 'true');
       setActiveTab('general');
     }
   }, [isOpen, user]);
 
-  if (!isOpen) return null;
+  useEffect(() => {
+    if (!window.speechSynthesis) return;
+    setVoices(window.speechSynthesis.getVoices());
+    const handler = () => setVoices(window.speechSynthesis.getVoices());
+    window.speechSynthesis.addEventListener('voiceschanged', handler);
+    return () => window.speechSynthesis.removeEventListener('voiceschanged', handler);
+  }, [isOpen]);
 
-  const colorOptions = [
-    { name: 'Purple', value: '#6C4FF6' },
-    { name: 'Green', value: '#10A37F' },
-    { name: 'Orange', value: '#D97757' },
-    { name: 'Red', value: '#E24B4A' },
-    { name: 'Blue', value: '#2563EB' },
-    { name: 'Pink', value: '#DB2777' },
-    { name: 'Teal', value: '#0D9488' },
-    { name: 'Yellow', value: '#D97706' },
-  ];
+  if (!isOpen) return null;
 
   const handleSave = () => {
     localStorage.setItem('fontSize', String(fontSize));
@@ -116,20 +112,12 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                   <span className="w-1.5 h-1.5 bg-accent rounded-full" />
                   Profile
                 </h3>
-                <div className="flex items-center gap-4 p-4 bg-bg-secondary rounded-xl">
-                  <div
-                    className="w-14 h-14 rounded-xl flex items-center justify-center text-white text-lg font-semibold shadow-lg"
-                    style={{ backgroundColor: avatarColor }}
-                  >
-                    {user?.username?.slice(0, 2).toUpperCase()}
-                  </div>
-                  <div>
-                    <p className="font-semibold">{user?.username}</p>
-                    <p className="text-sm text-text-secondary">{user?.email}</p>
-                    <span className="inline-block mt-1 px-2 py-0.5 bg-accent/10 text-accent text-xs rounded-full font-medium">
-                      {user?.role}
-                    </span>
-                  </div>
+                <div className="flex flex-col gap-1 p-4 bg-bg-secondary rounded-xl">
+                  <p className="font-semibold">{user?.username}</p>
+                  <p className="text-sm text-text-secondary">{user?.email}</p>
+                  <span className="self-start mt-1 px-2 py-0.5 bg-accent/10 text-accent text-xs rounded-full font-medium">
+                    {user?.role}
+                  </span>
                 </div>
               </div>
 
@@ -154,32 +142,33 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                   </div>
                   <span className="text-xs text-text-secondary/50 group-hover:text-accent transition">&rarr;</span>
                 </a>
-              </div>
+            </div>
 
-              {/* Avatar Color */}
+              {/* TTS Voice */}
               <div>
                 <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
                   <span className="w-1.5 h-1.5 bg-accent rounded-full" />
-                  Avatar Color
+                  Text-to-Speech Voice
                 </h3>
-                <div className="grid grid-cols-4 gap-3">
-                  {colorOptions.map((color) => (
-                    <button
-                      key={color.value}
-                      onClick={() => setAvatarColor(color.value)}
-                      className={`flex flex-col items-center gap-2 p-3 rounded-xl transition-all duration-150 ${
-                        avatarColor === color.value
-                          ? 'bg-accent/10 ring-2 ring-accent'
-                          : 'hover:bg-bg-secondary'
-                      }`}
-                    >
-                      <div
-                        className="w-8 h-8 rounded-full shadow-md"
-                        style={{ backgroundColor: color.value }}
-                      />
-                      <span className="text-xs text-text-secondary">{color.name}</span>
-                    </button>
-                  ))}
+                <div className="p-4 bg-bg-secondary rounded-xl">
+                  <select
+                    value={localStorage.getItem('ttsVoice') || ''}
+                    onChange={(e) => {
+                      localStorage.setItem('ttsVoice', e.target.value);
+                      window.speechSynthesis.cancel();
+                    }}
+                    className="w-full bg-bg-primary border border-border rounded-xl px-3 py-2.5 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-accent/50"
+                  >
+                    <option value="">System default</option>
+                    {voices.map((v) => (
+                      <option key={v.voiceURI} value={v.voiceURI}>
+                        {v.name} ({v.lang})
+                      </option>
+                    ))}
+                  </select>
+                  <p className="text-xs text-text-secondary/70 mt-2">
+                    Choose the voice used for reading responses aloud.
+                  </p>
                 </div>
               </div>
             </div>

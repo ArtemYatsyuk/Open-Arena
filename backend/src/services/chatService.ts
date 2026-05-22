@@ -5,7 +5,7 @@ export async function streamChat(
   modelId: string,
   messages: { role: string; content: string }[],
   onChunk: (chunk: string) => void,
-  onComplete: (tokenCount?: { prompt: number; completion: number }) => void,
+  onComplete: () => void,
   signal: AbortSignal,
   onReasoning?: (chunk: string) => void
 ) {
@@ -45,7 +45,8 @@ export async function streamChat(
       throw new Error(`Anthropic API error: ${response.status} - ${err}`);
     }
 
-    const reader = response.body!.getReader();
+    if (!response.body) throw new Error('Anthropic response body is null');
+    const reader = response.body.getReader();
     const decoder = new TextDecoder();
     let buffer = '';
 
@@ -65,6 +66,10 @@ export async function streamChat(
 
         try {
           const parsed = JSON.parse(data);
+          if (parsed.type === 'content_block_start' && parsed.content_block?.text) {
+            fullContent += parsed.content_block.text;
+            onChunk(parsed.content_block.text);
+          }
           if (parsed.type === 'content_block_delta' && parsed.delta?.text) {
             fullContent += parsed.delta.text;
             onChunk(parsed.delta.text);
@@ -107,7 +112,8 @@ export async function streamChat(
       throw new Error(`API error: ${response.status} - ${err}`);
     }
 
-    const reader = response.body!.getReader();
+    if (!response.body) throw new Error('API response body is null');
+    const reader = response.body.getReader();
     const decoder = new TextDecoder();
     let buffer = '';
     let fullReasoning = '';

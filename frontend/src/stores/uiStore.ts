@@ -1,5 +1,11 @@
 import { create } from 'zustand';
 
+interface Toast {
+  id: string;
+  message: string;
+  type: 'success' | 'error' | 'info';
+}
+
 interface UIState {
   sidebarOpen: boolean;
   workspaceOpen: boolean;
@@ -8,7 +14,7 @@ interface UIState {
   theme: 'light' | 'dark';
   workspaceTab: 'preview' | 'code';
   workspaceContent: string;
-  toasts: { id: string; message: string; type: 'success' | 'error' | 'info' }[];
+  toasts: Toast[];
 
   toggleSidebar: () => void;
   toggleWorkspace: () => void;
@@ -62,9 +68,10 @@ export const useUIStore = create<UIState>((set, get) => ({
   setWorkspaceContent: (content) => set({ workspaceContent: content, workspaceOpen: !!content }),
 
   addToast: (message, type = 'info') => {
-    const id = Date.now().toString();
+    const id = Date.now().toString() + Math.random().toString(36).slice(2, 4);
     set((state) => ({ toasts: [...state.toasts, { id, message, type }] }));
-    setTimeout(() => get().removeToast(id), 4000);
+    const timeout = setTimeout(() => get().removeToast(id), 4000);
+    (timeout as any).toastId = id;
   },
 
   removeToast: (id) => set((state) => ({ toasts: state.toasts.filter((t) => t.id !== id) })),

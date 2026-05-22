@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useChatStore } from '../../stores/chatStore';
-import { Send, Square, Globe, Brain } from 'lucide-react';
+import { useUIStore } from '../../stores/uiStore';
+import { Plus, LayoutGrid, Mic, Send, Square, Globe, Brain, Code } from 'lucide-react';
 
 export default function ChatInput() {
   const [input, setInput] = useState('');
@@ -13,6 +14,10 @@ export default function ChatInput() {
   const toggleWebSearch = useChatStore((s) => s.toggleWebSearch);
   const reasoningEnabled = useChatStore((s) => s.reasoningEnabled);
   const setReasoningEnabled = useChatStore((s) => s.setReasoningEnabled);
+  const selectedModelId = useChatStore((s) => s.selectedModelId);
+  const toggleWorkspace = useUIStore((s) => s.toggleWorkspace);
+  const workspaceOpen = useUIStore((s) => s.workspaceOpen);
+  const [integrationsOpen, setIntegrationsOpen] = useState(false);
 
   useEffect(() => {
     if (textareaRef.current) {
@@ -24,9 +29,13 @@ export default function ChatInput() {
   const handleSubmit = async () => {
     if (!input.trim() || isStreaming) return;
     const content = input.trim();
-    setInput('');
-    const modelId = currentConv?.modelId || 'nemotron-nano';
-    await sendMessage(content, modelId, currentConv?.id);
+    const modelId = currentConv?.modelId || selectedModelId;
+    try {
+      await sendMessage(content, modelId, currentConv?.id);
+      setInput('');
+    } catch {
+      // input preserved on failure
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -40,50 +49,88 @@ export default function ChatInput() {
     }
   };
 
-  if (input.startsWith('/')) {
-    const cmd = input.split(' ')[0];
-    if (cmd === '/clear') {
-      useChatStore.setState({ messages: [], currentConversation: null });
-    }
-  }
-
   return (
     <div className="px-4 sm:px-6 py-4">
       <div className="max-w-3xl mx-auto">
-        <div className={`relative bg-bg-secondary border rounded-2xl transition-all duration-200 ${
-          isStreaming
-            ? 'border-accent/40 ring-2 ring-accent/10 animate-pulseGlow'
-            : 'border-border focus-within:border-accent/50 focus-within:ring-2 focus-within:ring-accent/20 focus-within:shadow-lg focus-within:shadow-accent/5'
-        }`}>
-          {isStreaming && (
-            <div className="absolute -top-0.5 left-0 right-0 h-0.5 bg-gradient-to-r from-accent/20 via-accent to-accent/20 rounded-full animate-gradient" />
-          )}
-          {/* Toggles */}
-          <div className="absolute left-3 top-1/2 -translate-y-1/2 flex gap-1">
+        <div className="relative bg-bg-secondary border border-border rounded-2xl transition-all duration-200 focus-within:border-accent/50 focus-within:shadow-lg">
+          {/* Left icons */}
+          <div className="absolute left-3 top-1/2 -translate-y-1/2 flex items-center gap-0.5">
             <button
-              onClick={toggleWebSearch}
-              disabled={isStreaming}
-              title={webSearchEnabled ? 'Web search enabled' : 'Web search disabled'}
-              className={`p-2 rounded-xl transition ${
-                webSearchEnabled
-                  ? 'bg-accent/15 text-accent shadow-sm'
-                  : 'text-text-secondary/50 hover:text-text-secondary hover:bg-bg-primary/50'
-              } disabled:opacity-30`}
+              className="p-1.5 rounded-lg hover:bg-white/[0.06] transition text-text-secondary/60 hover:text-text-secondary"
+              title="Attach file"
             >
-              <Globe className="w-4 h-4" />
+              <Plus className="w-4 h-4" />
             </button>
-            <button
-              onClick={() => setReasoningEnabled(!reasoningEnabled)}
-              disabled={isStreaming}
-              title={reasoningEnabled ? 'Reasoning enabled' : 'Reasoning disabled'}
-              className={`p-2 rounded-xl transition ${
-                reasoningEnabled
-                  ? 'bg-accent/15 text-accent shadow-sm'
-                  : 'text-text-secondary/50 hover:text-text-secondary hover:bg-bg-primary/50'
-              } disabled:opacity-30`}
-            >
-              <Brain className="w-4 h-4" />
-            </button>
+            <div className="relative">
+              <button
+                onClick={() => setIntegrationsOpen(!integrationsOpen)}
+                className={`p-1.5 rounded-lg transition text-text-secondary/60 hover:text-text-secondary ${
+                  integrationsOpen ? 'bg-white/[0.08] text-text-secondary' : ''
+                }`}
+                title="Integrations"
+              >
+                <LayoutGrid className="w-4 h-4" />
+              </button>
+              {integrationsOpen && (
+                <>
+                  <div className="fixed inset-0 z-40" onClick={() => setIntegrationsOpen(false)} />
+                  <div className="absolute bottom-full left-0 mb-2 z-50 w-52 bg-bg-primary border border-border rounded-xl shadow-2xl p-2">
+                    <p className="text-xs font-semibold text-text-secondary px-2 py-1.5">Integrations</p>
+                    <div className="h-px bg-border mx-2 my-1" />
+                    <div className="space-y-0.5">
+                      <button
+                        onClick={() => { toggleWebSearch(); }}
+                        className="w-full flex items-center justify-between px-2.5 py-2 rounded-lg hover:bg-bg-secondary transition text-sm"
+                      >
+                        <span className="flex items-center gap-2">
+                          <Globe className="w-4 h-4 text-text-secondary" />
+                          Web Search
+                        </span>
+                        <span className={`w-8 h-4 rounded-full transition-colors relative ${
+                          webSearchEnabled ? 'bg-accent' : 'bg-border'
+                        }`}>
+                          <span className={`absolute top-0.5 w-3 h-3 bg-white rounded-full shadow-sm transition-all ${
+                            webSearchEnabled ? 'left-[18px]' : 'left-0.5'
+                          }`} />
+                        </span>
+                      </button>
+                      <button
+                        onClick={() => { toggleWorkspace(); setIntegrationsOpen(false); }}
+                        className="w-full flex items-center justify-between px-2.5 py-2 rounded-lg hover:bg-bg-secondary transition text-sm"
+                      >
+                        <span className="flex items-center gap-2">
+                          <Code className="w-4 h-4 text-text-secondary" />
+                          Code Interpreter
+                        </span>
+                        <span className={`w-8 h-4 rounded-full transition-colors relative ${
+                          workspaceOpen ? 'bg-accent' : 'bg-border'
+                        }`}>
+                          <span className={`absolute top-0.5 w-3 h-3 bg-white rounded-full shadow-sm transition-all ${
+                            workspaceOpen ? 'left-[18px]' : 'left-0.5'
+                          }`} />
+                        </span>
+                      </button>
+                      <button
+                        onClick={() => setReasoningEnabled(!reasoningEnabled)}
+                        className="w-full flex items-center justify-between px-2.5 py-2 rounded-lg hover:bg-bg-secondary transition text-sm"
+                      >
+                        <span className="flex items-center gap-2">
+                          <Brain className="w-4 h-4 text-text-secondary" />
+                          Reasoning
+                        </span>
+                        <span className={`w-8 h-4 rounded-full transition-colors relative ${
+                          reasoningEnabled ? 'bg-accent' : 'bg-border'
+                        }`}>
+                          <span className={`absolute top-0.5 w-3 h-3 bg-white rounded-full shadow-sm transition-all ${
+                            reasoningEnabled ? 'left-[18px]' : 'left-0.5'
+                          }`} />
+                        </span>
+                      </button>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
           </div>
 
           <textarea
@@ -91,18 +138,24 @@ export default function ChatInput() {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder={isStreaming ? 'AI is generating...' : 'Message Open Arena...'}
-            className="w-full bg-transparent text-base text-text-primary resize-none focus:outline-none min-h-[56px] max-h-[240px] py-4 pl-20 pr-14 leading-relaxed placeholder:text-text-secondary/50"
+            placeholder="Send a message"
+            className="w-full bg-transparent text-sm text-text-primary resize-none focus:outline-none min-h-[52px] max-h-[240px] py-3 pl-[72px] pr-[92px] leading-relaxed placeholder:text-text-secondary/50"
             rows={1}
             disabled={isStreaming}
           />
 
-          {/* Right action button */}
-          <div className="absolute right-3 top-1/2 -translate-y-1/2">
+          {/* Right icons */}
+          <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-0.5">
+            <button
+              className="p-1.5 rounded-lg hover:bg-white/[0.06] transition text-text-secondary/60 hover:text-text-secondary"
+              title="Voice input"
+            >
+              <Mic className="w-4 h-4" />
+            </button>
             {isStreaming ? (
               <button
                 onClick={stopStreaming}
-                className="p-2.5 bg-danger text-white rounded-xl hover:bg-danger/90 transition shadow-lg shadow-danger/20 flex items-center gap-1.5 text-sm font-medium"
+                className="p-2 bg-bg-reverse text-text-reverse rounded-xl hover:opacity-90 transition shadow-sm flex items-center justify-center"
                 title="Stop generation"
               >
                 <Square className="w-4 h-4" />
@@ -111,7 +164,7 @@ export default function ChatInput() {
               <button
                 onClick={handleSubmit}
                 disabled={!input.trim()}
-                className="p-2.5 bg-accent text-white rounded-xl hover:bg-accent-hover transition disabled:opacity-30 disabled:cursor-not-allowed shadow-lg shadow-accent/20"
+                className="p-2 bg-bg-reverse text-text-reverse rounded-xl hover:opacity-90 transition disabled:opacity-30 disabled:cursor-not-allowed shadow-sm flex items-center justify-center"
                 title="Send message"
               >
                 <Send className="w-4 h-4" />
@@ -119,7 +172,7 @@ export default function ChatInput() {
             )}
           </div>
         </div>
-        <p className="text-xs text-text-secondary/60 text-center mt-3">
+        <p className="text-[10px] text-text-secondary/50 text-center mt-2">
           Open Arena Can Make Mistakes. Verify Important Information
         </p>
       </div>

@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
+import { useUIStore } from '../stores/uiStore';
 import { Mail, User, Lock, AlertCircle, Loader2, Check } from 'lucide-react';
 
 export default function Register() {
+  const theme = useUIStore((s) => s.theme);
   const [email, setEmail] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -43,8 +45,8 @@ export default function Register() {
     <div className="flex items-center justify-center h-screen bg-bg-primary animate-fadeIn">
       <div className="w-full max-w-sm p-8">
         <div className="text-center mb-8">
-          <div className="w-16 h-16 rounded-2xl bg-accent flex items-center justify-center mx-auto mb-4 shadow-lg shadow-accent/20">
-            <span className="text-white text-2xl font-bold">OA</span>
+          <div className="w-16 h-16 rounded-2xl bg-bg-secondary border border-border flex items-center justify-center mx-auto mb-4 shadow-lg">
+            <img src={theme === 'dark' ? '/OpenArena-Black.png' : '/favicon.png'} alt="Open Arena" className="w-10 h-10 rounded-xl" />
           </div>
           <h1 className="text-2xl font-semibold mb-1">Create account</h1>
           <p className="text-text-secondary text-sm">Join Open Arena</p>

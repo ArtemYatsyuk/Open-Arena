@@ -39,19 +39,29 @@ export default function UserDetail() {
 
   useEffect(() => {
     if (!id) return;
+    setLoading(true);
     fetch(`/api/admin/users/${id}`, { credentials: 'include' })
-      .then((r) => r.json())
+      .then(async (r) => {
+        if (!r.ok) throw new Error('Failed to load user');
+        return r.json();
+      })
       .then((data) => {
         setUser(data);
+        setLoading(false);
+      })
+      .catch(() => {
         setLoading(false);
       });
   }, [id]);
 
   const loadConversations = async () => {
     if (!id) return;
-    const res = await fetch(`/api/admin/users/${id}/conversations`, { credentials: 'include' });
-    const data = await res.json();
-    setConversations(data);
+    try {
+      const res = await fetch(`/api/admin/users/${id}/conversations`, { credentials: 'include' });
+      if (!res.ok) throw new Error('Failed to load conversations');
+      const data = await res.json();
+      setConversations(data.conversations || data);
+    } catch {}
   };
 
   if (loading) return <div className="p-8 text-text-secondary">Loading...</div>;
@@ -85,13 +95,17 @@ export default function UserDetail() {
                 <select
                   value={user.role}
                   onChange={async (e) => {
-                    await fetch(`/api/admin/users/${user.id}/role`, {
-                      method: 'PATCH',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({ role: e.target.value }),
-                      credentials: 'include',
-                    });
-                    setUser({ ...user, role: e.target.value });
+                    const newRole = e.target.value;
+                    try {
+                      const res = await fetch(`/api/admin/users/${user.id}/role`, {
+                        method: 'PATCH',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ role: newRole }),
+                        credentials: 'include',
+                      });
+                      if (!res.ok) throw new Error('Failed to update role');
+                      setUser({ ...user, role: newRole as 'USER' | 'ADMIN' });
+                    } catch {}
                   }}
                   className="bg-bg-primary border border-border rounded-lg px-2 py-0.5 text-sm"
                 >

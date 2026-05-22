@@ -4,25 +4,29 @@
 
 :root {
   --bg-primary: #FFFFFF;
-  --bg-secondary: #F5F4F0;
-  --border-color: rgba(0, 0, 0, 0.08);
-  --text-primary: #1A1918;
-  --text-secondary: #706F6B;
+  --bg-secondary: #F0EDE8;
+  --bg-reverse: #1C1B1A;
+  --border-color: rgba(0, 0, 0, 0.06);
+  --text-primary: #1C1B1A;
+  --text-secondary: #8B8A84;
+  --text-reverse: #FFFFFF;
   --font-size-base: 16px;
-  --color-accent: 26 26 26;
-  --color-accent-hover: 0 0 0;
-  --color-accent-light: 26 26 26;
+  --color-accent: 91 154 101;
+  --color-accent-hover: 76 139 86;
+  --color-accent-light: 180 210 190;
 }
 
 .dark {
-  --bg-primary: #0F0F10;
-  --bg-secondary: #1A1A1B;
-  --border-color: rgba(255, 255, 255, 0.08);
-  --text-primary: #EDECE8;
-  --text-secondary: #A09E99;
-  --color-accent: 229 229 229;
-  --color-accent-hover: 255 255 255;
-  --color-accent-light: 229 229 229;
+  --bg-primary: #313338;
+  --bg-secondary: #2b2d31;
+  --bg-reverse: #FFFFFF;
+  --border-color: rgba(255, 255, 255, 0.06);
+  --text-primary: #dbdee1;
+  --text-secondary: #a6a8ab;
+  --text-reverse: #1C1B1A;
+  --color-accent: 91 154 101;
+  --color-accent-hover: 76 139 86;
+  --color-accent-light: 180 210 190;
 }
 
 * {
@@ -233,3 +237,8 @@ button, a, input, select, textarea, [role="button"] {
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
+
+/* Custom utility classes for theme-aware colors */
+.bg-bg-reverse { background-color: var(--bg-reverse); }
+.text-bg-reverse { color: var(--bg-reverse); }
+.text-text-reverse { color: var(--text-reverse); }

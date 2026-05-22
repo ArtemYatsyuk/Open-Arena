@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { prisma } from '../index.js';
 import { hashPassword, comparePassword, generateAccessToken, generateRefreshToken, setAuthCookies, clearAuthCookies } from '../services/authService.js';
 import { isAuthenticated, isNotBanned, AuthRequest } from '../middleware/auth.js';
+import { getConfig } from '../config.js';
 
 const router = Router();
 
@@ -16,11 +17,15 @@ const registerSchema = z.object({
 const loginSchema = z.object({
   email: z.string().email(),
   password: z.string(),
-  rememberMe: z.boolean().optional(),
 });
 
 router.post('/register', async (req, res) => {
   try {
+    const { app } = getConfig();
+    if (!app.allowRegistration) {
+      return res.status(403).json({ error: 'Registration is disabled' });
+    }
+
     const { email, username, password } = registerSchema.parse(req.body);
 
     const existing = await prisma.user.findFirst({
@@ -88,12 +93,8 @@ router.post('/refresh', async (req, res) => {
     if (!user || user.isBanned) return res.status(401).json({ error: 'User not found or banned' });
 
     const accessToken = generateAccessToken(userId, role);
-    res.cookie('accessToken', accessToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 60 * 60 * 1000,
-    });
+    const refreshToken = generateRefreshToken(userId, role);
+    setAuthCookies(res, accessToken, refreshToken);
     res.json({ success: true });
   } catch {
     clearAuthCookies(res);
@@ -102,12 +103,17 @@ router.post('/refresh', async (req, res) => {
 });
 
 router.get('/me', isAuthenticated, isNotBanned, async (req: AuthRequest, res) => {
-  const user = await prisma.user.findUnique({
-    where: { id: req.userId! },
-    select: { id: true, email: true, username: true, role: true, avatarColor: true, createdAt: true, isBanned: true, banReason: true },
-  });
-  if (!user) return res.status(404).json({ error: 'User not found' });
-  res.json(user);
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: req.userId! },
+      select: { id: true, email: true, username: true, role: true, avatarColor: true, createdAt: true, isBanned: true, banReason: true },
+    });
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    res.json(user);
+  } catch (e: any) {
+    console.error('[Auth] Me error:', e);
+    res.status(500).json({ error: 'Failed to get user info' });
+  }
 });
 
 export default router;

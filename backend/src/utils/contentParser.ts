@@ -2,7 +2,7 @@ function tryExtract(str: string, quote: string): string | null {
   const escaped = quote === '"' ? '\\"' : "'";
   const pattern = new RegExp(
     `^\\s*\\[\\s*\\{?['"]type['"]\\s*:\\s*['"]text['"]\\s*,\\s*['"]text['"]\\s*:\\s*${quote}((?:[^${escaped}\\\\]|\\\\.)*)${quote}\\s*\\}?\\s*\\]\\s*$`,
-    'gm'
+    'sg'
   );
   const matches = [...str.matchAll(pattern)];
   if (matches.length === 0) return null;

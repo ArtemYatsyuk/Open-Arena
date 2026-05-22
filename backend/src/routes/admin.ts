@@ -22,7 +22,7 @@ const createUserSchema = z.object({
 });
 
 function getId(req: AuthRequest): string {
-  return Array.isArray(req.params.id) ? req.params.id[0] : (req.params.id as string);
+  return req.params.id as string;
 }
 
 function getQueryStr(req: AuthRequest, key: string): string {
@@ -40,83 +40,115 @@ function getQueryInt(req: AuthRequest, key: string, fallback: number): number {
 router.use(isAuthenticated, isNotBanned, isAdmin);
 
 router.get('/stats', async (req, res) => {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  try {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
 
-  const [totalUsers, activeToday, totalConversations, messagesToday] = await Promise.all([
-    prisma.user.count(),
-    prisma.user.count({ where: { lastActiveAt: { gte: today } } }),
-    prisma.conversation.count(),
-    prisma.message.count({ where: { createdAt: { gte: today } } }),
-  ]);
+    const period = getQueryStr(req, 'period') || '30d';
+    if (!['7d', '30d', '1y'].includes(period)) {
+      return res.status(400).json({ error: 'Invalid period. Use 7d, 30d, or 1y' });
+    }
 
-  const last30Days = await prisma.$queryRaw`
-    SELECT DATE(createdAt) as date, COUNT(*) as count
-    FROM Message
-    WHERE createdAt >= date('now', '-30 days')
-    GROUP BY DATE(createdAt)
-    ORDER BY date ASC
-  `;
+    let dateRange: string;
+    switch (period) {
+      case '7d': dateRange = '-7 days'; break;
+      case '1y': dateRange = '-1 year'; break;
+      default: dateRange = '-30 days';
+    }
 
-  const topUsers = await prisma.user.findMany({
-    take: 5,
-    orderBy: { createdAt: 'desc' },
-    select: {
-      id: true,
-      username: true,
-      email: true,
-      _count: { select: { conversations: true } },
-    },
-  });
+    const [totalUsers, activeToday, totalConversations, messagesToday] = await Promise.all([
+      prisma.user.count(),
+      prisma.user.count({ where: { lastActiveAt: { gte: today } } }),
+      prisma.conversation.count(),
+      prisma.message.count({ where: { createdAt: { gte: today } } }),
+    ]);
 
-  res.json({
-    totalUsers,
-    activeToday,
-    totalConversations,
-    messagesToday,
-    last30Days,
-    topUsers,
-  });
+    const days = period === '7d' ? 7 : period === '1y' ? 365 : 30;
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - days);
+
+    const messages = await prisma.message.findMany({
+      where: { createdAt: { gte: startDate } },
+      select: { createdAt: true },
+      orderBy: { createdAt: 'asc' },
+    });
+
+    const chartMap = new Map<string, number>();
+    for (const m of messages) {
+      const date = m.createdAt.toISOString().slice(0, 10);
+      chartMap.set(date, (chartMap.get(date) || 0) + 1);
+    }
+    const chartData = Array.from(chartMap.entries()).map(([date, count]) => ({ date, count }));
+
+    const topUsers = await prisma.user.findMany({
+      take: 5,
+      orderBy: { lastActiveAt: 'desc' },
+      select: {
+        id: true,
+        username: true,
+        email: true,
+        lastActiveAt: true,
+        _count: { select: { conversations: true } },
+      },
+    });
+
+    res.json({
+      totalUsers,
+      activeToday,
+      totalConversations,
+      messagesToday,
+      last30Days: chartData,
+      topUsers,
+    });
+  } catch (e: any) {
+    console.error('[Admin] Stats error:', e);
+    res.status(500).json({ error: 'Failed to load stats' });
+  }
 });
 
 router.get('/users', async (req: AuthRequest, res) => {
-  const page = getQueryInt(req, 'page', 1);
-  const limit = 50;
-  const search = getQueryStr(req, 'search');
-  const skip = (page - 1) * limit;
+  try {
+    const page = getQueryInt(req, 'page', 1);
+    const limit = 50;
+    const search = getQueryStr(req, 'search');
+    const skip = (page - 1) * limit;
 
-  const where: any = search
-    ? {
-        OR: [
-          { username: { contains: search } },
-          { email: { contains: search } },
-        ],
-      }
-    : {};
+    const where: any = search
+      ? {
+          OR: [
+            { username: { contains: search } },
+            { email: { contains: search } },
+          ],
+        }
+      : {};
 
-  const [users, total] = await Promise.all([
-    prisma.user.findMany({
-      where,
-      skip,
-      take: limit,
-      orderBy: { createdAt: 'desc' },
-      select: {
-        id: true,
-        email: true,
-        username: true,
-        role: true,
-        isBanned: true,
-        banReason: true,
-        createdAt: true,
-        lastActiveAt: true,
-        avatarColor: true,
-        _count: { select: { conversations: true } },
-      },
-    }),
-    prisma.user.count({ where }),
-  ]);
+    const [users, total] = await Promise.all([
+      prisma.user.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: { createdAt: 'desc' },
+        select: {
+          id: true,
+          email: true,
+          username: true,
+          role: true,
+          isBanned: true,
+          banReason: true,
+          createdAt: true,
+          lastActiveAt: true,
+          avatarColor: true,
+          _count: { select: { conversations: true } },
+        },
+      }),
+      prisma.user.count({ where }),
+    ]);
 
-  res.json({ users, total, page, totalPages: Math.ceil(total / limit) });
+    res.json({ users, total, page, totalPages: Math.ceil(total / limit) });
+  } catch (e: any) {
+    console.error('[Admin] Users error:', e);
+    res.status(500).json({ error: 'Failed to load users' });
+  }
 });
 
 router.post('/users', async (req: AuthRequest, res) => {
@@ -141,120 +173,164 @@ router.post('/users', async (req: AuthRequest, res) => {
 });
 
 router.get('/users/:id', async (req: AuthRequest, res) => {
-  const userId = getId(req);
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    select: {
-      id: true,
-      email: true,
-      username: true,
-      role: true,
-      isBanned: true,
-      banReason: true,
-      createdAt: true,
-      lastActiveAt: true,
-      avatarColor: true,
-      _count: { select: { conversations: true } },
-    },
-  });
-  if (!user) return res.status(404).json({ error: 'User not found' });
+  try {
+    const userId = getId(req);
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        email: true,
+        username: true,
+        role: true,
+        isBanned: true,
+        banReason: true,
+        createdAt: true,
+        lastActiveAt: true,
+        avatarColor: true,
+        _count: { select: { conversations: true } },
+      },
+    });
+    if (!user) return res.status(404).json({ error: 'User not found' });
 
-  const messageCount = await prisma.message.count({
-    where: { conversation: { userId } },
-  });
+    const messageCount = await prisma.message.count({
+      where: { conversation: { userId } },
+    });
 
-  res.json({ ...user, messageCount });
+    res.json({ ...user, messageCount });
+  } catch (e: any) {
+    console.error('[Admin] User detail error:', e);
+    res.status(500).json({ error: 'Failed to load user details' });
+  }
+});
+
+const banSchema = z.object({
+  ban: z.boolean(),
+  reason: z.string().max(500).optional(),
+});
+
+const roleSchema = z.object({
+  role: z.enum(['USER', 'ADMIN']),
 });
 
 router.patch('/users/:id/ban', async (req: AuthRequest, res) => {
-  const userId = getId(req);
-  const { ban, reason } = req.body as { ban: boolean; reason?: string };
-  const user = await prisma.user.findUnique({ where: { id: userId } });
-  if (!user) return res.status(404).json({ error: 'User not found' });
+  try {
+    const userId = getId(req);
+    const { ban, reason } = banSchema.parse(req.body);
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user) return res.status(404).json({ error: 'User not found' });
 
-  const updated = await prisma.user.update({
-    where: { id: userId },
-    data: { isBanned: ban, banReason: ban ? reason || null : null },
-    select: { id: true, isBanned: true, banReason: true },
-  });
-  res.json(updated);
+    const updated = await prisma.user.update({
+      where: { id: userId },
+      data: { isBanned: ban, banReason: ban ? reason || null : null },
+      select: { id: true, isBanned: true, banReason: true },
+    });
+    res.json(updated);
+  } catch (e: any) {
+    if (e instanceof z.ZodError) return res.status(400).json({ error: e.errors });
+    res.status(500).json({ error: 'Failed to update ban status' });
+  }
 });
 
 router.patch('/users/:id/role', async (req: AuthRequest, res) => {
-  const userId = getId(req);
-  const { role } = req.body as { role: 'USER' | 'ADMIN' };
-  if (!role || !['USER', 'ADMIN'].includes(role)) {
-    return res.status(400).json({ error: 'Invalid role' });
+  try {
+    const userId = getId(req);
+    const { role } = roleSchema.parse(req.body);
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    const updated = await prisma.user.update({
+      where: { id: userId },
+      data: { role },
+      select: { id: true, role: true },
+    });
+    res.json(updated);
+  } catch (e: any) {
+    if (e instanceof z.ZodError) return res.status(400).json({ error: e.errors });
+    res.status(500).json({ error: 'Failed to update role' });
   }
-
-  const user = await prisma.user.findUnique({ where: { id: userId } });
-  if (!user) return res.status(404).json({ error: 'User not found' });
-
-  const updated = await prisma.user.update({
-    where: { id: userId },
-    data: { role },
-    select: { id: true, role: true },
-  });
-  res.json(updated);
 });
 
 router.delete('/users/:id', async (req: AuthRequest, res) => {
-  const userId = getId(req);
-  const user = await prisma.user.findUnique({ where: { id: userId } });
-  if (!user) return res.status(404).json({ error: 'User not found' });
-  if (user.id === req.userId) return res.status(400).json({ error: 'Cannot delete yourself' });
+  try {
+    const userId = getId(req);
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    if (user.id === req.userId) return res.status(400).json({ error: 'Cannot delete yourself' });
 
-  await prisma.user.delete({ where: { id: userId } });
-  res.json({ success: true });
+    await prisma.user.delete({ where: { id: userId } });
+    res.json({ success: true });
+  } catch (e: any) {
+    console.error('[Admin] Delete user error:', e);
+    res.status(500).json({ error: 'Failed to delete user' });
+  }
 });
 
 router.get('/users/:id/conversations', async (req: AuthRequest, res) => {
-  const userId = getId(req);
-  const conversations = await prisma.conversation.findMany({
-    where: { userId },
-    orderBy: { updatedAt: 'desc' },
-    include: {
-      messages: { orderBy: { createdAt: 'asc' } },
-    },
-  });
-  res.json(conversations);
+  try {
+    const userId = getId(req);
+    const page = Math.max(1, parseInt(String(req.query.page || '1')));
+    const limit = Math.min(50, Math.max(1, parseInt(String(req.query.limit || '20'))));
+    const skip = (page - 1) * limit;
+
+    const [conversations, total] = await Promise.all([
+      prisma.conversation.findMany({
+        where: { userId },
+        orderBy: { updatedAt: 'desc' },
+        skip,
+        take: limit,
+        include: {
+          messages: { orderBy: { createdAt: 'asc' } },
+        },
+      }),
+      prisma.conversation.count({ where: { userId } }),
+    ]);
+    res.json({ conversations, total, page, totalPages: Math.ceil(total / limit) });
+  } catch (e: any) {
+    console.error('[Admin] User conversations error:', e);
+    res.status(500).json({ error: 'Failed to load conversations' });
+  }
 });
 
 router.get('/conversations', async (req: AuthRequest, res) => {
-  const page = getQueryInt(req, 'page', 1);
-  const limit = 50;
-  const search = getQueryStr(req, 'search');
-  const skip = (page - 1) * limit;
+  try {
+    const page = getQueryInt(req, 'page', 1);
+    const limit = 50;
+    const search = getQueryStr(req, 'search');
+    const skip = (page - 1) * limit;
 
-  const where: any = search
-    ? {
-        OR: [
-          { title: { contains: search } },
-          { user: { username: { contains: search } } },
-        ],
-      }
-    : {};
+    const where: any = search
+      ? {
+          OR: [
+            { title: { contains: search } },
+            { user: { username: { contains: search } } },
+          ],
+        }
+      : {};
 
-  const [conversations, total] = await Promise.all([
-    prisma.conversation.findMany({
-      where,
-      skip,
-      take: limit,
-      orderBy: { updatedAt: 'desc' },
-      include: {
-        user: { select: { username: true, email: true } },
-        _count: { select: { messages: true } },
-      },
-    }),
-    prisma.conversation.count({ where }),
-  ]);
+    const [conversations, total] = await Promise.all([
+      prisma.conversation.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: { updatedAt: 'desc' },
+        include: {
+          user: { select: { username: true, email: true } },
+          _count: { select: { messages: true } },
+        },
+      }),
+      prisma.conversation.count({ where }),
+    ]);
 
-  res.json({ conversations, total, page, totalPages: Math.ceil(total / limit) });
+    res.json({ conversations, total, page, totalPages: Math.ceil(total / limit) });
+  } catch (e: any) {
+    console.error('[Admin] Conversations error:', e);
+    res.status(500).json({ error: 'Failed to load conversations' });
+  }
 });
 
 router.get('/conversations/:id/messages', async (req: AuthRequest, res) => {
   try {
-    const convId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+    const convId = req.params.id as string;
     const conversation = await prisma.conversation.findUnique({ where: { id: convId } });
     if (!conversation) return res.status(404).json({ error: 'Conversation not found' });
 
@@ -320,7 +396,7 @@ router.put('/config', async (req, res) => {
 router.post('/config/backup', async (req, res) => {
   try {
     const now = new Date();
-    const ts = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}${String(now.getSeconds()).padStart(2, '0')}`;
+    const ts = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}${String(now.getSeconds()).padStart(2, '0')}${String(now.getMilliseconds()).padStart(3, '0')}`;
     const backupPath = configPath.replace('.json', `.backup.${ts}.json`);
 
     fs.copyFileSync(configPath, backupPath);

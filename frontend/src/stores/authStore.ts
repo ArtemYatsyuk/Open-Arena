@@ -57,19 +57,29 @@ export const useAuthStore = create<AuthState>((set) => ({
   setUser: (user) => set({ user, isAuthenticated: !!user, isLoading: false }),
 
   login: async (email, password) => {
-    const user = await fetchJson('/api/auth/login', {
-      method: 'POST',
-      body: JSON.stringify({ email, password }),
-    });
-    set({ user, isAuthenticated: true, isLoading: false });
+    try {
+      const user = await fetchJson('/api/auth/login', {
+        method: 'POST',
+        body: JSON.stringify({ email, password }),
+      });
+      set({ user, isAuthenticated: true, isLoading: false });
+    } catch (e) {
+      set({ isLoading: false });
+      throw e;
+    }
   },
 
   register: async (email, username, password) => {
-    const user = await fetchJson('/api/auth/register', {
-      method: 'POST',
-      body: JSON.stringify({ email, username, password }),
-    });
-    set({ user, isAuthenticated: true, isLoading: false });
+    try {
+      const user = await fetchJson('/api/auth/register', {
+        method: 'POST',
+        body: JSON.stringify({ email, username, password }),
+      });
+      set({ user, isAuthenticated: true, isLoading: false });
+    } catch (e) {
+      set({ isLoading: false });
+      throw e;
+    }
   },
 
   logout: async () => {

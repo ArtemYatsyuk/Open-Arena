@@ -22,21 +22,23 @@ export function generateRefreshToken(userId: string, role: string): string {
 }
 
 export function setAuthCookies(res: any, accessToken: string, refreshToken: string) {
+  const secure = process.env.SECURE_COOKIES === 'true';
   res.cookie('accessToken', accessToken, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
+    secure,
     sameSite: 'lax',
     maxAge: 60 * 60 * 1000,
   });
   res.cookie('refreshToken', refreshToken, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
+    secure,
     sameSite: 'lax',
     maxAge: 30 * 24 * 60 * 60 * 1000,
   });
 }
 
 export function clearAuthCookies(res: any) {
-  res.clearCookie('accessToken');
-  res.clearCookie('refreshToken');
+  const secure = process.env.SECURE_COOKIES === 'true';
+  res.clearCookie('accessToken', { httpOnly: true, secure, sameSite: 'lax', path: '/' });
+  res.clearCookie('refreshToken', { httpOnly: true, secure, sameSite: 'lax', path: '/' });
 }

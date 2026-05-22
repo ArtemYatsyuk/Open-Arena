@@ -6,12 +6,13 @@ import { streamChat, generateTitle } from '../services/chatService.js';
 import { extractTextFromContent } from '../utils/contentParser.js';
 import { searchWeb, getTodayDateString } from '../services/webSearchService.js';
 import { runInlet, runOutlet } from '../services/filterEngine.js';
+import { getConfig } from '../config.js';
 
 const router = Router();
 
 const chatSchema = z.object({
   conversationId: z.string().optional(),
-  content: z.string().min(1),
+  content: z.string().min(1).max(100000),
   modelId: z.string(),
   webSearch: z.boolean().optional(),
   reasoning: z.boolean().optional(),
@@ -46,6 +47,13 @@ router.post('/', isAuthenticated, isNotBanned, async (req: AuthRequest, res) => 
     }
 
     if (!convId) {
+      const { app } = getConfig();
+      if (app.maxConversationsPerUser > 0) {
+        const convCount = await prisma.conversation.count({ where: { userId: req.userId! } });
+        if (convCount >= app.maxConversationsPerUser) {
+          return res.status(400).json({ error: `Maximum of ${app.maxConversationsPerUser} conversations reached` });
+        }
+      }
       const title = await generateTitle(content, modelId);
       const conv = await prisma.conversation.create({
         data: { userId: req.userId!, modelId, title },

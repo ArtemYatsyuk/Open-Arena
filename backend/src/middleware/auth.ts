@@ -7,6 +7,8 @@ export interface AuthRequest extends Request {
   userRole?: string;
 }
 
+let lastActiveUpdates: Map<string, number> = new Map();
+
 export function isAuthenticated(req: AuthRequest, res: Response, next: NextFunction) {
   const token = req.cookies?.accessToken;
   if (!token) return res.status(401).json({ error: 'Not authenticated' });
@@ -28,7 +30,12 @@ export async function isNotBanned(req: AuthRequest, res: Response, next: NextFun
   if (!user) return res.status(401).json({ error: 'User not found' });
   if (user.isBanned) return res.status(403).json({ error: 'Account banned', reason: user.banReason });
 
-  await prisma.user.update({ where: { id: req.userId }, data: { lastActiveAt: new Date() } });
+  const now = Date.now();
+  const lastUpdate = lastActiveUpdates.get(req.userId) || 0;
+  if (now - lastUpdate > 300000) {
+    lastActiveUpdates.set(req.userId, now);
+    await prisma.user.update({ where: { id: req.userId }, data: { lastActiveAt: new Date() } });
+  }
   next();
 }
 

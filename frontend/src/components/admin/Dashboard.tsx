@@ -1,6 +1,5 @@
-import { useState, useEffect } from 'react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } from 'recharts';
-import { Users, Activity, MessageSquare, Pencil, BarChart3, UserX } from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react';
+import { Users, Activity, MessageSquare, Pencil, UserX } from 'lucide-react';
 
 interface Stats {
   totalUsers: number;
@@ -42,29 +41,26 @@ export default function Dashboard() {
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    fetchJson('/api/admin/stats')
-      .then((data) => {
-        const processedData = {
-          ...data,
-          last30Days: (data.last30Days || []).map((d: any) => ({
-            date: new Date(d.date || d.createdAt).toLocaleDateString(),
-            messages: Number(d.count || 0),
-          })),
-          topUsers: data.topUsers || [],
-        };
-        setStats(processedData);
-        setLoading(false);
-      })
-      .catch((e) => {
-        console.error('Dashboard error:', e);
-        setError(e.message);
-        setLoading(false);
-      });
+  const fetchStats = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await fetchJson(`/api/admin/stats?period=30d`);
+      setStats({ ...data, topUsers: data.topUsers || [] });
+    } catch (e: any) {
+      console.error('Dashboard error:', e);
+      setError(e.message);
+    }
+    setLoading(false);
   }, []);
 
-  if (loading) {
+  useEffect(() => {
+    fetchStats();
+    const interval = setInterval(() => fetchStats(), 5 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, [fetchStats]);
+
+  if (loading && !stats) {
     return (
       <div className="flex items-center justify-center h-full">
         <div className="text-center">
@@ -93,15 +89,6 @@ export default function Dashboard() {
   }
 
   if (!stats) return null;
-
-  const chartData = stats.last30Days.length > 0
-    ? stats.last30Days
-    : Array.from({ length: 7 }, (_, i) => ({
-        date: new Date(Date.now() - (6 - i) * 24 * 60 * 60 * 1000).toLocaleDateString(),
-        messages: 0,
-      }));
-
-  const hasData = stats.last30Days.length > 0 || stats.messagesToday > 0;
 
   const statCards = [
     { label: 'Total Users', value: stats.totalUsers, icon: <Users className="w-6 h-6 text-blue-500" />, color: 'from-blue-500/10 to-blue-500/5' },
@@ -134,52 +121,7 @@ export default function Dashboard() {
         ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 bg-bg-secondary border border-border rounded-2xl p-6">
-          <h2 className="text-sm font-semibold mb-6 flex items-center gap-2">
-            <span className="w-2 h-2 bg-accent rounded-full" />
-            Messages Activity (Last 30 Days)
-          </h2>
-          {hasData ? (
-            <ResponsiveContainer width="100%" height={280}>
-              <AreaChart data={chartData}>
-                <defs>
-                  <linearGradient id="colorMessages" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#6C4FF6" stopOpacity={0.3} />
-                    <stop offset="95%" stopColor="#6C4FF6" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" vertical={false} />
-                <XAxis dataKey="date" tick={{ fontSize: 11 }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fontSize: 11 }} axisLine={false} tickLine={false} domain={[0, 'auto']} tickCount={5} />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: 'var(--bg-primary)',
-                    border: '1px solid var(--border-color)',
-                    borderRadius: '12px',
-                    fontSize: '12px',
-                  }}
-                />
-                <Area
-                  type="monotone"
-                  dataKey="messages"
-                  stroke="#6C4FF6"
-                  strokeWidth={2}
-                  fill="url(#colorMessages)"
-                  dot={{ r: 4, fill: '#6C4FF6' }}
-                  activeDot={{ r: 6 }}
-                />
-              </AreaChart>
-            </ResponsiveContainer>
-          ) : (
-            <div className="flex flex-col items-center justify-center h-64 text-center">
-              <BarChart3 className="w-12 h-12 text-text-secondary/50 mb-3" />
-              <p className="text-text-secondary text-sm mb-1">No message activity yet</p>
-              <p className="text-text-secondary/70 text-xs">Data will appear once users start sending messages</p>
-            </div>
-          )}
-        </div>
-
+      <div className="max-w-md">
         <div className="bg-bg-secondary border border-border rounded-2xl p-6">
           <h2 className="text-sm font-semibold mb-4 flex items-center gap-2">
             <span className="w-2 h-2 bg-success rounded-full" />

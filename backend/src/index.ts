@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
+import helmet from 'helmet';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { PrismaClient } from '@prisma/client';
@@ -16,6 +17,13 @@ import filterRoutes from './routes/filters.js';
 
 dotenv.config();
 
+const REQUIRED_ENV = ['JWT_ACCESS_SECRET', 'JWT_REFRESH_SECRET', 'DATABASE_URL'];
+for (const key of REQUIRED_ENV) {
+  if (!process.env[key]) {
+    throw new Error(`Missing required environment variable: ${key}`);
+  }
+}
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -25,10 +33,25 @@ const app = express();
 const PORT = parseInt(process.env.PORT || '4000');
 const isDev = process.env.NODE_ENV !== 'production';
 
-// CORS - only needed in dev mode
-if (isDev) {
-  app.use(cors({ origin: 'http://localhost:5173', credentials: true }));
-}
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://cdn.jsdelivr.net"],
+      imgSrc: ["'self'", "data:", "https://*"],
+      fontSrc: ["'self'", "https://fonts.googleapis.com", "https://fonts.gstatic.com"],
+      connectSrc: ["'self'", "ws://localhost:5173"],
+      frameSrc: ["'none'"],
+      objectSrc: ["'none'"],
+    },
+  },
+}));
+
+app.use(cors({
+  origin: process.env.CORS_ORIGIN || (isDev ? 'http://localhost:5173' : 'http://localhost:4000'),
+  credentials: true,
+}));
 
 app.use(express.json({ limit: '20mb' }));
 app.use(cookieParser());
@@ -65,6 +88,7 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
 
 process.on('uncaughtException', (err) => {
   console.error('Uncaught Exception:', err);
+  process.exit(1);
 });
 
 process.on('unhandledRejection', (reason, promise) => {

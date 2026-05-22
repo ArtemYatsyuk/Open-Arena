@@ -16,6 +16,7 @@ export interface ModelConfig {
   streaming: boolean;
   contextWindow: number;
   description: string;
+  image?: string;
 }
 
 export interface AppConfig {
@@ -42,9 +43,14 @@ let config: FullConfig;
 let watchers: ((cfg: FullConfig) => void)[] = [];
 
 function loadConfig(): FullConfig {
-  const raw = fs.readFileSync(configPath, 'utf-8');
-  config = JSON.parse(raw);
-  watchers.forEach(fn => fn(config));
+  try {
+    const raw = fs.readFileSync(configPath, 'utf-8');
+    config = JSON.parse(raw);
+    watchers.forEach(fn => fn(config));
+  } catch (e: any) {
+    console.error('Failed to load config.json:', e.message);
+    if (!config) throw new Error('Config file missing or invalid at startup');
+  }
   return config;
 }
 

@@ -54,8 +54,9 @@ export default function ChatLayout() {
       {/* Sidebar */}
       <div
         className={`flex-shrink-0 border-r border-border transition-all duration-200 ease-out hidden md:block ${
-          sidebarOpen ? 'w-[260px]' : 'w-0 overflow-hidden'
+          sidebarOpen ? '' : 'overflow-hidden'
         }`}
+        style={{ width: sidebarOpen ? sidebarWidth : 0 }}
       >
         <Sidebar />
       </div>
