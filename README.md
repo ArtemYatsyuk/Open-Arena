@@ -1,5 +1,9 @@
 <p align="center">
-  <img src="OpenArena-Rounded.png" alt="Open Arena" width="480">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="frontend/public/OpenArena-Black.png" />
+    <source media="(prefers-color-scheme: light)" srcset="OpenArena-Rounded.png" />
+    <img src="OpenArena-Rounded.png" alt="Open Arena — self-hosted multi-model AI chat platform" width="480">
+  </picture>
 </p>
 
 <p align="center">
@@ -7,29 +11,61 @@
 </p>
 
 <p align="center">
+  <a href="#features">Features</a> ·
+  <a href="#quick-start">Quick Start</a> ·
+  <a href="#tech-stack">Tech Stack</a> ·
+  <a href="#configuration">Configuration</a> ·
+  <a href="#environment-variables">Environment</a> ·
+  <a href="#admin-panel">Admin Panel</a> ·
+  <a href="#deployment">Deployment</a>
+</p>
+
+<p align="center">
   <a href="https://github.com/ArtemYatsyuk/Open-Arena/releases">
-    <img src="https://img.shields.io/github/v/release/ArtemYatsyuk/Open-Arena?style=for-the-badge&label=Version&color=18181b" alt="Version">
+    <img src="https://img.shields.io/github/v/release/ArtemYatsyuk/Open-Arena?style=for-the-badge&label=Version&color=18181b&logo=github" alt="Version">
   </a>
   <a href="https://github.com/ArtemYatsyuk/Open-Arena/blob/main/LICENSE">
-    <img src="https://img.shields.io/badge/License-MIT-18181b?style=for-the-badge" alt="License">
+    <img src="https://img.shields.io/badge/License-MIT-555?style=for-the-badge&logo=open-source-initiative" alt="License">
   </a>
   <a href="https://nodejs.org">
-    <img src="https://img.shields.io/badge/Node-≥20.10-18181b?style=for-the-badge&logo=nodedotjs&logoColor=white" alt="Node">
+    <img src="https://img.shields.io/badge/Node-≥20.10-339933?style=for-the-badge&logo=nodedotjs&logoColor=white" alt="Node">
   </a>
   <a href="https://pnpm.io">
-    <img src="https://img.shields.io/badge/pnpm-≥10-18181b?style=for-the-badge&logo=pnpm&logoColor=white" alt="pnpm">
+    <img src="https://img.shields.io/badge/pnpm-≥10-F69220?style=for-the-badge&logo=pnpm&logoColor=white" alt="pnpm">
   </a>
   <a href="https://github.com/ArtemYatsyuk/Open-Arena/pulls">
-    <img src="https://img.shields.io/badge/PRs-Welcome-18181b?style=for-the-badge" alt="PRs Welcome">
+    <img src="https://img.shields.io/badge/PRs-Welcome-28a745?style=for-the-badge&logo=gitpullrequest&logoColor=white" alt="PRs Welcome">
   </a>
   <a href="https://github.com/ArtemYatsyuk/Open-Arena/stargazers">
-    <img src="https://img.shields.io/github/stars/ArtemYatsyuk/Open-Arena?style=for-the-badge&label=Stars&color=18181b" alt="Stars">
+    <img src="https://img.shields.io/github/stars/ArtemYatsyuk/Open-Arena?style=for-the-badge&label=Stars&color=18181b&logo=github" alt="Stars">
   </a>
+</p>
+
+<p align="center">
+  <code>pnpm install && pnpm --filter @open-arena/backend db:generate db:push db:seed && pnpm dev</code>
 </p>
 
 ---
 
-## Features
+<details>
+  <summary><b>📑 Table of Contents</b></summary>
+  <ol>
+    <li><a href="#features">Features</a></li>
+    <li><a href="#tech-stack">Tech Stack</a></li>
+    <li><a href="#quick-start">Quick Start</a></li>
+    <li><a href="#star-history">Star History</a></li>
+    <li><a href="#project-structure">Project Structure</a></li>
+    <li><a href="#configuration">Configuration</a></li>
+    <li><a href="#environment-variables">Environment Variables</a></li>
+    <li><a href="#development">Development</a></li>
+    <li><a href="#admin-panel">Admin Panel</a></li>
+    <li><a href="#deployment">Deployment</a></li>
+    <li><a href="#security">Security</a></li>
+    <li><a href="#license">License</a></li>
+  </ol>
+</details>
+
+## ✨ Features
 
 <table>
   <tr>
@@ -74,7 +110,26 @@
   </tr>
 </table>
 
-## Quick Start
+---
+
+## 🏗️ Tech Stack
+
+| Layer          | Technology                                         |
+| -------------- | -------------------------------------------------- |
+| **Runtime**    | Node.js 20+                                        |
+| **Backend**    | Express 4 + Prisma 6 (SQLite) + Zod + Helmet + JWT |
+| **Frontend**   | React 19 + Vite 6 + shadcn/ui + Tailwind 3         |
+| **State**      | Zustand + TanStack React Query                     |
+| **Streaming**  | Server-Sent Events via fetch ReadableStream        |
+| **Auth**       | JWT (access + refresh), httpOnly cookies, bcrypt   |
+| **Validation** | Zod — shared schemas across the whole stack        |
+| **Monorepo**   | pnpm workspaces                                    |
+
+See [ARCHITECTURE.md](ARCHITECTURE.md) for detailed design decisions.
+
+---
+
+## 🚀 Quick Start
 
 ```bash
 # Prerequisites: Node ≥20.10, pnpm ≥10
@@ -87,7 +142,7 @@ pnpm dev
 
 Open **http://localhost:5173** and log in as `admin@openarena.local` / `admin123`.
 
-## Star History
+## ⭐ Star History
 
 <a href="https://star-history.com/#ArtemYatsyuk/Open-Arena&Date">
   <picture>
@@ -99,7 +154,7 @@ Open **http://localhost:5173** and log in as `admin@openarena.local` / `admin123
 
 ---
 
-## Project Structure
+## 📂 Project Structure
 
 ```
 open-arena/
@@ -130,11 +185,13 @@ open-arena/
 
 ---
 
-## Configuration
+## ⚙️ Configuration
 
-Edit `config.json` in the project root to add model endpoints. Each model
-specifies an `apiKeyEnv` field naming the environment variable that holds its
-API key — **never put secrets in config files**.
+Edit `config.json` in the project root to add model endpoints.
+
+> [!WARNING]
+> Never put API keys directly in `config.json`. Use environment variables referenced
+> via `apiKeyEnv` — see the [Environment Variables](#environment-variables) section.
 
 ```json
 {
@@ -180,16 +237,23 @@ The adapter is selected automatically based on `baseUrl`:
 
 ---
 
-## Environment Variables
+## 🌐 Environment Variables
 
-### Required
+<!-- Start Required -->
+<details>
+<summary><b>Required</b> — <code>JWT_ACCESS_SECRET</code>, <code>JWT_REFRESH_SECRET</code></summary>
 
 | Variable             | Default | Notes                                 |
 | -------------------- | ------- | ------------------------------------- |
 | `JWT_ACCESS_SECRET`  | —       | Random string, at least 32 characters |
 | `JWT_REFRESH_SECRET` | —       | Must be different from access secret  |
 
-### Server
+</details>
+<!-- End Required -->
+
+<!-- Start Server -->
+<details>
+<summary><b>Server</b> — <code>DATABASE_URL</code>, <code>PORT</code>, <code>NODE_ENV</code></summary>
 
 | Variable         | Default                 | Notes                                 |
 | ---------------- | ----------------------- | ------------------------------------- |
@@ -199,7 +263,12 @@ The adapter is selected automatically based on `baseUrl`:
 | `CORS_ORIGIN`    | `http://localhost:5173` | Frontend origin for CORS              |
 | `SECURE_COOKIES` | `false`                 | Set `true` behind HTTPS reverse proxy |
 
-### Model API Keys
+</details>
+<!-- End Server -->
+
+<!-- Start Model API Keys -->
+<details>
+<summary><b>Model API Keys</b> — <code>NVIDIA_API_KEY</code>, <code>ANTHROPIC_API_KEY</code>, <code>OPENAI_API_KEY</code></summary>
 
 | Variable            | For                         |
 | ------------------- | --------------------------- |
@@ -207,7 +276,12 @@ The adapter is selected automatically based on `baseUrl`:
 | `ANTHROPIC_API_KEY` | Claude models               |
 | `OPENAI_API_KEY`    | OpenAI-compatible endpoints |
 
-### Email (SMTP)
+</details>
+<!-- End Model API Keys -->
+
+<!-- Start Email (SMTP) -->
+<details>
+<summary><b>Email (SMTP)</b> — <code>SMTP_HOST</code>, <code>SMTP_PORT</code>, <code>SMTP_USER</code>, <code>SMTP_PASS</code>, <code>SMTP_FROM</code></summary>
 
 | Variable    | Default | Notes                           |
 | ----------- | ------- | ------------------------------- |
@@ -217,7 +291,12 @@ The adapter is selected automatically based on `baseUrl`:
 | `SMTP_PASS` | —       | SMTP password                   |
 | `SMTP_FROM` | —       | From-address for outgoing email |
 
-### OAuth
+</details>
+<!-- End Email (SMTP) -->
+
+<!-- Start OAuth -->
+<details>
+<summary><b>OAuth</b> — <code>GOOGLE_CLIENT_ID</code>, <code>GOOGLE_CLIENT_SECRET</code>, <code>GITHUB_CLIENT_ID</code>, <code>GITHUB_CLIENT_SECRET</code>, <code>DISCORD_CLIENT_ID</code>, <code>DISCORD_CLIENT_SECRET</code></summary>
 
 | Variable                                      | Provider |
 | --------------------------------------------- | -------- |
@@ -225,9 +304,12 @@ The adapter is selected automatically based on `baseUrl`:
 | `GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET`   | GitHub   |
 | `DISCORD_CLIENT_ID` / `DISCORD_CLIENT_SECRET` | Discord  |
 
+</details>
+<!-- End OAuth -->
+
 ---
 
-## Development
+## 🛠️ Development
 
 ```bash
 # Install dependencies
@@ -258,7 +340,7 @@ pnpm dev
 
 ---
 
-## Admin Panel
+## 👑 Admin Panel
 
 Access at **/admin** (requires ADMIN role). The seeded admin user is:
 
@@ -280,7 +362,7 @@ Password: admin123
 
 ---
 
-## Deployment
+## 🚢 Deployment
 
 ```bash
 # Build frontend
@@ -294,12 +376,13 @@ NODE_ENV=production \
   pnpm start
 ```
 
-We recommend running behind a reverse proxy (nginx, Caddy) that handles TLS
-termination. Set `SECURE_COOKIES=true` when behind HTTPS.
+> [!TIP]
+> We recommend running behind a reverse proxy (nginx, Caddy) that handles TLS
+> termination. Set `SECURE_COOKIES=true` when behind HTTPS.
 
 ---
 
-## Security
+## 🔒 Security
 
 - **CSRF** — Double-submit cookie pattern (exempts `/api/chat` and `/api/auth`)
 - **Rate limiting** — Global 200 req/min, auth endpoints 20 req/15min
@@ -309,29 +392,16 @@ termination. Set `SECURE_COOKIES=true` when behind HTTPS.
 - **No secrets in config** — API keys from env vars, referenced by name
 - **Filter sandbox** — User-defined JS filters run in `node:vm` with timeout
 
----
-
-## Tech Stack
-
-| Layer          | Technology                                         |
-| -------------- | -------------------------------------------------- |
-| **Runtime**    | Node.js 20+                                        |
-| **Backend**    | Express 4 + Prisma 6 (SQLite) + Zod + Helmet + JWT |
-| **Frontend**   | React 19 + Vite 6 + shadcn/ui + Tailwind 3         |
-| **State**      | Zustand + TanStack React Query                     |
-| **Streaming**  | Server-Sent Events via fetch ReadableStream        |
-| **Auth**       | JWT (access + refresh), httpOnly cookies, bcrypt   |
-| **Validation** | Zod — shared schemas across the whole stack        |
-| **Monorepo**   | pnpm workspaces                                    |
-
-See [ARCHITECTURE.md](ARCHITECTURE.md) for detailed design decisions.
-
----
-
-## License
-
-MIT &mdash; see [LICENSE](LICENSE) for details.
+<p align="center">
+  <a href="#">⬆️ Back to top</a>
+</p>
 
 <p align="center">
-  <sub>Built with ❤️ using TypeScript, React, and Express</sub>
+  Built with ❤️ using TypeScript, React, and Express &middot;
+  <a href="CONTRIBUTING.md">Contributing guide</a> &middot;
+  <a href="ARCHITECTURE.md">Architecture docs</a>
+</p>
+
+<p align="center">
+  <sub>MIT &mdash; see <a href="LICENSE">LICENSE</a> for details.</sub>
 </p>
