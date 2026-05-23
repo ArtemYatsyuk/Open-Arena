@@ -1,7 +1,81 @@
-# Open Arena
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/ArtemYatsyuk/Open-Arena/main/frontend/public/OpenArena-Black.png">
+    <img src="https://raw.githubusercontent.com/ArtemYatsyuk/Open-Arena/main/OpenArena-Black.png" alt="Open Arena" width="480">
+  </picture>
+</p>
 
-Self-hosted multi-model AI chat platform with an admin panel, web search,
-sandboxed message filters, file uploads, and OAuth SSO.
+<p align="center">
+  <em>Self-hosted multi-model AI chat platform</em>
+</p>
+
+<p align="center">
+  <a href="https://github.com/ArtemYatsyuk/Open-Arena/releases">
+    <img src="https://img.shields.io/github/v/release/ArtemYatsyuk/Open-Arena?style=for-the-badge&label=Version&color=18181b" alt="Version">
+  </a>
+  <a href="https://github.com/ArtemYatsyuk/Open-Arena/blob/main/LICENSE">
+    <img src="https://img.shields.io/badge/License-MIT-18181b?style=for-the-badge" alt="License">
+  </a>
+  <a href="https://nodejs.org">
+    <img src="https://img.shields.io/badge/Node-≥20.10-18181b?style=for-the-badge&logo=nodedotjs&logoColor=white" alt="Node">
+  </a>
+  <a href="https://pnpm.io">
+    <img src="https://img.shields.io/badge/pnpm-≥10-18181b?style=for-the-badge&logo=pnpm&logoColor=white" alt="pnpm">
+  </a>
+  <a href="https://github.com/ArtemYatsyuk/Open-Arena/pulls">
+    <img src="https://img.shields.io/badge/PRs-Welcome-18181b?style=for-the-badge" alt="PRs Welcome">
+  </a>
+  <a href="https://github.com/ArtemYatsyuk/Open-Arena/stargazers">
+    <img src="https://img.shields.io/github/stars/ArtemYatsyuk/Open-Arena?style=for-the-badge&label=Stars&color=18181b" alt="Stars">
+  </a>
+</p>
+
+---
+
+## Features
+
+<table>
+  <tr>
+    <td width="50%">
+      <h3>🤖 Multi-Model</h3>
+      <p>OpenAI-compatible, Anthropic Claude, NVIDIA NIM, OpenRouter — any endpoint via <code>config.json</code>. Provider-adapter pattern auto-selects the right API format.</p>
+    </td>
+    <td width="50%">
+      <h3>⚡ SSE Streaming</h3>
+      <p>Real-time token streaming with reasoning visibility (chain-of-thought) and message version history (regenerate + navigate alternatives).</p>
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <h3>🔍 Web Search</h3>
+      <p>SearXNG integration with inline citations. Sources appear as clickable <code>[N]</code> links in every response.</p>
+    </td>
+    <td>
+      <h3>🛡️ Sandboxed Filters</h3>
+      <p>JavaScript hooks that transform messages in-flight — inlet/outlet pattern running in <code>node:vm</code> sandbox with timeout.</p>
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <h3>📎 File Uploads</h3>
+      <p>Images render inline; documents display as downloadable cards. 20 MB limit, MIME whitelist, auth-protected storage.</p>
+    </td>
+    <td>
+      <h3>👑 Admin Panel</h3>
+      <p>Dashboard stats, user management (ban, role), config editor (auto-backup), conversations browser, filters, announcements, audit log, model health checks.</p>
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <h3>🔐 OAuth/SSO</h3>
+      <p>Google, GitHub, Discord authentication. Email verification + password reset (SMTP or mock transport).</p>
+    </td>
+    <td>
+      <h3>📱 Mobile-Responsive</h3>
+      <p>Sheet-based sidebar on small screens. shadcn/ui monochrome design with dark mode support.</p>
+    </td>
+  </tr>
+</table>
 
 ## Quick Start
 
@@ -14,62 +88,50 @@ pnpm --filter @open-arena/backend db:seed
 pnpm dev
 ```
 
-Open `http://localhost:5173` and log in as `admin@openarena.local` / `admin123`.
+Open **http://localhost:5173** and log in as `admin@openarena.local` / `admin123`.
 
-## Features
+## Star History
 
-- **Multi-model** — OpenAI-compatible, Anthropic, NVIDIA NIM, OpenRouter, and
-  any OpenAI-compatible endpoint. Configured via `config.json`.
-- **SSE streaming** — Real-time token streaming with reasoning visibility
-  (chain-of-thought) and message regeneration with version history.
-- **Web search** — SearXNG integration with inline citations (`[N]` →
-  clickable source links).
-- **Sandboxed message filters** — JavaScript hooks that transform messages
-  in-flight (inlet/outlet pattern, `node:vm` sandbox with timeout).
-- **File uploads** — Images render inline; documents downloadable as cards.
-  20 MB limit, auth-protected storage (no public directory).
-- **Admin panel** — Dashboard stats, user management (ban, role, bulk delete),
-  config editor (with auto-backups), conversations browser, filters editor,
-  MOTD/announcements system, audit log, model health checks.
-- **OAuth/SSO** — Google, GitHub, Discord authentication.
-- **Email verification** + password reset (SMTP or mock console transport).
-- **Invitation management** — Restrict registration by invite token.
-- **Rate limiting** — Global (200/min) and auth-specific (20/15min) with
-  account lockout after 5 failed attempts.
-- **Conversation folders/tags** + full-text message search.
-- **Mobile-responsive** — Sheet-based sidebar on small screens, shadcn/ui
-  monochrome design system.
-- **Prompt library** — Store reusable prompts with `{{variable}}` interpolation.
+<a href="https://star-history.com/#ArtemYatsyuk/Open-Arena&Date">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=ArtemYatsyuk/Open-Arena&type=Date&theme=dark" />
+    <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=ArtemYatsyuk/Open-Arena&type=Date" />
+    <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=ArtemYatsyuk/Open-Arena&type=Date" width="100%" />
+  </picture>
+</a>
 
-## Folder Structure
+---
+
+## Project Structure
 
 ```
 open-arena/
-├── backend/          # Express 4 API server
+├── backend/              # Express 4 API server
 │   ├── src/
-│   │   ├── routes/       # auth, chat, conversations, admin, attachments, oauth, filters, models
-│   │   ├── middleware/   # isAuthenticated, isAdmin, isNotBanned, CSRF
-│   │   ├── services/     # auth, chat, webSearch, filterEngine
-│   │   │   └── providers/  # openai.ts, anthropic.ts, base.ts (adapter pattern)
-│   │   ├── index.ts      # Express app + middleware setup
-│   │   └── config.ts     # config.json watcher + Zod validation
+│   │   ├── routes/           # auth, chat, conversations, admin, attachments, oauth, filters, models
+│   │   ├── middleware/       # isAuthenticated, isAdmin, isNotBanned, CSRF
+│   │   ├── services/         # auth, chat, webSearch, filterEngine
+│   │   │   └── providers/     # openai.ts, anthropic.ts, base.ts (adapter pattern)
+│   │   ├── index.ts          # Express app + middleware setup
+│   │   └── config.ts         # config.json watcher + Zod validation
 │   ├── prisma/
-│   │   └── schema.prisma # 18 models + 2 enums
-│   └── seed.ts           # Admin user + sample data
-├── frontend/         # React 19 + Vite 6 + shadcn/ui
+│   │   └── schema.prisma     # 18 models + 2 enums
+│   └── seed.ts               # Admin user + sample data
+├── frontend/             # React 19 + Vite 6
 │   ├── src/
-│   │   ├── pages/        # Login, Register, ChatLayout, AdminPanel, BannedPage
-│   │   ├── components/   # chat/, sidebar/, admin/, workspace/, ui/
-│   │   ├── stores/       # Zustand: authStore, chatStore, uiStore
-│   │   └── lib/          # apiClient.ts, utils.ts, adminHooks.ts
-│   └── vite.config.ts    # Dev proxy → localhost:4000
-├── shared/           # Zod schemas + TypeScript types
-│   └── src/              # message, conversation, auth, config, sse, attachment, etc.
+│   │   ├── pages/            # Login, Register, ChatLayout, AdminPanel, BannedPage
+│   │   ├── components/       # chat/, sidebar/, admin/, workspace/, ui/
+│   │   ├── stores/           # Zustand: authStore, chatStore, uiStore
+│   │   └── lib/              # apiClient.ts, utils.ts, adminHooks.ts
+│   └── vite.config.ts        # Dev proxy → localhost:4000
+├── shared/               # Zod schemas + TypeScript types (shared across packages)
+│   └── src/                  # message, conversation, auth, config, sse, attachment, etc.
 ├── data/
-│   ├── uploads/          # File upload storage
-│   └── .gitkeep
-└── config.json           # Models + app config
+│   └── uploads/              # File upload storage
+└── config.json               # Models + app configuration
 ```
+
+---
 
 ## Configuration
 
@@ -109,41 +171,64 @@ API key — **never put secrets in config files**.
 
 ### Provider Adapters
 
-| Provider          | Adapter        | Endpoint format        |
+| Provider          | Adapter        | Endpoint Format        |
 | ----------------- | -------------- | ---------------------- |
 | OpenAI-compatible | `openai.ts`    | `/v1/chat/completions` |
-| Anthropic         | `anthropic.ts` | `/v1/messages`         |
+| Anthropic Claude  | `anthropic.ts` | `/v1/messages`         |
 
-The adapter is selected automatically based on the `baseUrl`:
+The adapter is selected automatically based on `baseUrl`:
 
-- `*anthropic.com*` → Claude adapter (uses `messages` API, `thinking` blocks)
-- Everything else → OpenAI-compatible adapter (uses `chat/completions`, optional `reasoning_content`)
+- `*anthropic.com*` → Claude adapter (`messages` API, `thinking` blocks)
+- Everything else → OpenAI-compatible adapter (`chat/completions`, optional `reasoning_content`)
+
+---
 
 ## Environment Variables
 
-| Variable                | Required        | Default                 | Notes                                   |
-| ----------------------- | --------------- | ----------------------- | --------------------------------------- |
-| `JWT_ACCESS_SECRET`     | ✓               | —                       | Random string, ≥32 chars                |
-| `JWT_REFRESH_SECRET`    | ✓               | —                       | Different from access secret            |
-| `DATABASE_URL`          |                 | `file:./data.db`        | SQLite file path                        |
-| `PORT`                  |                 | `4000`                  | Backend listens on this port            |
-| `NODE_ENV`              |                 | `development`           | Set `production` for deployment         |
-| `CORS_ORIGIN`           |                 | `http://localhost:5173` | Frontend origin (dev default)           |
-| `SECURE_COOKIES`        |                 | `false`                 | Set `true` behind HTTPS reverse proxy   |
-| `NVIDIA_API_KEY`        | model-dependent | —                       | API key for NVIDIA NIM models           |
-| `ANTHROPIC_API_KEY`     | model-dependent | —                       | API key for Claude models               |
-| `OPENAI_API_KEY`        | model-dependent | —                       | API key for OpenAI-compatible endpoints |
-| `SMTP_HOST`             | for email       | —                       | SMTP server hostname                    |
-| `SMTP_PORT`             | for email       | `587`                   | SMTP port                               |
-| `SMTP_USER`             | for email       | —                       | SMTP username                           |
-| `SMTP_PASS`             | for email       | —                       | SMTP password                           |
-| `SMTP_FROM`             | for email       | —                       | From-address for outgoing email         |
-| `GOOGLE_CLIENT_ID`      | for OAuth       | —                       | Google OAuth client ID                  |
-| `GOOGLE_CLIENT_SECRET`  | for OAuth       | —                       | Google OAuth client secret              |
-| `GITHUB_CLIENT_ID`      | for OAuth       | —                       | GitHub OAuth client ID                  |
-| `GITHUB_CLIENT_SECRET`  | for OAuth       | —                       | GitHub OAuth client secret              |
-| `DISCORD_CLIENT_ID`     | for OAuth       | —                       | Discord OAuth client ID                 |
-| `DISCORD_CLIENT_SECRET` | for OAuth       | —                       | Discord OAuth client secret             |
+### Required
+
+| Variable             | Default | Notes                                 |
+| -------------------- | ------- | ------------------------------------- |
+| `JWT_ACCESS_SECRET`  | —       | Random string, at least 32 characters |
+| `JWT_REFRESH_SECRET` | —       | Must be different from access secret  |
+
+### Server
+
+| Variable         | Default                 | Notes                                 |
+| ---------------- | ----------------------- | ------------------------------------- |
+| `DATABASE_URL`   | `file:./data.db`        | SQLite file path                      |
+| `PORT`           | `4000`                  | Backend listens on this port          |
+| `NODE_ENV`       | `development`           | Set `production` for deployment       |
+| `CORS_ORIGIN`    | `http://localhost:5173` | Frontend origin for CORS              |
+| `SECURE_COOKIES` | `false`                 | Set `true` behind HTTPS reverse proxy |
+
+### Model API Keys
+
+| Variable            | For                         |
+| ------------------- | --------------------------- |
+| `NVIDIA_API_KEY`    | NVIDIA NIM models           |
+| `ANTHROPIC_API_KEY` | Claude models               |
+| `OPENAI_API_KEY`    | OpenAI-compatible endpoints |
+
+### Email (SMTP)
+
+| Variable    | Default | Notes                           |
+| ----------- | ------- | ------------------------------- |
+| `SMTP_HOST` | —       | SMTP server hostname            |
+| `SMTP_PORT` | `587`   | SMTP port                       |
+| `SMTP_USER` | —       | SMTP username                   |
+| `SMTP_PASS` | —       | SMTP password                   |
+| `SMTP_FROM` | —       | From-address for outgoing email |
+
+### OAuth
+
+| Variable                                      | Provider |
+| --------------------------------------------- | -------- |
+| `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET`   | Google   |
+| `GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET`   | GitHub   |
+| `DISCORD_CLIENT_ID` / `DISCORD_CLIENT_SECRET` | Discord  |
+
+---
 
 ## Development
 
@@ -158,69 +243,45 @@ pnpm --filter @open-arena/backend db:seed
 
 # Start dev servers (backend :4000, frontend :5173)
 pnpm dev
-
-# Run all typechecks
-pnpm --filter @open-arena/shared typecheck
-pnpm --filter @open-arena/backend typecheck
-pnpm --filter @open-arena/frontend typecheck
-
-# Run tests
-pnpm test
 ```
 
 ### Useful Commands
 
-```bash
-# Open Prisma Studio (database GUI)
-pnpm --filter @open-arena/backend db:studio
+| Command                                        | Purpose                                 |
+| ---------------------------------------------- | --------------------------------------- |
+| `pnpm dev`                                     | Start backend + frontend concurrently   |
+| `pnpm build`                                   | Build frontend for production           |
+| `pnpm start`                                   | Run production server                   |
+| `pnpm test`                                    | Run all tests across packages           |
+| `pnpm lint`                                    | ESLint across all packages              |
+| `pnpm format`                                  | Prettier format                         |
+| `pnpm typecheck`                               | TypeScript check across all packages    |
+| `pnpm --filter @open-arena/backend db:studio`  | Open Prisma Studio (database GUI)       |
+| `pnpm --filter @open-arena/backend db:migrate` | Create a migration after schema changes |
 
-# Create a migration after schema changes
-pnpm --filter @open-arena/backend db:migrate
-
-# Push schema directly (no migration file)
-pnpm --filter @open-arena/backend db:push
-
-# Run specific package tests
-pnpm --filter @open-arena/backend test
-pnpm --filter @open-arena/frontend test
-
-# Lint all packages
-pnpm lint
-
-# Format code
-pnpm format
-```
-
-## Scripts
-
-| Script           | Purpose                                     |
-| ---------------- | ------------------------------------------- |
-| `pnpm dev`       | Start backend + frontend concurrently       |
-| `pnpm build`     | Build frontend for production               |
-| `pnpm start`     | Run production backend (after `pnpm build`) |
-| `pnpm test`      | Run all tests                               |
-| `pnpm lint`      | ESLint across all packages                  |
-| `pnpm format`    | Prettier format                             |
-| `pnpm typecheck` | TypeScript check across all packages        |
+---
 
 ## Admin Panel
 
-Access at `/admin` (requires ADMIN role). The seeded admin user is:
+Access at **/admin** (requires ADMIN role). The seeded admin user is:
 
-- **Email:** `admin@openarena.local`
-- **Password:** `admin123`
+```
+Email:    admin@openarena.local
+Password: admin123
+```
 
-### Admin features
+### Admin Features
 
-- **Dashboard** — Active users, conversation counts, message volume charts
-  (7d/30d/1y), top users leaderboard.
-- **Users** — Search, paginated list, set role, ban/unban with reason, delete.
-- **Config** — Edit `config.json` in-browser with validation and auto-backup.
-- **Conversations** — Browse all conversations, search, delete.
-- **Filters** — Create/edit/delete sandboxed message transformation hooks.
-- **Announcements** — MOTD with Markdown, severity levels, scheduling.
-- **Audit log** — All admin actions with actor, target, and timestamp.
-- **Models** — Health check pings for all configured model endpoints.
+- **Dashboard** — Active users, conversation counts, message volume charts (7d/30d/1y), top users
+- **Users** — Search, paginated list, set role, ban/unban with reason, delete
+- **Config** — Edit `config.json` in-browser with validation and auto-backup
+- **Conversations** — Browse all conversations, search, delete
+- **Filters** — Create/edit/delete sandboxed message transformation hooks
+- **Announcements** — MOTD with Markdown, severity levels, scheduling
+- **Audit log** — All admin actions with actor, target, and timestamp
+- **Models** — Health check pings for all configured endpoints
+
+---
 
 ## Deployment
 
@@ -228,44 +289,52 @@ Access at `/admin` (requires ADMIN role). The seeded admin user is:
 # Build frontend
 pnpm build
 
-# Set env vars and start
+# Start production server
 NODE_ENV=production \
-JWT_ACCESS_SECRET="..." \
-JWT_REFRESH_SECRET="..." \
-DATABASE_URL="file:./data.db" \
-pnpm start
+  JWT_ACCESS_SECRET="..." \
+  JWT_REFRESH_SECRET="..." \
+  DATABASE_URL="file:./data.db" \
+  pnpm start
 ```
 
 We recommend running behind a reverse proxy (nginx, Caddy) that handles TLS
 termination. Set `SECURE_COOKIES=true` when behind HTTPS.
 
+---
+
 ## Security
 
-- **CSRF** — Double-submit cookie pattern (exempts `/api/chat` and `/api/auth`
-  prefixes for SSE and pre-login requests).
-- **Rate limiting** — Global 200 req/min, auth endpoints 20 req/15min.
-- **Account lockout** — 5 failed login attempts → 15 minute lockout.
-- **CSP** — Tight Content-Security-Policy via Helmet.
-- **File uploads** — MIME type whitelist, 20 MB limit, auth-protected download
-  URLs (no public static directory).
-- **No secrets in config** — API keys are read from environment variables,
-  referenced by name in `config.json`.
-- **Filter sandbox** — User-defined JS filters run in `node:vm` with timeout.
+- **CSRF** — Double-submit cookie pattern (exempts `/api/chat` and `/api/auth`)
+- **Rate limiting** — Global 200 req/min, auth endpoints 20 req/15min
+- **Account lockout** — 5 failed attempts → 15 minute lockout
+- **CSP** — Tight Content-Security-Policy via Helmet
+- **File uploads** — MIME whitelist, 20 MB limit, auth-protected downloads
+- **No secrets in config** — API keys from env vars, referenced by name
+- **Filter sandbox** — User-defined JS filters run in `node:vm` with timeout
+
+---
 
 ## Tech Stack
 
-| Layer      | Technology                                              |
-| ---------- | ------------------------------------------------------- |
-| Backend    | Express 4 + Prisma 6 (SQLite) + Zod                     |
-| Frontend   | React 19 + Vite 6 + shadcn/ui + Tailwind 3              |
-| State      | Zustand + TanStack React Query                          |
-| Streaming  | Server-Sent Events (SSE) via fetch ReadableStream       |
-| Auth       | JWT (access + refresh tokens), httpOnly cookies, bcrypt |
-| Validation | Zod — shared schemas across frontend and backend        |
-| Monorepo   | pnpm workspaces                                         |
+| Layer          | Technology                                         |
+| -------------- | -------------------------------------------------- |
+| **Runtime**    | Node.js 20+                                        |
+| **Backend**    | Express 4 + Prisma 6 (SQLite) + Zod + Helmet + JWT |
+| **Frontend**   | React 19 + Vite 6 + shadcn/ui + Tailwind 3         |
+| **State**      | Zustand + TanStack React Query                     |
+| **Streaming**  | Server-Sent Events via fetch ReadableStream        |
+| **Auth**       | JWT (access + refresh), httpOnly cookies, bcrypt   |
+| **Validation** | Zod — shared schemas across the whole stack        |
+| **Monorepo**   | pnpm workspaces                                    |
 
-See [ARCHITECTURE.md](ARCHITECTURE.md) for details.
+See [ARCHITECTURE.md](ARCHITECTURE.md) for detailed design decisions.
+
+---
 
 ## License
 
-MIT
+MIT &mdash; see [LICENSE](LICENSE) for details.
+
+<p align="center">
+  <sub>Built with ❤️ using TypeScript, React, and Express</sub>
+</p>
