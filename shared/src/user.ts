@@ -12,6 +12,9 @@ export const userSchema = z.object({
   isBanned: z.boolean(),
   banReason: z.string().nullable().optional(),
   avatarColor: z.string().nullable().optional(),
+  emailVerifiedAt: isoDateSchema.nullable().optional(),
+  lockedUntil: isoDateSchema.nullable().optional(),
+  loginAttempts: z.number().int().nonnegative().optional(),
   createdAt: isoDateSchema,
   lastActiveAt: isoDateSchema.nullable().optional(),
 });

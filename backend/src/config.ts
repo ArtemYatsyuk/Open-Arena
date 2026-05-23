@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { configSchema } from '@open-arena/shared';
 import type { Config } from '@open-arena/shared';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -36,10 +37,15 @@ let watchers: Array<(cfg: Config) => void> = [];
 function loadConfig(): Config {
   try {
     const raw = fs.readFileSync(configPath, 'utf-8');
-    config = JSON.parse(raw) as Config;
+    const parsed = JSON.parse(raw);
+    config = configSchema.parse(parsed);
     watchers.forEach((fn) => fn(config));
   } catch (e: any) {
-    console.error('Failed to load config.json:', e.message);
+    if (e?.issues) {
+      console.error('Config validation errors:', JSON.stringify(e.issues, null, 2));
+    } else {
+      console.error('Failed to load config.json:', e.message);
+    }
     if (!config) throw new Error('Config file missing or invalid at startup');
   }
   return config;

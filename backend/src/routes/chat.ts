@@ -7,6 +7,7 @@ import { extractTextFromContent } from '../utils/contentParser.js';
 import { searchWeb, getTodayDateString } from '../services/webSearchService.js';
 import { runInlet, runOutlet } from '../services/filterEngine.js';
 import { getConfig } from '../config.js';
+import { sseSend } from '../utils/sse.js';
 
 const router = Router();
 
@@ -72,7 +73,7 @@ router.post('/', isAuthenticated, isNotBanned, async (req: AuthRequest, res) => 
 
     if (!isRegenerate) {
       await prisma.message.create({
-        data: { conversationId: convId, role: 'user', content },
+        data: { conversationId: convId, role: 'USER', content },
       });
     }
 
@@ -83,7 +84,7 @@ router.post('/', isAuthenticated, isNotBanned, async (req: AuthRequest, res) => 
     });
 
     const formattedMessages = messages.map((m) => ({
-      role: m.role,
+      role: m.role.toLowerCase(),
       content: extractTextFromContent(m.content),
     }));
 
@@ -101,10 +102,7 @@ router.post('/', isAuthenticated, isNotBanned, async (req: AuthRequest, res) => 
         ? `Today is ${today}.\n\nLive web search results for the user's query are below. These are NOT part of your training data — use them to answer.\n\n${searchResults.text}`
         : `Today is ${today}. Web search was attempted but no results were retrieved. Answer using your best available knowledge, but take note of the current date.`;
       formattedMessages.unshift({ role: 'system', content: context });
-      res.write(
-        `data: ${JSON.stringify({ type: 'websearch', count: searchResults.count, sources: searchSources })}\n\n`,
-      );
-      if (typeof (res as any).flush === 'function') (res as any).flush();
+      sseSend(res, { type: 'websearch', query: content, sources: searchSources ?? [] });
     }
 
     const controller = new AbortController();
@@ -113,25 +111,23 @@ router.post('/', isAuthenticated, isNotBanned, async (req: AuthRequest, res) => 
     let fullContent = '';
     let fullReasoning = '';
 
-    const onReasoning = reasoning
-      ? (chunk: string) => {
-          fullReasoning += chunk;
-          res.write(`data: ${JSON.stringify({ type: 'reasoning', content: chunk })}\n\n`);
-          if (typeof (res as any).flush === 'function') (res as any).flush();
-        }
-      : undefined;
-
     fullContent = await streamChat(
       modelId,
       formattedMessages,
-      (chunk) => {
-        fullContent += chunk;
-        res.write(`data: ${JSON.stringify({ type: 'chunk', content: chunk })}\n\n`);
-        if (typeof (res as any).flush === 'function') (res as any).flush();
+      {
+        onChunk(chunk: string) {
+          fullContent += chunk;
+          sseSend(res, { type: 'chunk', delta: chunk });
+        },
+        onComplete() {},
+        onReasoning: reasoning
+          ? (chunk: string) => {
+              fullReasoning += chunk;
+              sseSend(res, { type: 'reasoning', delta: chunk });
+            }
+          : undefined,
       },
-      () => {},
       controller.signal,
-      onReasoning,
     );
 
     const cleanedContent = extractTextFromContent(fullContent);
@@ -157,14 +153,21 @@ router.post('/', isAuthenticated, isNotBanned, async (req: AuthRequest, res) => 
         },
       });
 
-      res.write(
-        `data: ${JSON.stringify({ type: 'alternative', messageId: targetMessage.id, content: cleanedContent, reasoning: reasoning ? fullReasoning : '', versionCount: alternatives.length + 1 })}\n\n`,
-      );
+      sseSend(res, {
+        type: 'alternative',
+        messageId: targetMessage.id,
+        alternative: {
+          id: targetMessage.id,
+          content: cleanedContent,
+          reasoning: reasoning ? fullReasoning : null,
+          createdAt: new Date().toISOString(),
+        },
+      });
     } else {
       const newMsg = await prisma.message.create({
         data: {
           conversationId: convId,
-          role: 'assistant',
+          role: 'ASSISTANT',
           content: cleanedContent,
           reasoning: reasoning ? fullReasoning || null : null,
           webSearchSources: searchSources ? JSON.stringify(searchSources) : null,
@@ -191,20 +194,17 @@ router.post('/', isAuthenticated, isNotBanned, async (req: AuthRequest, res) => 
 
     if (isNewConversation) {
       const conv = await prisma.conversation.findUnique({ where: { id: convId } });
-      res.write(
-        `data: ${JSON.stringify({ type: 'conversation', id: convId, title: conv?.title })}\n\n`,
-      );
+      sseSend(res, { type: 'conversation', conversationId: convId, title: conv?.title ?? '' });
     }
 
-    res.write(`data: ${JSON.stringify({ type: 'done', messageId: createdMessageId })}\n\n`);
-    if (typeof (res as any).flush === 'function') (res as any).flush();
+    sseSend(res, { type: 'done', messageId: createdMessageId ?? '' });
     res.end();
   } catch (e: any) {
     console.error('Chat error:', e);
     if (!res.headersSent) {
       res.status(500).json({ error: e.message || 'Chat failed' });
     } else {
-      res.write(`data: ${JSON.stringify({ type: 'error', message: e.message })}\n\n`);
+      sseSend(res, { type: 'error', message: e.message || 'Chat failed' });
       res.end();
     }
   }

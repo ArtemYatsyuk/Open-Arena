@@ -7,26 +7,125 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// ── Enums ──────────────────────────────────────────────────────────────────
+
 enum Role {
   USER
   ADMIN
 }
 
+enum MessageRole {
+  USER
+  ASSISTANT
+  SYSTEM
+  TOOL
+}
+
+// ── Models ─────────────────────────────────────────────────────────────────
+
 model User {
-  id           String       @id @default(cuid())
-  email        String       @unique
-  username     String       @unique
-  passwordHash String
-  role         Role         @default(USER)
-  isBanned     Boolean      @default(false)
-  banReason    String?
-  createdAt    DateTime     @default(now())
-  lastActiveAt DateTime?
-  avatarColor  String       @default("#6C4FF6")
-  conversations Conversation[]
-  filters       Filter[]
+  id              String    @id @default(cuid())
+  email           String    @unique
+  username        String    @unique
+  passwordHash    String
+  role            Role      @default(USER)
+  isBanned        Boolean   @default(false)
+  banReason       String?
+  avatarColor     String    @default("#6C4FF6")
+  lockedUntil     DateTime?
+  loginAttempts   Int       @default(0)
+  emailVerifiedAt DateTime?
+  createdAt       DateTime  @default(now())
+  lastActiveAt    DateTime?
+
+  conversations        Conversation[]
+  filters              Filter[]
+  folders              Folder[]
+  prompts              PromptTemplate[]
+  attachments          Attachment[]
+  oauthAccounts        OAuthAccount[]
+  emailTokens          EmailVerificationToken[]
+  passwordResetTokens  PasswordResetToken[]
+  auditEntries         AuditLog[]
+  invitationsCreated   Invitation[]       @relation("CreatedInvitations")
+
   @@index([email])
   @@index([username])
+}
+
+model Conversation {
+  id        String   @id @default(cuid())
+  userId    String
+  modelId   String
+  title     String
+  isStarred Boolean  @default(false)
+  folderId  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  folder   Folder?   @relation(fields: [folderId], references: [id], onDelete: SetNull)
+  messages Message[]
+  tags     ConversationTag[]
+  attachments Attachment[]
+
+  @@index([userId])
+  @@index([folderId])
+  @@index([createdAt])
+}
+
+model Message {
+  id               String     @id @default(cuid())
+  conversationId   String
+  role             MessageRole
+  content          String
+  reasoning        String?
+  webSearchSources String?    // JSON array of WebSearchSource
+  alternatives     String?    // JSON array of MessageAlternative
+  tokenCount       Int?
+  createdAt        DateTime   @default(now())
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  attachments  Attachment[]
+  usageRecords UsageRecord[]
+
+  @@index([conversationId])
+  @@index([createdAt])
+}
+
+model Folder {
+  id        String   @id @default(cuid())
+  userId    String
+  name      String
+  icon      String   @default("folder")
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  conversations Conversation[]
+
+  @@unique([userId, name])
+  @@index([userId])
+}
+
+model Tag {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  color     String   @default("#6C4FF6")
+  createdAt DateTime @default(now())
+
+  conversations ConversationTag[]
+}
+
+model ConversationTag {
+  conversationId String
+  tagId          String
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  tag          Tag          @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([conversationId, tagId])
 }
 
 model Filter {
@@ -38,38 +137,167 @@ model Filter {
   isGlobal    Boolean  @default(false)
   isActive    Boolean  @default(true)
   priority    Int      @default(0)
-  valves      String   @default("{}")
+  valves      String   @default("{}")   // JSON object
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  author      User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  author User @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
   @@index([authorId])
 }
 
-model Conversation {
-  id        String    @id @default(cuid())
-  userId    String
-  modelId   String
-  title     String
-  isStarred Boolean   @default(false)
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  messages  Message[]
+model PromptTemplate {
+  id          String   @id @default(cuid())
+  userId      String?
+  name        String
+  description String   @default("")
+  content     String
+  variables   String   @default("[]")   // JSON array of variable names
+  isGlobal    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  author User? @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@index([userId])
+  @@index([isGlobal])
+}
+
+model Attachment {
+  id             String    @id @default(cuid())
+  conversationId String
+  messageId      String?
+  userId         String
+  fileName       String
+  mimeType       String
+  size           Int
+  path           String
+  sha256         String?
+  createdAt      DateTime  @default(now())
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  message      Message?     @relation(fields: [messageId], references: [id], onDelete: SetNull)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId])
+  @@index([userId])
+}
+
+model UsageRecord {
+  id          String   @id @default(cuid())
+  userId      String
+  modelId     String
+  tokensIn    Int
+  tokensOut   Int
+  costEstimate Float?  // USD, nullable until pricing configured
+  latencyMs   Int?
+  messageId   String
+  createdAt   DateTime @default(now())
+
+  message Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([modelId])
   @@index([createdAt])
 }
 
-model Message {
-  id             String   @id @default(cuid())
-  conversationId String
-  role           String
-  content        String
-  reasoning      String?
-  webSearchSources String?
-  alternatives   String?
-  tokenCount     Int?
-  createdAt      DateTime @default(now())
-  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-  @@index([conversationId])
+model RateLimitPolicy {
+  id                String  @id @default(cuid())
+  name              String  @unique
+  scope             String  @default("ROLE")  // GLOBAL | ROLE | USER
+  scopeId           String?
+  requestsPerWindow Int
+  windowSec         Int
+  monthlyTokenQuota Int?
+  active            Boolean @default(true)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  actorId   String?
+  action    String   // e.g. "user.ban", "config.update", "filter.create"
+  targetType String? // e.g. "User", "Conversation", "Filter"
+  targetId  String?
+  details   String?  // JSON payload with extra context
+  createdAt DateTime @default(now())
+
+  actor User? @relation(fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([actorId])
+  @@index([action])
   @@index([createdAt])
+}
+
+model Announcement {
+  id          String   @id @default(cuid())
+  body        String   // Markdown
+  severity    String   @default("INFO")   // INFO | WARNING | DANGER
+  startsAt    DateTime
+  endsAt      DateTime?
+  dismissible Boolean  @default(true)
+  active      Boolean  @default(true)
+  createdBy   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([active, startsAt, endsAt])
+}
+
+model Invitation {
+  id        String    @id @default(cuid())
+  email     String?
+  role      Role      @default(USER)
+  token     String    @unique
+  createdBy String
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  creator User @relation("CreatedInvitations", fields: [createdBy], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@index([email])
+}
+
+model OAuthAccount {
+  id                String   @id @default(cuid())
+  userId            String
+  provider          String   // "google" | "github" | "discord"
+  providerAccountId String
+  createdAt         DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+model EmailVerificationToken {
+  id        String    @id @default(cuid())
+  userId    String
+  token     String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@index([userId])
+}
+
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  userId    String
+  token     String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@index([userId])
 }

@@ -1,66 +1,10 @@
-import { useState, useEffect, useCallback } from 'react';
 import { Users, Activity, MessageSquare, Pencil, UserX } from 'lucide-react';
-
-interface Stats {
-  totalUsers: number;
-  activeToday: number;
-  totalConversations: number;
-  messagesToday: number;
-  last30Days: { date: string; count: number }[];
-  topUsers: { id: string; username: string; email: string; _count: { conversations: number } }[];
-}
-
-async function fetchJson(url: string, options: RequestInit = {}) {
-  const res = await fetch(url, {
-    ...options,
-    credentials: 'include',
-    headers: {
-      'Content-Type': 'application/json',
-      ...options.headers,
-    },
-  });
-
-  if (!res.ok) {
-    let errorData;
-    try {
-      errorData = await res.json();
-    } catch {
-      errorData = { error: `Server error: ${res.status}` };
-    }
-    throw new Error(errorData.error || `Request failed with status ${res.status}`);
-  }
-
-  try {
-    return await res.json();
-  } catch {
-    throw new Error('Invalid JSON response from server');
-  }
-}
+import { useAdminStats } from '../../utils/adminHooks';
 
 export default function Dashboard() {
-  const [stats, setStats] = useState<Stats | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const fetchStats = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const data = await fetchJson(`/api/admin/stats?period=30d`);
-      setStats({ ...data, topUsers: data.topUsers || [] });
-    } catch (e: any) {
-      console.error('Dashboard error:', e);
-      setError(e.message);
-    }
-    setLoading(false);
-  }, []);
+  const { data: stats, isLoading, error } = useAdminStats('30d');
 
-  useEffect(() => {
-    fetchStats();
-    const interval = setInterval(() => fetchStats(), 5 * 60 * 1000);
-    return () => clearInterval(interval);
-  }, [fetchStats]);
-
-  if (loading && !stats) {
+  if (isLoading && !stats) {
     return (
       <div className="flex items-center justify-center h-full">
         <div className="text-center">
@@ -76,7 +20,7 @@ export default function Dashboard() {
       <div className="flex items-center justify-center h-full">
         <div className="text-center p-6 bg-danger/5 rounded-2xl border border-danger/20">
           <p className="text-danger font-medium mb-2">Failed to load dashboard</p>
-          <p className="text-text-secondary text-sm">{error}</p>
+          <p className="text-text-secondary text-sm">{(error as Error).message}</p>
           <button
             onClick={() => window.location.reload()}
             className="mt-4 px-4 py-2 bg-danger text-white rounded-lg text-sm hover:bg-danger/90 transition"
