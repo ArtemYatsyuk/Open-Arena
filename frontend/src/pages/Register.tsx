@@ -46,7 +46,11 @@ export default function Register() {
       <div className="w-full max-w-sm p-8">
         <div className="text-center mb-8">
           <div className="w-16 h-16 rounded-2xl bg-bg-secondary border border-border flex items-center justify-center mx-auto mb-4 shadow-lg">
-            <img src={theme === 'dark' ? '/OpenArena-Black.png' : '/favicon.png'} alt="Open Arena" className="w-10 h-10 rounded-xl" />
+            <img
+              src={theme === 'dark' ? '/OpenArena-Black.png' : '/favicon.png'}
+              alt="Open Arena"
+              className="w-10 h-10 rounded-xl"
+            />
           </div>
           <h1 className="text-2xl font-semibold mb-1">Create account</h1>
           <p className="text-text-secondary text-sm">Join Open Arena</p>
@@ -112,7 +116,9 @@ export default function Register() {
                     />
                   ))}
                 </div>
-                <p className="text-xs text-text-secondary mt-1">{scoreLabels[score - 1] || 'Too short'}</p>
+                <p className="text-xs text-text-secondary mt-1">
+                  {scoreLabels[score - 1] || 'Too short'}
+                </p>
               </div>
             )}
           </div>

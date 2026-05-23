@@ -2,7 +2,14 @@ import { Router } from 'express';
 import jwt from 'jsonwebtoken';
 import { z } from 'zod';
 import { prisma } from '../index.js';
-import { hashPassword, comparePassword, generateAccessToken, generateRefreshToken, setAuthCookies, clearAuthCookies } from '../services/authService.js';
+import {
+  hashPassword,
+  comparePassword,
+  generateAccessToken,
+  generateRefreshToken,
+  setAuthCookies,
+  clearAuthCookies,
+} from '../services/authService.js';
 import { isAuthenticated, isNotBanned, AuthRequest } from '../middleware/auth.js';
 import { getConfig } from '../config.js';
 
@@ -10,7 +17,11 @@ const router = Router();
 
 const registerSchema = z.object({
   email: z.string().email(),
-  username: z.string().min(3).max(30).regex(/^[a-zA-Z0-9_]+$/),
+  username: z
+    .string()
+    .min(3)
+    .max(30)
+    .regex(/^[a-zA-Z0-9_]+$/),
   password: z.string().min(8),
 });
 
@@ -71,7 +82,13 @@ router.post('/login', async (req, res) => {
     const refreshToken = generateRefreshToken(user.id, user.role);
     setAuthCookies(res, accessToken, refreshToken);
 
-    res.json({ id: user.id, email: user.email, username: user.username, role: user.role, avatarColor: user.avatarColor });
+    res.json({
+      id: user.id,
+      email: user.email,
+      username: user.username,
+      role: user.role,
+      avatarColor: user.avatarColor,
+    });
   } catch (e: any) {
     if (e instanceof z.ZodError) return res.status(400).json({ error: e.errors });
     res.status(500).json({ error: 'Login failed' });
@@ -88,7 +105,10 @@ router.post('/refresh', async (req, res) => {
   if (!token) return res.status(401).json({ error: 'No refresh token' });
 
   try {
-    const { userId, role } = jwt.verify(token, process.env.JWT_REFRESH_SECRET!) as { userId: string; role: string };
+    const { userId, role } = jwt.verify(token, process.env.JWT_REFRESH_SECRET!) as {
+      userId: string;
+      role: string;
+    };
     const user = await prisma.user.findUnique({ where: { id: userId } });
     if (!user || user.isBanned) return res.status(401).json({ error: 'User not found or banned' });
 
@@ -106,7 +126,16 @@ router.get('/me', isAuthenticated, isNotBanned, async (req: AuthRequest, res) =>
   try {
     const user = await prisma.user.findUnique({
       where: { id: req.userId! },
-      select: { id: true, email: true, username: true, role: true, avatarColor: true, createdAt: true, isBanned: true, banReason: true },
+      select: {
+        id: true,
+        email: true,
+        username: true,
+        role: true,
+        avatarColor: true,
+        createdAt: true,
+        isBanned: true,
+        banReason: true,
+      },
     });
     if (!user) return res.status(404).json({ error: 'User not found' });
     res.json(user);

@@ -33,25 +33,34 @@ const app = express();
 const PORT = parseInt(process.env.PORT || '4000');
 const isDev = process.env.NODE_ENV !== 'production';
 
-app.use(helmet({
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
-      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://cdn.jsdelivr.net"],
-      imgSrc: ["'self'", "data:", "https://*"],
-      fontSrc: ["'self'", "https://fonts.googleapis.com", "https://fonts.gstatic.com"],
-      connectSrc: ["'self'", "ws://localhost:5173"],
-      frameSrc: ["'none'"],
-      objectSrc: ["'none'"],
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+        styleSrc: [
+          "'self'",
+          "'unsafe-inline'",
+          'https://fonts.googleapis.com',
+          'https://cdn.jsdelivr.net',
+        ],
+        imgSrc: ["'self'", 'data:', 'https://*'],
+        fontSrc: ["'self'", 'https://fonts.googleapis.com', 'https://fonts.gstatic.com'],
+        connectSrc: ["'self'", 'ws://localhost:5173'],
+        frameSrc: ["'none'"],
+        objectSrc: ["'none'"],
+      },
     },
-  },
-}));
+  }),
+);
 
-app.use(cors({
-  origin: process.env.CORS_ORIGIN || (isDev ? 'http://localhost:5173' : 'http://localhost:4000'),
-  credentials: true,
-}));
+app.use(
+  cors({
+    origin: process.env.CORS_ORIGIN || (isDev ? 'http://localhost:5173' : 'http://localhost:4000'),
+    credentials: true,
+  }),
+);
 
 app.use(express.json({ limit: '20mb' }));
 app.use(cookieParser());
@@ -74,7 +83,7 @@ app.use('/api/filters', filterRoutes);
 if (!isDev) {
   const frontendDist = path.join(__dirname, '../../frontend/dist');
   app.use(express.static(frontendDist));
-  
+
   // SPA fallback - serve index.html for all non-API routes
   app.get('*', (req, res) => {
     res.sendFile(path.join(frontendDist, 'index.html'));

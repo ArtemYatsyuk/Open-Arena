@@ -14,7 +14,10 @@ export function isAuthenticated(req: AuthRequest, res: Response, next: NextFunct
   if (!token) return res.status(401).json({ error: 'Not authenticated' });
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET!) as { userId: string; role: string };
+    const decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET!) as {
+      userId: string;
+      role: string;
+    };
     req.userId = decoded.userId;
     req.userRole = decoded.role;
     next();
@@ -28,7 +31,8 @@ export async function isNotBanned(req: AuthRequest, res: Response, next: NextFun
 
   const user = await prisma.user.findUnique({ where: { id: req.userId } });
   if (!user) return res.status(401).json({ error: 'User not found' });
-  if (user.isBanned) return res.status(403).json({ error: 'Account banned', reason: user.banReason });
+  if (user.isBanned)
+    return res.status(403).json({ error: 'Account banned', reason: user.banReason });
 
   const now = Date.now();
   const lastUpdate = lastActiveUpdates.get(req.userId) || 0;

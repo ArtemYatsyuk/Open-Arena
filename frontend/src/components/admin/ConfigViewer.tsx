@@ -1,5 +1,16 @@
 import { useState, useEffect } from 'react';
-import { Settings, Cpu, CheckCircle, XCircle, Download, Plus, X, Save, AlertCircle, Check } from 'lucide-react';
+import {
+  Settings,
+  Cpu,
+  CheckCircle,
+  XCircle,
+  Download,
+  Plus,
+  X,
+  Save,
+  AlertCircle,
+  Check,
+} from 'lucide-react';
 
 async function fetchJson(url: string, options: RequestInit = {}) {
   const res = await fetch(url, {
@@ -143,14 +154,24 @@ export default function ConfigViewer() {
     }
   };
 
-  if (loading) return <div className="p-8 text-text-secondary animate-fadeIn">Loading config...</div>;
+  if (loading)
+    return <div className="p-8 text-text-secondary animate-fadeIn">Loading config...</div>;
 
   const currentModels = (() => {
-    try { return JSON.parse(jsonText).models || []; } catch { return []; }
+    try {
+      return JSON.parse(jsonText).models || [];
+    } catch {
+      return [];
+    }
   })();
 
   const isValidJson = (() => {
-    try { JSON.parse(jsonText); return true; } catch { return false; }
+    try {
+      JSON.parse(jsonText);
+      return true;
+    } catch {
+      return false;
+    }
   })();
 
   return (
@@ -275,7 +296,9 @@ export default function ConfigViewer() {
                 <input
                   type="number"
                   value={form.contextWindow}
-                  onChange={(e) => setForm({ ...form, contextWindow: parseInt(e.target.value) || 0 })}
+                  onChange={(e) =>
+                    setForm({ ...form, contextWindow: parseInt(e.target.value) || 0 })
+                  }
                   className="w-full px-3 py-2 bg-bg-primary border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent/50"
                 />
               </div>

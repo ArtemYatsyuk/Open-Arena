@@ -16,14 +16,33 @@ let filtersLoaded = false;
 function createSandbox(): any {
   return {
     console: { log: console.log, error: console.error, warn: console.warn },
-    setTimeout, clearTimeout, Math, Date, JSON,
-    parseInt, parseFloat, isNaN, isFinite,
-    String, Number, Boolean, Map, Set, RegExp,
-    Error, TypeError, RangeError, Promise,
+    setTimeout,
+    clearTimeout,
+    Math,
+    Date,
+    JSON,
+    parseInt,
+    parseFloat,
+    isNaN,
+    isFinite,
+    String,
+    Number,
+    Boolean,
+    Map,
+    Set,
+    RegExp,
+    Error,
+    TypeError,
+    RangeError,
+    Promise,
   };
 }
 
-function compileCode(code: string): { success: true; context: vm.Context; hasInlet: boolean; hasOutlet: boolean; title: string } | { success: false; error: string } {
+function compileCode(
+  code: string,
+):
+  | { success: true; context: vm.Context; hasInlet: boolean; hasOutlet: boolean; title: string }
+  | { success: false; error: string } {
   const sandbox = createSandbox();
   sandbox.globalThis = sandbox;
   const context = vm.createContext(sandbox);

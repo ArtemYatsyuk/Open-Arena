@@ -74,16 +74,16 @@ export default function FiltersManager() {
     }
   };
 
-  useEffect(() => { fetchFilters(); }, []);
+  useEffect(() => {
+    fetchFilters();
+  }, []);
 
   const handleSave = async () => {
     setError('');
     setTestResult(null);
     try {
       const body = { ...form };
-      const url = editingId
-        ? `/api/filters/admin/${editingId}`
-        : '/api/filters/admin';
+      const url = editingId ? `/api/filters/admin/${editingId}` : '/api/filters/admin';
       const method = editingId ? 'PUT' : 'POST';
       const res = await fetch(url, {
         method,
@@ -94,7 +94,15 @@ export default function FiltersManager() {
       if (!res.ok) throw new Error((await res.json()).error || 'Save failed');
       setShowForm(false);
       setEditingId(null);
-      setForm({ name: '', description: '', code: defaultCode, isGlobal: false, isActive: true, priority: 0, valves: '{}' });
+      setForm({
+        name: '',
+        description: '',
+        code: defaultCode,
+        isGlobal: false,
+        isActive: true,
+        priority: 0,
+        valves: '{}',
+      });
       await fetchFilters();
     } catch (e: any) {
       setError(e.message);
@@ -104,7 +112,10 @@ export default function FiltersManager() {
   const handleDelete = async (id: string) => {
     if (!confirm('Delete this filter?')) return;
     try {
-      const res = await fetch(`/api/filters/admin/${id}`, { method: 'DELETE', credentials: 'include' });
+      const res = await fetch(`/api/filters/admin/${id}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
       if (!res.ok) throw new Error('Delete failed');
       await fetchFilters();
     } catch (e: any) {
@@ -164,17 +175,41 @@ export default function FiltersManager() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-xl font-bold">Filters</h2>
-          <p className="text-sm text-text-secondary">JS hooks that run before (inlet) and after (outlet) every chat request.</p>
+          <p className="text-sm text-text-secondary">
+            JS hooks that run before (inlet) and after (outlet) every chat request.
+          </p>
         </div>
         <div className="flex gap-2">
-          <button onClick={fetchFilters} className="btn-ghost p-2" title="Refresh"><RefreshCw className="h-4 w-4" /></button>
-          <button onClick={() => { setShowForm(!showForm); setEditingId(null); setForm({ name: '', description: '', code: defaultCode, isGlobal: false, isActive: true, priority: 0, valves: '{}' }); setTestResult(null); }} className="btn-primary flex items-center gap-2 px-4 py-2 rounded-xl text-sm">
+          <button onClick={fetchFilters} className="btn-ghost p-2" title="Refresh">
+            <RefreshCw className="h-4 w-4" />
+          </button>
+          <button
+            onClick={() => {
+              setShowForm(!showForm);
+              setEditingId(null);
+              setForm({
+                name: '',
+                description: '',
+                code: defaultCode,
+                isGlobal: false,
+                isActive: true,
+                priority: 0,
+                valves: '{}',
+              });
+              setTestResult(null);
+            }}
+            className="btn-primary flex items-center gap-2 px-4 py-2 rounded-xl text-sm"
+          >
             <Plus className="h-4 w-4" /> New Filter
           </button>
         </div>
       </div>
 
-      {error && <div className="bg-red-500/10 border border-red-500/30 text-red-400 px-4 py-3 rounded-xl text-sm">{error}</div>}
+      {error && (
+        <div className="bg-red-500/10 border border-red-500/30 text-red-400 px-4 py-3 rounded-xl text-sm">
+          {error}
+        </div>
+      )}
 
       {showForm && (
         <div className="bg-bg-secondary border border-border rounded-xl p-5 space-y-4">
@@ -183,46 +218,97 @@ export default function FiltersManager() {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-xs text-text-secondary mb-1">Name</label>
-              <input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} className="w-full bg-bg-primary border border-border rounded-lg px-3 py-2 text-sm" placeholder="Rate Limiter" />
+              <input
+                value={form.name}
+                onChange={(e) => setForm({ ...form, name: e.target.value })}
+                className="w-full bg-bg-primary border border-border rounded-lg px-3 py-2 text-sm"
+                placeholder="Rate Limiter"
+              />
             </div>
             <div>
-              <label className="block text-xs text-text-secondary mb-1">Priority (lower = runs first)</label>
-              <input type="number" value={form.priority} onChange={e => setForm({ ...form, priority: parseInt(e.target.value) || 0 })} className="w-full bg-bg-primary border border-border rounded-lg px-3 py-2 text-sm" />
+              <label className="block text-xs text-text-secondary mb-1">
+                Priority (lower = runs first)
+              </label>
+              <input
+                type="number"
+                value={form.priority}
+                onChange={(e) => setForm({ ...form, priority: parseInt(e.target.value) || 0 })}
+                className="w-full bg-bg-primary border border-border rounded-lg px-3 py-2 text-sm"
+              />
             </div>
           </div>
 
           <div>
             <label className="block text-xs text-text-secondary mb-1">Description</label>
-            <input value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} className="w-full bg-bg-primary border border-border rounded-lg px-3 py-2 text-sm" placeholder="Optional description" />
+            <input
+              value={form.description}
+              onChange={(e) => setForm({ ...form, description: e.target.value })}
+              className="w-full bg-bg-primary border border-border rounded-lg px-3 py-2 text-sm"
+              placeholder="Optional description"
+            />
           </div>
 
           <div>
             <label className="block text-xs text-text-secondary mb-1">Code (JavaScript)</label>
-            <textarea value={form.code} onChange={e => setForm({ ...form, code: e.target.value })} className="w-full bg-bg-primary border border-border rounded-lg px-3 py-2 text-sm font-mono" rows={16} />
+            <textarea
+              value={form.code}
+              onChange={(e) => setForm({ ...form, code: e.target.value })}
+              className="w-full bg-bg-primary border border-border rounded-lg px-3 py-2 text-sm font-mono"
+              rows={16}
+            />
           </div>
 
           <div className="flex items-center gap-6">
             <label className="flex items-center gap-2 text-sm">
-              <input type="checkbox" checked={form.isActive} onChange={e => setForm({ ...form, isActive: e.target.checked })} className="rounded" />
+              <input
+                type="checkbox"
+                checked={form.isActive}
+                onChange={(e) => setForm({ ...form, isActive: e.target.checked })}
+                className="rounded"
+              />
               Active
             </label>
             <label className="flex items-center gap-2 text-sm">
-              <input type="checkbox" checked={form.isGlobal} onChange={e => setForm({ ...form, isGlobal: e.target.checked })} className="rounded" />
+              <input
+                type="checkbox"
+                checked={form.isGlobal}
+                onChange={(e) => setForm({ ...form, isGlobal: e.target.checked })}
+                className="rounded"
+              />
               Global
             </label>
           </div>
 
           <div className="flex gap-2">
-            <button onClick={handleTest} className="btn-ghost flex items-center gap-2 px-4 py-2 rounded-xl text-sm border border-border">
+            <button
+              onClick={handleTest}
+              className="btn-ghost flex items-center gap-2 px-4 py-2 rounded-xl text-sm border border-border"
+            >
               <Play className="h-4 w-4" /> Test
             </button>
-            <button onClick={handleSave} className="btn-primary px-6 py-2 rounded-xl text-sm">Save</button>
-            <button onClick={() => { setShowForm(false); setEditingId(null); }} className="btn-ghost px-4 py-2 rounded-xl text-sm">Cancel</button>
+            <button onClick={handleSave} className="btn-primary px-6 py-2 rounded-xl text-sm">
+              Save
+            </button>
+            <button
+              onClick={() => {
+                setShowForm(false);
+                setEditingId(null);
+              }}
+              className="btn-ghost px-4 py-2 rounded-xl text-sm"
+            >
+              Cancel
+            </button>
           </div>
 
           {testResult && (
-            <div className={`flex items-center gap-2 text-sm ${testResult.success ? 'text-green-400' : 'text-red-400'}`}>
-              {testResult.success ? <CheckCircle className="h-4 w-4" /> : <XCircle className="h-4 w-4" />}
+            <div
+              className={`flex items-center gap-2 text-sm ${testResult.success ? 'text-green-400' : 'text-red-400'}`}
+            >
+              {testResult.success ? (
+                <CheckCircle className="h-4 w-4" />
+              ) : (
+                <XCircle className="h-4 w-4" />
+              )}
               {testResult.success ? 'Compiled successfully' : testResult.error}
             </div>
           )}
@@ -231,28 +317,51 @@ export default function FiltersManager() {
 
       <div className="space-y-2">
         {filters.length === 0 && !loading && (
-          <div className="text-center text-text-secondary py-12">No filters yet. Create one to start hooking into chat requests.</div>
+          <div className="text-center text-text-secondary py-12">
+            No filters yet. Create one to start hooking into chat requests.
+          </div>
         )}
         {filters.map((f) => (
-          <div key={f.id} className="bg-bg-secondary border border-border rounded-xl p-4 flex items-start gap-4">
+          <div
+            key={f.id}
+            className="bg-bg-secondary border border-border rounded-xl p-4 flex items-start gap-4"
+          >
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
                 <span className="font-medium">{f.name}</span>
-                <span className={`text-xs px-2 py-0.5 rounded-full ${f.isActive ? 'bg-green-500/20 text-green-400' : 'bg-gray-500/20 text-gray-400'}`}>
+                <span
+                  className={`text-xs px-2 py-0.5 rounded-full ${f.isActive ? 'bg-green-500/20 text-green-400' : 'bg-gray-500/20 text-gray-400'}`}
+                >
                   {f.isActive ? 'Active' : 'Disabled'}
                 </span>
-                {f.isGlobal && <span className="text-xs px-2 py-0.5 rounded-full bg-accent/20 text-accent">Global</span>}
+                {f.isGlobal && (
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-accent/20 text-accent">
+                    Global
+                  </span>
+                )}
                 <span className="text-xs text-text-secondary">P{f.priority}</span>
               </div>
               {f.description && <p className="text-xs text-text-secondary mt-1">{f.description}</p>}
               <p className="text-xs text-text-secondary mt-1">by {f.author.username}</p>
             </div>
             <div className="flex items-center gap-1 flex-shrink-0">
-              <button onClick={() => handleToggleActive(f)} className="btn-ghost p-2" title={f.isActive ? 'Disable' : 'Enable'}>
-                {f.isActive ? <CheckCircle className="h-4 w-4 text-green-400" /> : <XCircle className="h-4 w-4 text-gray-400" />}
+              <button
+                onClick={() => handleToggleActive(f)}
+                className="btn-ghost p-2"
+                title={f.isActive ? 'Disable' : 'Enable'}
+              >
+                {f.isActive ? (
+                  <CheckCircle className="h-4 w-4 text-green-400" />
+                ) : (
+                  <XCircle className="h-4 w-4 text-gray-400" />
+                )}
               </button>
-              <button onClick={() => handleEdit(f)} className="btn-ghost p-2 text-sm">Edit</button>
-              <button onClick={() => handleDelete(f.id)} className="btn-ghost p-2 text-red-400"><Trash2 className="h-4 w-4" /></button>
+              <button onClick={() => handleEdit(f)} className="btn-ghost p-2 text-sm">
+                Edit
+              </button>
+              <button onClick={() => handleDelete(f.id)} className="btn-ghost p-2 text-red-400">
+                <Trash2 className="h-4 w-4" />
+              </button>
             </div>
           </div>
         ))}

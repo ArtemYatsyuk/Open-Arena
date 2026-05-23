@@ -34,7 +34,9 @@ export default function ModelSelector({ currentModelId }: { currentModelId?: str
           {selected?.image ? (
             <img src={selected.image} alt="" className="w-6 h-6 rounded object-contain" />
           ) : null}
-          <span className="font-medium max-w-[120px] truncate">{selected?.name || 'Select model'}</span>
+          <span className="font-medium max-w-[120px] truncate">
+            {selected?.name || 'Select model'}
+          </span>
           <ChevronDown className="w-3.5 h-3.5 text-text-secondary" />
         </button>
       </DropdownMenu.Trigger>
@@ -64,7 +66,11 @@ export default function ModelSelector({ currentModelId }: { currentModelId?: str
                   }`}
                 >
                   {model.image ? (
-                    <img src={model.image} alt="" className="w-10 h-10 rounded-xl object-contain flex-shrink-0 shadow-sm" />
+                    <img
+                      src={model.image}
+                      alt=""
+                      className="w-10 h-10 rounded-xl object-contain flex-shrink-0 shadow-sm"
+                    />
                   ) : (
                     <div className="w-10 h-10 rounded-xl bg-bg-secondary border border-border flex items-center justify-center flex-shrink-0 shadow-sm">
                       <Database className="w-5 h-5 text-text-secondary" />
@@ -74,7 +80,9 @@ export default function ModelSelector({ currentModelId }: { currentModelId?: str
                     <div className="flex items-center gap-2">
                       <span className="text-sm font-semibold">{model.name}</span>
                     </div>
-                    <p className="text-xs text-text-secondary mt-0.5 line-clamp-1">{model.description}</p>
+                    <p className="text-xs text-text-secondary mt-0.5 line-clamp-1">
+                      {model.description}
+                    </p>
                     <p className="text-xs text-text-secondary/70 mt-0.5 flex items-center gap-1">
                       <Database className="w-3 h-3" />
                       {model.contextWindow.toLocaleString()} context

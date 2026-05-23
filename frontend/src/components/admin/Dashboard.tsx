@@ -91,10 +91,30 @@ export default function Dashboard() {
   if (!stats) return null;
 
   const statCards = [
-    { label: 'Total Users', value: stats.totalUsers, icon: <Users className="w-6 h-6 text-blue-500" />, color: 'from-blue-500/10 to-blue-500/5' },
-    { label: 'Active Today', value: stats.activeToday, icon: <Activity className="w-6 h-6 text-green-500" />, color: 'from-green-500/10 to-green-500/5' },
-    { label: 'Conversations', value: stats.totalConversations, icon: <MessageSquare className="w-6 h-6 text-purple-500" />, color: 'from-purple-500/10 to-purple-500/5' },
-    { label: 'Messages Today', value: stats.messagesToday, icon: <Pencil className="w-6 h-6 text-orange-500" />, color: 'from-orange-500/10 to-orange-500/5' },
+    {
+      label: 'Total Users',
+      value: stats.totalUsers,
+      icon: <Users className="w-6 h-6 text-blue-500" />,
+      color: 'from-blue-500/10 to-blue-500/5',
+    },
+    {
+      label: 'Active Today',
+      value: stats.activeToday,
+      icon: <Activity className="w-6 h-6 text-green-500" />,
+      color: 'from-green-500/10 to-green-500/5',
+    },
+    {
+      label: 'Conversations',
+      value: stats.totalConversations,
+      icon: <MessageSquare className="w-6 h-6 text-purple-500" />,
+      color: 'from-purple-500/10 to-purple-500/5',
+    },
+    {
+      label: 'Messages Today',
+      value: stats.messagesToday,
+      icon: <Pencil className="w-6 h-6 text-orange-500" />,
+      color: 'from-orange-500/10 to-orange-500/5',
+    },
   ];
 
   return (
@@ -111,10 +131,10 @@ export default function Dashboard() {
             className={`bg-gradient-to-br ${card.color} border border-border rounded-2xl p-5 hover:shadow-lg transition-all duration-200`}
           >
             <div className="flex items-center justify-between mb-4">
-              <div className="w-12 h-12 flex items-center justify-center">
-                {card.icon}
-              </div>
-              <span className="text-xs text-text-secondary font-medium uppercase tracking-wider">{card.label}</span>
+              <div className="w-12 h-12 flex items-center justify-center">{card.icon}</div>
+              <span className="text-xs text-text-secondary font-medium uppercase tracking-wider">
+                {card.label}
+              </span>
             </div>
             <p className="text-4xl font-bold">{card.value.toLocaleString()}</p>
           </div>
@@ -147,7 +167,9 @@ export default function Dashboard() {
                     <p className="text-sm font-medium truncate">{u.username}</p>
                     <p className="text-xs text-text-secondary truncate">{u.email}</p>
                   </div>
-                  <span className="text-xs font-semibold text-accent">{u._count.conversations}</span>
+                  <span className="text-xs font-semibold text-accent">
+                    {u._count.conversations}
+                  </span>
                 </div>
               ))}
             </div>

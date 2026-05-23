@@ -2,7 +2,10 @@ import { getConfig } from '../config.js';
 
 export function getTodayDateString(): string {
   return new Date().toLocaleDateString('en-US', {
-    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
   });
 }
 
@@ -32,11 +35,13 @@ export async function searchWeb(query: string): Promise<WebSearchResult> {
   if (!wsConfig?.enabled) {
     console.log('[WebSearch] disabled in config');
     return { text: '', count: 0, sources: [] };
-
-
   }
 
   if (wsConfig.provider === 'searxng') {
+    if (!wsConfig.searxngUrl) {
+      console.log('[WebSearch] searxngUrl not configured');
+      return { text: '', count: 0, sources: [] };
+    }
     return searchSearXNG(query, wsConfig.searxngUrl);
   }
 
@@ -57,7 +62,7 @@ async function searchSearXNG(query: string, baseUrl: string): Promise<WebSearchR
 
     const res = await fetch(url.toString(), {
       headers: {
-        'Accept': 'application/json',
+        Accept: 'application/json',
         'User-Agent': 'Open-Arena/1.0',
       },
       signal: AbortSignal.timeout(10000),
@@ -85,13 +90,11 @@ async function searchSearXNG(query: string, baseUrl: string): Promise<WebSearchR
       url: r.url,
       snippet: r.snippet,
     }));
-    const snippets = sources.map((s) =>
-      `[${s.index}] ${s.title}\n${s.snippet}\nSource: ${s.url}`
-    );
+    const snippets = sources.map((s) => `[${s.index}] ${s.title}\n${s.snippet}\nSource: ${s.url}`);
 
     const text = [
       `Today is ${today}. The user is asking about current or recent information.`,
-      'Web search results for the user\'s query are provided below.',
+      "Web search results for the user's query are provided below.",
       'These results are from a live search engine — they are NOT part of your training data.',
       'You MUST use these search results to form your answer, especially for time-sensitive questions.',
       'If the results contain relevant information, base your answer on them and cite sources numerically like [1], [2], etc.',

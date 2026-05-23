@@ -5,5 +5,25 @@ backend/prisma/data.db
 backend/prisma/*.db
 *.tsbuildinfo
 config.backup.*.json
-backend/node_modules/
-frontend/node_modules/
+
+# Runtime data directory (config, database, backups)
+data/*
+!data/.gitkeep
+
+# Testing & coverage
+coverage/
+.vite/
+
+# IDE
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Husky generated files
+.husky/_
+

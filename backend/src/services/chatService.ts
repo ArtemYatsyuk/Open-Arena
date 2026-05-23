@@ -7,7 +7,7 @@ export async function streamChat(
   onChunk: (chunk: string) => void,
   onComplete: () => void,
   signal: AbortSignal,
-  onReasoning?: (chunk: string) => void
+  onReasoning?: (chunk: string) => void,
 ) {
   const model = getModelById(modelId);
   if (!model) throw new Error(`Model ${modelId} not found`);
@@ -20,8 +20,8 @@ export async function streamChat(
   let fullContent = '';
 
   if (isAnthropic) {
-    const systemMessage = messages.find(m => m.role === 'system');
-    const userMessages = messages.filter(m => m.role !== 'system');
+    const systemMessage = messages.find((m) => m.role === 'system');
+    const userMessages = messages.filter((m) => m.role !== 'system');
 
     const response = await fetch(`${model.baseUrl}${model.endpoint}`, {
       method: 'POST',
@@ -34,7 +34,7 @@ export async function streamChat(
         model: model.modelId,
         max_tokens: 8192,
         system: systemMessage?.content,
-        messages: userMessages.map(m => ({ role: m.role, content: m.content })),
+        messages: userMessages.map((m) => ({ role: m.role, content: m.content })),
         stream: true,
       }),
       signal,
@@ -91,7 +91,7 @@ export async function streamChat(
           'X-Title': 'Open Arena',
         }),
         ...(isNVIDIA && {
-          'Accept': 'application/json',
+          Accept: 'application/json',
         }),
       },
       body: JSON.stringify({
@@ -177,7 +177,8 @@ export async function generateTitle(content: string, modelId: string): Promise<s
         body: JSON.stringify({
           model: model.modelId,
           max_tokens: 50,
-          system: 'Generate a short title (5 words max) for this conversation. Return ONLY the title, nothing else.',
+          system:
+            'Generate a short title (5 words max) for this conversation. Return ONLY the title, nothing else.',
           messages: [{ role: 'user', content }],
         }),
         signal: AbortSignal.timeout(5000),
@@ -198,7 +199,11 @@ export async function generateTitle(content: string, modelId: string): Promise<s
           model: model.modelId,
           max_tokens: 50,
           messages: [
-            { role: 'system', content: 'Generate a short title (5 words max) for this conversation. Return ONLY the title, nothing else.' },
+            {
+              role: 'system',
+              content:
+                'Generate a short title (5 words max) for this conversation. Return ONLY the title, nothing else.',
+            },
             { role: 'user', content },
           ],
         }),

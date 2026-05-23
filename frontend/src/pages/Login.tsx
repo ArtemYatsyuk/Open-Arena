@@ -35,7 +35,11 @@ export default function Login() {
       <div className="w-full max-w-sm p-8">
         <div className="text-center mb-8">
           <div className="w-16 h-16 rounded-2xl bg-bg-secondary border border-border flex items-center justify-center mx-auto mb-4 shadow-lg">
-            <img src={theme === 'dark' ? '/OpenArena-Black.png' : '/favicon.png'} alt="Open Arena" className="w-10 h-10 rounded-xl" />
+            <img
+              src={theme === 'dark' ? '/OpenArena-Black.png' : '/favicon.png'}
+              alt="Open Arena"
+              className="w-10 h-10 rounded-xl"
+            />
           </div>
           <h1 className="text-2xl font-semibold mb-1">Welcome back</h1>
           <p className="text-text-secondary text-sm">Sign in to Open Arena</p>

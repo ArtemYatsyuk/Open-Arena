@@ -58,7 +58,9 @@ router.post('/', isAuthenticated, isNotBanned, async (req: AuthRequest, res) => 
     if (app.maxConversationsPerUser > 0) {
       const convCount = await prisma.conversation.count({ where: { userId: req.userId! } });
       if (convCount >= app.maxConversationsPerUser) {
-        return res.status(400).json({ error: `Maximum of ${app.maxConversationsPerUser} conversations reached` });
+        return res
+          .status(400)
+          .json({ error: `Maximum of ${app.maxConversationsPerUser} conversations reached` });
       }
     }
     const conversation = await prisma.conversation.create({
@@ -138,10 +140,12 @@ router.get('/:id/messages', isAuthenticated, isNotBanned, async (req: AuthReques
     });
     if (!conversation) return res.status(404).json({ error: 'Conversation not found' });
 
-    const messages = (await prisma.message.findMany({
-      where: { conversationId: id },
-      orderBy: { createdAt: 'asc' },
-    })).map(m => ({
+    const messages = (
+      await prisma.message.findMany({
+        where: { conversationId: id },
+        orderBy: { createdAt: 'asc' },
+      })
+    ).map((m) => ({
       ...m,
       webSearchSources: m.webSearchSources ? JSON.parse(m.webSearchSources) : null,
     }));

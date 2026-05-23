@@ -1,6 +1,16 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Shield, Calendar, MessageSquare, Ban, Trash2, ChevronDown, ChevronUp, X } from 'lucide-react';
+import {
+  ArrowLeft,
+  Shield,
+  Calendar,
+  MessageSquare,
+  Ban,
+  Trash2,
+  ChevronDown,
+  ChevronUp,
+  X,
+} from 'lucide-react';
 
 interface UserDetail {
   id: string;
@@ -118,7 +128,8 @@ export default function UserDetail() {
                 Joined: {new Date(user.createdAt).toLocaleDateString()}
               </span>
               <span className="flex items-center gap-1.5">
-                Last active: {user.lastActiveAt ? new Date(user.lastActiveAt).toLocaleDateString() : 'Never'}
+                Last active:{' '}
+                {user.lastActiveAt ? new Date(user.lastActiveAt).toLocaleDateString() : 'Never'}
               </span>
             </div>
             <div className="flex gap-4 mt-2 text-sm text-text-secondary">
@@ -175,7 +186,10 @@ export default function UserDetail() {
       {conversations.length > 0 && (
         <div className="space-y-2">
           {conversations.map((conv) => (
-            <div key={conv.id} className="bg-bg-secondary border border-border rounded-2xl overflow-hidden">
+            <div
+              key={conv.id}
+              className="bg-bg-secondary border border-border rounded-2xl overflow-hidden"
+            >
               <button
                 onClick={() => setExpandedConv(expandedConv === conv.id ? null : conv.id)}
                 className="w-full flex items-center justify-between p-4 text-left hover:bg-bg-primary/50 transition"
@@ -183,15 +197,23 @@ export default function UserDetail() {
                 <div>
                   <p className="text-sm font-medium">{conv.title}</p>
                   <p className="text-xs text-text-secondary">
-                    {conv.modelId} · {conv.messages.length} messages · {new Date(conv.createdAt).toLocaleDateString()}
+                    {conv.modelId} · {conv.messages.length} messages ·{' '}
+                    {new Date(conv.createdAt).toLocaleDateString()}
                   </p>
                 </div>
-                {expandedConv === conv.id ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                {expandedConv === conv.id ? (
+                  <ChevronUp className="w-4 h-4" />
+                ) : (
+                  <ChevronDown className="w-4 h-4" />
+                )}
               </button>
               {expandedConv === conv.id && (
                 <div className="p-4 border-t border-border space-y-3 max-h-96 overflow-y-auto">
                   {conv.messages.map((msg, i) => (
-                    <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                    <div
+                      key={i}
+                      className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                    >
                       <div
                         className={`max-w-[80%] p-3 rounded-xl text-sm ${
                           msg.role === 'user'

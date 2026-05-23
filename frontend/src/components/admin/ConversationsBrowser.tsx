@@ -5,7 +5,18 @@ import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
-import { Search, MessageSquare, ChevronLeft, ChevronRight, ArrowLeft, User, Calendar, Cpu, Copy, Check } from 'lucide-react';
+import {
+  Search,
+  MessageSquare,
+  ChevronLeft,
+  ChevronRight,
+  ArrowLeft,
+  User,
+  Calendar,
+  Cpu,
+  Copy,
+  Check,
+} from 'lucide-react';
 
 interface Conversation {
   id: string;
@@ -118,7 +129,9 @@ export default function ConversationsBrowser() {
   return (
     <div className="flex h-full">
       {/* List panel */}
-      <div className={`flex flex-col border-r border-border ${selectedConv ? 'w-1/2 min-w-0' : 'w-full'} p-6 overflow-y-auto animate-fadeIn`}>
+      <div
+        className={`flex flex-col border-r border-border ${selectedConv ? 'w-1/2 min-w-0' : 'w-full'} p-6 overflow-y-auto animate-fadeIn`}
+      >
         <h1 className="text-xl font-semibold mb-6">Conversations</h1>
 
         <div className="mb-4">
@@ -157,7 +170,9 @@ export default function ConversationsBrowser() {
                 <tbody>
                   {conversations.length === 0 ? (
                     <tr>
-                      <td colSpan={5} className="p-8 text-center text-text-secondary">No conversations found</td>
+                      <td colSpan={5} className="p-8 text-center text-text-secondary">
+                        No conversations found
+                      </td>
                     </tr>
                   ) : (
                     conversations.map((conv) => (
@@ -172,7 +187,9 @@ export default function ConversationsBrowser() {
                         <td className="p-3 text-text-secondary">{conv.user.username}</td>
                         <td className="p-3 text-text-secondary">{conv.modelId}</td>
                         <td className="p-3">{conv._count.messages}</td>
-                        <td className="p-3 text-text-secondary">{new Date(conv.updatedAt).toLocaleDateString()}</td>
+                        <td className="p-3 text-text-secondary">
+                          {new Date(conv.updatedAt).toLocaleDateString()}
+                        </td>
                       </tr>
                     ))
                   )}
@@ -181,7 +198,9 @@ export default function ConversationsBrowser() {
             </div>
 
             <div className="flex items-center justify-between mt-4">
-              <p className="text-sm text-text-secondary">Page {page} of {totalPages}</p>
+              <p className="text-sm text-text-secondary">
+                Page {page} of {totalPages}
+              </p>
               <div className="flex gap-2">
                 <button
                   onClick={() => setPage((p) => Math.max(1, p - 1))}
@@ -238,14 +257,19 @@ export default function ConversationsBrowser() {
             </div>
           </div>
 
-                <div className="flex-1 overflow-y-auto p-4 space-y-4">
+          <div className="flex-1 overflow-y-auto p-4 space-y-4">
             {messagesLoading ? (
               <div className="p-8 text-text-secondary text-center">Loading messages...</div>
             ) : messages.length === 0 ? (
-              <div className="p-8 text-text-secondary text-center">No messages in this conversation</div>
+              <div className="p-8 text-text-secondary text-center">
+                No messages in this conversation
+              </div>
             ) : (
               messages.map((msg) => (
-                <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                <div
+                  key={msg.id}
+                  className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                >
                   <div
                     className={`max-w-[80%] p-3 rounded-xl text-sm ${
                       msg.role === 'user'
@@ -257,7 +281,10 @@ export default function ConversationsBrowser() {
                       <MessageRenderer content={msg.content} />
                     </div>
                     <p className="text-xs text-text-secondary/60 mt-1.5">
-                      {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      {new Date(msg.createdAt).toLocaleTimeString([], {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })}
                     </p>
                   </div>
                 </div>
@@ -323,7 +350,10 @@ function MessageRenderer({ content }: { content: string }) {
           }
 
           return (
-            <code className="px-1.5 py-0.5 bg-bg-secondary border border-border rounded-md text-sm font-mono" {...props}>
+            <code
+              className="px-1.5 py-0.5 bg-bg-secondary border border-border rounded-md text-sm font-mono"
+              {...props}
+            >
               {children}
             </code>
           );

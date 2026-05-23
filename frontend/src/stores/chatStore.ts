@@ -167,9 +167,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
         body: JSON.stringify(data),
       });
       set((state) => ({
-        conversations: state.conversations.map((c) =>
-          c.id === id ? { ...c, ...updated } : c
-        ),
+        conversations: state.conversations.map((c) => (c.id === id ? { ...c, ...updated } : c)),
         ...(state.currentConversation?.id === id
           ? { currentConversation: { ...state.currentConversation, ...updated } }
           : {}),
@@ -203,7 +201,13 @@ export const useChatStore = create<ChatState>((set, get) => ({
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ conversationId: convId, content, modelId, webSearch: get().webSearchEnabled, reasoning: get().reasoningEnabled }),
+        body: JSON.stringify({
+          conversationId: convId,
+          content,
+          modelId,
+          webSearch: get().webSearchEnabled,
+          reasoning: get().reasoningEnabled,
+        }),
         credentials: 'include',
         signal: abortController.signal,
       });
@@ -254,19 +258,22 @@ export const useChatStore = create<ChatState>((set, get) => ({
               assistantContent += parsed.content;
               set({ streamingContent: assistantContent });
             } else if (parsed.type === 'websearch') {
-              set({ webSearchCount: parsed.count, pendingWebSearchSources: parsed.sources || null });
+              set({
+                webSearchCount: parsed.count,
+                pendingWebSearchSources: parsed.sources || null,
+              });
             } else if (parsed.type === 'conversation') {
               newConvId = parsed.id;
             } else if (parsed.type === 'error') {
               throw new Error(parsed.message);
-              } else if (parsed.type === 'done') {
-                doneMessageId = parsed.messageId || null;
-                break;
-              }
-            } catch (e: any) {
-              if (e.message && !e.message.includes('JSON')) {
-                throw e;
-              }
+            } else if (parsed.type === 'done') {
+              doneMessageId = parsed.messageId || null;
+              break;
+            }
+          } catch (e: any) {
+            if (e.message && !e.message.includes('JSON')) {
+              throw e;
+            }
           }
         }
       }
@@ -294,26 +301,49 @@ export const useChatStore = create<ChatState>((set, get) => ({
 
       if (newConvId) {
         window.history.pushState(null, '', '/c/' + newConvId);
-        set({ currentConversation: { id: newConvId, title: '', modelId, isStarred: false, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() } });
+        set({
+          currentConversation: {
+            id: newConvId,
+            title: '',
+            modelId,
+            isStarred: false,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          },
+        });
         await get().fetchConversations();
       } else {
         await get().fetchConversations();
       }
     } catch (e: any) {
       if (e.name === 'AbortError') {
-        set({ isStreaming: false, streamingContent: '', webSearchCount: 0, pendingWebSearchSources: null });
+        set({
+          isStreaming: false,
+          streamingContent: '',
+          webSearchCount: 0,
+          pendingWebSearchSources: null,
+        });
       } else {
-        set({ error: e.message, isStreaming: false, streamingContent: '', webSearchCount: 0, pendingWebSearchSources: null });
+        set({
+          error: e.message,
+          isStreaming: false,
+          streamingContent: '',
+          webSearchCount: 0,
+          pendingWebSearchSources: null,
+        });
       }
     }
   },
 
   regenerateMessage: async (messageId) => {
     const state = get();
-    const msg = state.messages.find(m => m.id === messageId);
+    const msg = state.messages.find((m) => m.id === messageId);
     if (!msg || msg.role !== 'assistant') return;
     const msgIndex = state.messages.indexOf(msg);
-    const userMsg = msgIndex > 0 && state.messages[msgIndex - 1].role === 'user' ? state.messages[msgIndex - 1] : null;
+    const userMsg =
+      msgIndex > 0 && state.messages[msgIndex - 1].role === 'user'
+        ? state.messages[msgIndex - 1]
+        : null;
     if (!userMsg) return;
 
     set({ isStreaming: true, streamingContent: '', reasoningContent: '', error: null });
@@ -342,7 +372,11 @@ export const useChatStore = create<ChatState>((set, get) => ({
       }
       if (!res.ok) {
         let errorData;
-        try { errorData = await res.json(); } catch { errorData = { error: 'Regenerate failed' }; }
+        try {
+          errorData = await res.json();
+        } catch {
+          errorData = { error: 'Regenerate failed' };
+        }
         throw new Error(errorData.error || 'Regenerate failed');
       }
 
@@ -368,9 +402,22 @@ export const useChatStore = create<ChatState>((set, get) => ({
               set((s) => ({
                 messages: s.messages.map((m) => {
                   if (m.id === parsed.messageId) {
-                    let alts: { content: string; reasoning?: string }[] = m.alternatives ? (() => { try { return JSON.parse(m.alternatives); } catch { return []; } })() : [];
+                    let alts: { content: string; reasoning?: string }[] = m.alternatives
+                      ? (() => {
+                          try {
+                            return JSON.parse(m.alternatives);
+                          } catch {
+                            return [];
+                          }
+                        })()
+                      : [];
                     alts.push({ content: m.content, reasoning: m.reasoning || undefined });
-                    return { ...m, content: parsed.content, reasoning: parsed.reasoning || null, alternatives: JSON.stringify(alts) };
+                    return {
+                      ...m,
+                      content: parsed.content,
+                      reasoning: parsed.reasoning || null,
+                      alternatives: JSON.stringify(alts),
+                    };
                   }
                   return m;
                 }),

@@ -17,7 +17,11 @@ export default function AdminPanel() {
   const navItems = [
     { path: '/admin', label: 'Dashboard', icon: <LayoutDashboard className="h-5 w-5" /> },
     { path: '/admin/users', label: 'Users', icon: <Users className="h-5 w-5" /> },
-    { path: '/admin/conversations', label: 'Conversations', icon: <MessageSquare className="h-5 w-5" /> },
+    {
+      path: '/admin/conversations',
+      label: 'Conversations',
+      icon: <MessageSquare className="h-5 w-5" />,
+    },
     { path: '/admin/config', label: 'Config', icon: <Settings className="h-5 w-5" /> },
     { path: '/admin/filters', label: 'Filters', icon: <Filter className="h-5 w-5" /> },
   ];
@@ -28,7 +32,11 @@ export default function AdminPanel() {
       <div className="w-64 bg-bg-secondary border-r border-border flex-shrink-0 flex flex-col">
         <div className="p-5 border-b border-border">
           <div className="flex items-center gap-3">
-            <img src={theme === 'dark' ? '/OpenArena-Black.png' : '/favicon.png'} alt="Open Arena" className="w-10 h-10 rounded-xl" />
+            <img
+              src={theme === 'dark' ? '/OpenArena-Black.png' : '/favicon.png'}
+              alt="Open Arena"
+              className="w-10 h-10 rounded-xl"
+            />
             <div>
               <h1 className="text-base font-semibold">Admin Panel</h1>
               <p className="text-xs text-text-secondary">Manage your instance</p>
@@ -38,7 +46,9 @@ export default function AdminPanel() {
 
         <nav className="flex-1 p-3 space-y-1">
           {navItems.map((item) => {
-            const isActive = location.pathname === item.path || (item.path !== '/admin' && location.pathname.startsWith(item.path));
+            const isActive =
+              location.pathname === item.path ||
+              (item.path !== '/admin' && location.pathname.startsWith(item.path));
             return (
               <button
                 key={item.path}

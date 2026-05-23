@@ -1,7 +1,19 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { isToday, isYesterday, subDays } from 'date-fns';
-import { Building2, Pencil, Search, PanelLeftClose, MoreHorizontal, Trash2, Edit3, User, X, Settings, Layers } from 'lucide-react';
+import {
+  Building2,
+  Pencil,
+  Search,
+  PanelLeftClose,
+  MoreHorizontal,
+  Trash2,
+  Edit3,
+  User,
+  X,
+  Settings,
+  Layers,
+} from 'lucide-react';
 import { useChatStore } from '../../stores/chatStore';
 import { useUIStore } from '../../stores/uiStore';
 import { useAuthStore } from '../../stores/authStore';
@@ -91,7 +103,9 @@ export default function Sidebar() {
     if (items.length === 0) return null;
     return (
       <div className="mb-1">
-        <h3 className="text-[11px] font-semibold text-text-secondary/60 uppercase tracking-wider px-3 py-1.5">{title}</h3>
+        <h3 className="text-[11px] font-semibold text-text-secondary/60 uppercase tracking-wider px-3 py-1.5">
+          {title}
+        </h3>
         {items.map((conv) => (
           <div
             key={conv.id}
@@ -121,7 +135,9 @@ export default function Sidebar() {
                 <span className="truncate text-[13px]">{conv.title}</span>
               )}
             </div>
-            <span className="text-[11px] text-text-secondary/60 flex-shrink-0">{formatRelativeTime(conv.updatedAt)}</span>
+            <span className="text-[11px] text-text-secondary/60 flex-shrink-0">
+              {formatRelativeTime(conv.updatedAt)}
+            </span>
             <div className="relative flex-shrink-0">
               <button
                 onClick={(e) => {
@@ -137,14 +153,20 @@ export default function Sidebar() {
                   <div className="fixed inset-0 z-40" onClick={() => setMenuOpenId(null)} />
                   <div className="absolute right-0 top-full mt-1 z-50 w-28 bg-bg-primary border border-border rounded-lg shadow-xl p-1">
                     <button
-                      onClick={(e) => { e.stopPropagation(); startEdit(conv); }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        startEdit(conv);
+                      }}
                       className="w-full flex items-center gap-2 px-2.5 py-1.5 text-xs rounded-md hover:bg-bg-secondary transition text-left"
                     >
                       <Edit3 className="w-3 h-3" />
                       Rename
                     </button>
                     <button
-                      onClick={(e) => { e.stopPropagation(); handleDelete(conv.id); }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDelete(conv.id);
+                      }}
                       className="w-full flex items-center gap-2 px-2.5 py-1.5 text-xs rounded-md hover:bg-danger/10 hover:text-danger transition text-left"
                     >
                       <Trash2 className="w-3 h-3" />
@@ -169,7 +191,11 @@ export default function Sidebar() {
             <Building2 className="w-5 h-5 text-text-primary" />
             <h1 className="text-sm font-semibold tracking-tight">Open Arena</h1>
           </div>
-          <button onClick={toggleSidebar} className="p-1 hover:bg-white/[0.06] rounded-lg transition" title="Close sidebar">
+          <button
+            onClick={toggleSidebar}
+            className="p-1 hover:bg-white/[0.06] rounded-lg transition"
+            title="Close sidebar"
+          >
             <PanelLeftClose className="w-4 h-4 text-text-secondary" />
           </button>
         </div>
@@ -206,7 +232,10 @@ export default function Sidebar() {
             />
             {searchQuery && (
               <button
-                onClick={() => { setSearchQuery(''); setSearchOpen(false); }}
+                onClick={() => {
+                  setSearchQuery('');
+                  setSearchOpen(false);
+                }}
                 className="absolute right-2 top-1/2 -translate-y-1/2"
               >
                 <X className="w-3 h-3 text-text-secondary/60" />
@@ -219,10 +248,14 @@ export default function Sidebar() {
       {/* Conversations */}
       <div className="flex-1 overflow-y-auto py-1 min-h-0">
         <div className="px-3 py-1.5">
-          <h3 className="text-[11px] font-semibold text-text-secondary/60 uppercase tracking-wider">Folders</h3>
+          <h3 className="text-[11px] font-semibold text-text-secondary/60 uppercase tracking-wider">
+            Folders
+          </h3>
         </div>
         <div className="px-3 py-1.5">
-          <h3 className="text-[11px] font-semibold text-text-secondary/60 uppercase tracking-wider">Chats</h3>
+          <h3 className="text-[11px] font-semibold text-text-secondary/60 uppercase tracking-wider">
+            Chats
+          </h3>
         </div>
         {renderGroup('Today', groups.today)}
         {renderGroup('Yesterday', groups.yesterday)}

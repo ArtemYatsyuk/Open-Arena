@@ -1,23 +1,68 @@
 {
   "name": "open-arena",
-  "version": "1.0.5",
+  "version": "1.0.8",
   "private": true,
+  "type": "module",
+  "packageManager": "pnpm@10.33.0",
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@prisma/client",
+      "@prisma/engines",
+      "prisma",
+      "esbuild"
+    ]
+  },
+  "engines": {
+    "node": ">=20.10.0",
+    "pnpm": ">=10.0.0"
+  },
   "scripts": {
-    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
-    "dev:backend": "cd backend && npm run dev",
-    "dev:frontend": "cd frontend && npm run dev",
-    "start": "npm run build && npm run start:prod",
-    "start:prod": "cross-env NODE_ENV=production npm --prefix backend start",
-    "build": "npm run build:frontend && npm run build:backend",
-    "build:frontend": "cd frontend && npm run build",
-    "build:backend": "cd backend && npm run build",
-    "db:generate": "cd backend && npx prisma generate",
-    "db:push": "cd backend && npx prisma db push",
-    "db:seed": "cd backend && npx tsx seed.ts",
-    "db:studio": "cd backend && npx prisma studio"
+    "dev": "concurrently -n backend,frontend -c blue,magenta \"pnpm --filter @open-arena/backend dev\" \"pnpm --filter @open-arena/frontend dev\"",
+    "dev:backend": "pnpm --filter @open-arena/backend dev",
+    "dev:frontend": "pnpm --filter @open-arena/frontend dev",
+    "build": "pnpm --filter @open-arena/shared build && pnpm --filter @open-arena/backend build && pnpm --filter @open-arena/frontend build",
+    "build:shared": "pnpm --filter @open-arena/shared build",
+    "build:backend": "pnpm --filter @open-arena/backend build",
+    "build:frontend": "pnpm --filter @open-arena/frontend build",
+    "start": "pnpm build && pnpm start:prod",
+    "start:prod": "cross-env NODE_ENV=production pnpm --filter @open-arena/backend start",
+    "db:generate": "pnpm --filter @open-arena/backend db:generate",
+    "db:push": "pnpm --filter @open-arena/backend db:push",
+    "db:migrate": "pnpm --filter @open-arena/backend db:migrate",
+    "db:seed": "pnpm --filter @open-arena/backend db:seed",
+    "db:studio": "pnpm --filter @open-arena/backend db:studio",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "typecheck": "pnpm -r --parallel typecheck",
+    "test": "pnpm -r --parallel test",
+    "test:e2e": "playwright test",
+    "prepare": "husky"
   },
   "devDependencies": {
     "concurrently": "^9.1.0",
-    "cross-env": "^10.1.0"
+    "cross-env": "^10.1.0",
+    "@eslint/js": "^9.17.0",
+    "@typescript-eslint/eslint-plugin": "^8.18.0",
+    "@typescript-eslint/parser": "^8.18.0",
+    "eslint": "^9.17.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-react": "^7.37.2",
+    "eslint-plugin-react-hooks": "^5.1.0",
+    "globals": "^15.14.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^15.3.0",
+    "prettier": "^3.4.2",
+    "typescript": "^5.7.3"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js,jsx,mjs,cjs}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md,yml,yaml,css,html}": [
+      "prettier --write"
+    ]
   }
 }

@@ -1,6 +1,21 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Eye, Ban, CheckCircle, Download, ChevronLeft, ChevronRight, Trash2, UserPlus, Users as UsersIcon, Mail, User, Lock, Shield } from 'lucide-react';
+import {
+  Search,
+  Eye,
+  Ban,
+  CheckCircle,
+  Download,
+  ChevronLeft,
+  ChevronRight,
+  Trash2,
+  UserPlus,
+  Users as UsersIcon,
+  Mail,
+  User,
+  Lock,
+  Shield,
+} from 'lucide-react';
 
 interface AdminUser {
   id: string;
@@ -192,9 +207,7 @@ export default function UsersTable() {
   }, [page, search]);
 
   const toggleSelect = (id: string) => {
-    setSelected((prev) =>
-      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]
-    );
+    setSelected((prev) => (prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]));
   };
 
   const toggleAll = () => {
@@ -223,7 +236,10 @@ export default function UsersTable() {
   const exportCSV = () => {
     const headers = 'ID,Username,Email,Role,Status,Joined\n';
     const rows = users
-      .map((u) => `${u.id},${u.username},${u.email},${u.role},${u.isBanned ? 'Banned' : 'Active'},${u.createdAt}`)
+      .map(
+        (u) =>
+          `${u.id},${u.username},${u.email},${u.role},${u.isBanned ? 'Banned' : 'Active'},${u.createdAt}`,
+      )
       .join('\n');
     const blob = new Blob([headers + rows], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
@@ -328,7 +344,11 @@ export default function UsersTable() {
                   <thead>
                     <tr className="text-text-secondary border-b border-border">
                       <th className="p-3">
-                        <input type="checkbox" checked={selected.length === users.length} onChange={toggleAll} />
+                        <input
+                          type="checkbox"
+                          checked={selected.length === users.length}
+                          onChange={toggleAll}
+                        />
                       </th>
                       <th className="text-left p-3">Username</th>
                       <th className="text-left p-3">Email</th>
@@ -355,14 +375,18 @@ export default function UsersTable() {
                           <td className="p-3">
                             <span
                               className={`px-2 py-0.5 rounded-full text-xs ${
-                                u.role === 'ADMIN' ? 'bg-accent/20 text-accent' : 'bg-bg-primary text-text-secondary'
+                                u.role === 'ADMIN'
+                                  ? 'bg-accent/20 text-accent'
+                                  : 'bg-bg-primary text-text-secondary'
                               }`}
                             >
                               {u.role}
                             </span>
                           </td>
                           <td className={`p-3 ${status.color}`}>{status.label}</td>
-                          <td className="p-3 text-text-secondary">{new Date(u.createdAt).toLocaleDateString()}</td>
+                          <td className="p-3 text-text-secondary">
+                            {new Date(u.createdAt).toLocaleDateString()}
+                          </td>
                           <td className="p-3">
                             <div className="flex gap-1">
                               <button
@@ -376,7 +400,10 @@ export default function UsersTable() {
                                 onClick={async () => {
                                   await fetchJson(`/api/admin/users/${u.id}/ban`, {
                                     method: 'PATCH',
-                                    body: JSON.stringify({ ban: !u.isBanned, reason: 'Banned by admin' }),
+                                    body: JSON.stringify({
+                                      ban: !u.isBanned,
+                                      reason: 'Banned by admin',
+                                    }),
                                   });
                                   fetchUsers();
                                 }}
@@ -386,7 +413,11 @@ export default function UsersTable() {
                                     : 'bg-danger/10 text-danger hover:bg-danger/20'
                                 }`}
                               >
-                                {u.isBanned ? <CheckCircle className="w-3 h-3" /> : <Ban className="w-3 h-3" />}
+                                {u.isBanned ? (
+                                  <CheckCircle className="w-3 h-3" />
+                                ) : (
+                                  <Ban className="w-3 h-3" />
+                                )}
                                 {u.isBanned ? 'Unban' : 'Ban'}
                               </button>
                             </div>

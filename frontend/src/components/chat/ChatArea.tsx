@@ -44,7 +44,11 @@ export default function ChatArea() {
       <div className="flex items-center gap-1.5 px-4 sm:px-6 py-3 border-b border-border bg-bg-primary/80 backdrop-blur-xl flex-shrink-0">
         <ModelSelector currentModelId={currentConv?.modelId} />
         <div className="flex-1" />
-        <button onClick={toggleSidebar} className="p-1.5 hover:bg-bg-secondary rounded-lg transition md:hidden" title="Toggle sidebar">
+        <button
+          onClick={toggleSidebar}
+          className="p-1.5 hover:bg-bg-secondary rounded-lg transition md:hidden"
+          title="Toggle sidebar"
+        >
           <User className="w-4 h-4 text-text-secondary" />
         </button>
       </div>
@@ -56,7 +60,12 @@ export default function ChatArea() {
         ) : (
           <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8 space-y-8">
             {messages.map((msg) => (
-              <MessageBubble key={msg.id} message={msg} modelName={modelName} modelImage={modelImage} />
+              <MessageBubble
+                key={msg.id}
+                message={msg}
+                modelName={modelName}
+                modelImage={modelImage}
+              />
             ))}
             {isStreaming && streamingContent && (
               <MessageBubble
@@ -79,7 +88,11 @@ export default function ChatArea() {
                   {modelImage ? (
                     <img src={modelImage} alt="" className="w-6 h-6 rounded object-contain" />
                   ) : (
-                    <img src={theme === 'dark' ? '/OpenArena-Black.png' : '/favicon.png'} alt="Open Arena" className="w-5 h-5 rounded-md" />
+                    <img
+                      src={theme === 'dark' ? '/OpenArena-Black.png' : '/favicon.png'}
+                      alt="Open Arena"
+                      className="w-5 h-5 rounded-md"
+                    />
                   )}
                 </div>
                 <div className="flex items-center gap-1.5">
@@ -135,9 +148,15 @@ function EmptyState() {
   return (
     <div className="flex flex-col items-center justify-center h-full text-center px-4 sm:px-6 animate-fadeIn">
       <div className="w-20 h-20 rounded-2xl bg-bg-secondary border border-border flex items-center justify-center mb-5 shadow-lg">
-        <img src={theme === 'dark' ? '/OpenArena-Black.png' : '/favicon.png'} alt="Open Arena" className="w-12 h-12 rounded-xl" />
+        <img
+          src={theme === 'dark' ? '/OpenArena-Black.png' : '/favicon.png'}
+          alt="Open Arena"
+          className="w-12 h-12 rounded-xl"
+        />
       </div>
-      <h1 className="text-2xl sm:text-3xl font-semibold mb-2 tracking-tight">How can I help you today?</h1>
+      <h1 className="text-2xl sm:text-3xl font-semibold mb-2 tracking-tight">
+        How can I help you today?
+      </h1>
       <p className="text-text-secondary text-sm sm:text-base mb-8 max-w-md">
         Start a conversation or try a suggestion
       </p>
@@ -151,7 +170,9 @@ function EmptyState() {
             <div className="w-9 h-9 rounded-lg bg-accent/10 flex items-center justify-center text-accent flex-shrink-0 group-hover:bg-accent/20 transition">
               {p.icon}
             </div>
-            <span className="text-text-secondary group-hover:text-text-primary transition leading-snug">{p.text}</span>
+            <span className="text-text-secondary group-hover:text-text-primary transition leading-snug">
+              {p.text}
+            </span>
           </button>
         ))}
       </div>

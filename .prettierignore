@@ -1,0 +1,13 @@
+**/dist/**
+**/build/**
+**/node_modules/**
+**/.next/**
+**/coverage/**
+**/.turbo/**
+**/data.db
+**/data/**
+**/*.lock
+**/pnpm-lock.yaml
+config.json
+config.backup.*.json
+backend/prisma/migrations/**

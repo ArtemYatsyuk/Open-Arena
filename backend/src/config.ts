@@ -1,52 +1,43 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import type { Config } from '@open-arena/shared';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const configPath = path.join(__dirname, '../../config.json');
 
-export interface ModelConfig {
-  id: string;
-  name: string;
-  baseUrl: string;
-  endpoint: string;
-  modelId: string;
-  apiKeyEnv: string;
-  streaming: boolean;
-  contextWindow: number;
-  description: string;
-  image?: string;
+/**
+ * Resolve path to the closest config.json.
+ *
+ * Lookup order:
+ *   1. <root>/data/config.json        (preferred — Phase 0 migration target)
+ *   2. <root>/config.json             (legacy — backwards compatibility)
+ *
+ * @returns { path: string; isDataDir: boolean }
+ */
+export function resolveConfigPath(): { path: string; isDataDir: boolean } {
+  const rootDir = path.resolve(__dirname, '../..');
+  const dataPath = path.join(rootDir, 'data', 'config.json');
+  const legacyPath = path.join(rootDir, 'config.json');
+
+  if (fs.existsSync(dataPath)) {
+    return { path: dataPath, isDataDir: true };
+  }
+  return { path: legacyPath, isDataDir: false };
 }
 
-export interface AppConfig {
-  name: string;
-  logoUrl: string;
-  allowRegistration: boolean;
-  maxConversationsPerUser: number;
-}
+const resolved = resolveConfigPath();
+export const configPath = resolved.path;
+export const isDataDir = resolved.isDataDir;
 
-export interface WebSearchConfig {
-  enabled: boolean;
-  provider: string;
-  searxngUrl: string;
-}
+let config: Config;
+let watchers: Array<(cfg: Config) => void> = [];
 
-export interface FullConfig {
-  models: ModelConfig[];
-  defaultModelId: string;
-  app: AppConfig;
-  webSearch?: WebSearchConfig;
-}
-
-let config: FullConfig;
-let watchers: ((cfg: FullConfig) => void)[] = [];
-
-function loadConfig(): FullConfig {
+function loadConfig(): Config {
   try {
     const raw = fs.readFileSync(configPath, 'utf-8');
-    config = JSON.parse(raw);
-    watchers.forEach(fn => fn(config));
+    config = JSON.parse(raw) as Config;
+    watchers.forEach((fn) => fn(config));
   } catch (e: any) {
     console.error('Failed to load config.json:', e.message);
     if (!config) throw new Error('Config file missing or invalid at startup');
@@ -54,20 +45,20 @@ function loadConfig(): FullConfig {
   return config;
 }
 
-export function getConfig(): FullConfig {
+export function getConfig(): Config {
   if (!config) loadConfig();
   return config;
 }
 
-export function getModelById(id: string): ModelConfig | undefined {
-  return getConfig().models.find(m => m.id === id);
+export function getModelById(id: string): Config['models'][number] | undefined {
+  return getConfig().models.find((m) => m.id === id);
 }
 
 export function getDefaultModelId(): string {
   return getConfig().defaultModelId;
 }
 
-export function onConfigChange(fn: (cfg: FullConfig) => void) {
+export function onConfigChange(fn: (cfg: Config) => void) {
   watchers.push(fn);
 }
 

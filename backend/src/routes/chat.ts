@@ -21,11 +21,16 @@ const chatSchema = z.object({
 
 router.post('/', isAuthenticated, isNotBanned, async (req: AuthRequest, res) => {
   try {
-    let { conversationId, content, modelId, webSearch, reasoning, regenerateMessageId } = chatSchema.parse(req.body);
+    let { conversationId, content, modelId, webSearch, reasoning, regenerateMessageId } =
+      chatSchema.parse(req.body);
     reasoning = reasoning !== false;
 
     // Filter inlet hook
-    const inletBody = await runInlet({ messages: [{ role: 'user', content }], modelId, webSearch, reasoning }, req.userId!, req.userRole!);
+    const inletBody = await runInlet(
+      { messages: [{ role: 'user', content }], modelId, webSearch, reasoning },
+      req.userId!,
+      req.userRole!,
+    );
     content = inletBody.messages?.[inletBody.messages.length - 1]?.content || content;
     modelId = inletBody.modelId || modelId;
     webSearch = inletBody.webSearch !== undefined ? inletBody.webSearch : webSearch;
@@ -36,7 +41,8 @@ router.post('/', isAuthenticated, isNotBanned, async (req: AuthRequest, res) => 
     let isRegenerate = !!regenerateMessageId;
     let targetMessage: any = null;
     let createdMessageId: string | null = null;
-    let searchSources: { index: number; title: string; url: string; snippet: string }[] | null = null;
+    let searchSources: { index: number; title: string; url: string; snippet: string }[] | null =
+      null;
 
     if (isRegenerate) {
       targetMessage = await prisma.message.findUnique({ where: { id: regenerateMessageId } });
@@ -51,7 +57,9 @@ router.post('/', isAuthenticated, isNotBanned, async (req: AuthRequest, res) => 
       if (app.maxConversationsPerUser > 0) {
         const convCount = await prisma.conversation.count({ where: { userId: req.userId! } });
         if (convCount >= app.maxConversationsPerUser) {
-          return res.status(400).json({ error: `Maximum of ${app.maxConversationsPerUser} conversations reached` });
+          return res
+            .status(400)
+            .json({ error: `Maximum of ${app.maxConversationsPerUser} conversations reached` });
         }
       }
       const title = await generateTitle(content, modelId);
@@ -74,7 +82,10 @@ router.post('/', isAuthenticated, isNotBanned, async (req: AuthRequest, res) => 
       take: 40,
     });
 
-    const formattedMessages = messages.map(m => ({ role: m.role, content: extractTextFromContent(m.content) }));
+    const formattedMessages = messages.map((m) => ({
+      role: m.role,
+      content: extractTextFromContent(m.content),
+    }));
 
     res.setHeader('Content-Type', 'text/event-stream');
     res.setHeader('Cache-Control', 'no-cache');
@@ -90,7 +101,9 @@ router.post('/', isAuthenticated, isNotBanned, async (req: AuthRequest, res) => 
         ? `Today is ${today}.\n\nLive web search results for the user's query are below. These are NOT part of your training data — use them to answer.\n\n${searchResults.text}`
         : `Today is ${today}. Web search was attempted but no results were retrieved. Answer using your best available knowledge, but take note of the current date.`;
       formattedMessages.unshift({ role: 'system', content: context });
-      res.write(`data: ${JSON.stringify({ type: 'websearch', count: searchResults.count, sources: searchSources })}\n\n`);
+      res.write(
+        `data: ${JSON.stringify({ type: 'websearch', count: searchResults.count, sources: searchSources })}\n\n`,
+      );
       if (typeof (res as any).flush === 'function') (res as any).flush();
     }
 
@@ -100,11 +113,13 @@ router.post('/', isAuthenticated, isNotBanned, async (req: AuthRequest, res) => 
     let fullContent = '';
     let fullReasoning = '';
 
-    const onReasoning = reasoning ? (chunk: string) => {
-      fullReasoning += chunk;
-      res.write(`data: ${JSON.stringify({ type: 'reasoning', content: chunk })}\n\n`);
-      if (typeof (res as any).flush === 'function') (res as any).flush();
-    } : undefined;
+    const onReasoning = reasoning
+      ? (chunk: string) => {
+          fullReasoning += chunk;
+          res.write(`data: ${JSON.stringify({ type: 'reasoning', content: chunk })}\n\n`);
+          if (typeof (res as any).flush === 'function') (res as any).flush();
+        }
+      : undefined;
 
     fullContent = await streamChat(
       modelId,
@@ -127,26 +142,31 @@ router.post('/', isAuthenticated, isNotBanned, async (req: AuthRequest, res) => 
       try {
         alternatives = targetMessage.alternatives ? JSON.parse(targetMessage.alternatives) : [];
       } catch {}
-      alternatives.push({ content: targetMessage.content, reasoning: targetMessage.reasoning || undefined });
+      alternatives.push({
+        content: targetMessage.content,
+        reasoning: targetMessage.reasoning || undefined,
+      });
 
       await prisma.message.update({
         where: { id: targetMessage.id },
         data: {
           content: cleanedContent,
-          reasoning: reasoning ? (fullReasoning || null) : null,
+          reasoning: reasoning ? fullReasoning || null : null,
           alternatives: JSON.stringify(alternatives),
           webSearchSources: searchSources ? JSON.stringify(searchSources) : null,
         },
       });
 
-      res.write(`data: ${JSON.stringify({ type: 'alternative', messageId: targetMessage.id, content: cleanedContent, reasoning: reasoning ? fullReasoning : '', versionCount: alternatives.length + 1 })}\n\n`);
+      res.write(
+        `data: ${JSON.stringify({ type: 'alternative', messageId: targetMessage.id, content: cleanedContent, reasoning: reasoning ? fullReasoning : '', versionCount: alternatives.length + 1 })}\n\n`,
+      );
     } else {
       const newMsg = await prisma.message.create({
         data: {
           conversationId: convId,
           role: 'assistant',
           content: cleanedContent,
-          reasoning: reasoning ? (fullReasoning || null) : null,
+          reasoning: reasoning ? fullReasoning || null : null,
           webSearchSources: searchSources ? JSON.stringify(searchSources) : null,
         },
       });
@@ -160,14 +180,20 @@ router.post('/', isAuthenticated, isNotBanned, async (req: AuthRequest, res) => 
 
     // Filter outlet hook
     try {
-      await runOutlet({ messages: [{ role: 'assistant', content: cleanedContent }] }, req.userId!, req.userRole!);
+      await runOutlet(
+        { messages: [{ role: 'assistant', content: cleanedContent }] },
+        req.userId!,
+        req.userRole!,
+      );
     } catch (e: any) {
       console.error('[Chat] Filter outlet error:', e.message);
     }
 
     if (isNewConversation) {
       const conv = await prisma.conversation.findUnique({ where: { id: convId } });
-      res.write(`data: ${JSON.stringify({ type: 'conversation', id: convId, title: conv?.title })}\n\n`);
+      res.write(
+        `data: ${JSON.stringify({ type: 'conversation', id: convId, title: conv?.title })}\n\n`,
+      );
     }
 
     res.write(`data: ${JSON.stringify({ type: 'done', messageId: createdMessageId })}\n\n`);

@@ -75,39 +75,54 @@ export default function ChatInput() {
                 <>
                   <div className="fixed inset-0 z-40" onClick={() => setIntegrationsOpen(false)} />
                   <div className="absolute bottom-full left-0 mb-2 z-50 w-52 bg-bg-primary border border-border rounded-xl shadow-2xl p-2">
-                    <p className="text-xs font-semibold text-text-secondary px-2 py-1.5">Integrations</p>
+                    <p className="text-xs font-semibold text-text-secondary px-2 py-1.5">
+                      Integrations
+                    </p>
                     <div className="h-px bg-border mx-2 my-1" />
                     <div className="space-y-0.5">
                       <button
-                        onClick={() => { toggleWebSearch(); }}
+                        onClick={() => {
+                          toggleWebSearch();
+                        }}
                         className="w-full flex items-center justify-between px-2.5 py-2 rounded-lg hover:bg-bg-secondary transition text-sm"
                       >
                         <span className="flex items-center gap-2">
                           <Globe className="w-4 h-4 text-text-secondary" />
                           Web Search
                         </span>
-                        <span className={`w-8 h-4 rounded-full transition-colors relative ${
-                          webSearchEnabled ? 'bg-accent' : 'bg-border'
-                        }`}>
-                          <span className={`absolute top-0.5 w-3 h-3 bg-white rounded-full shadow-sm transition-all ${
-                            webSearchEnabled ? 'left-[18px]' : 'left-0.5'
-                          }`} />
+                        <span
+                          className={`w-8 h-4 rounded-full transition-colors relative ${
+                            webSearchEnabled ? 'bg-accent' : 'bg-border'
+                          }`}
+                        >
+                          <span
+                            className={`absolute top-0.5 w-3 h-3 bg-white rounded-full shadow-sm transition-all ${
+                              webSearchEnabled ? 'left-[18px]' : 'left-0.5'
+                            }`}
+                          />
                         </span>
                       </button>
                       <button
-                        onClick={() => { toggleWorkspace(); setIntegrationsOpen(false); }}
+                        onClick={() => {
+                          toggleWorkspace();
+                          setIntegrationsOpen(false);
+                        }}
                         className="w-full flex items-center justify-between px-2.5 py-2 rounded-lg hover:bg-bg-secondary transition text-sm"
                       >
                         <span className="flex items-center gap-2">
                           <Code className="w-4 h-4 text-text-secondary" />
                           Code Interpreter
                         </span>
-                        <span className={`w-8 h-4 rounded-full transition-colors relative ${
-                          workspaceOpen ? 'bg-accent' : 'bg-border'
-                        }`}>
-                          <span className={`absolute top-0.5 w-3 h-3 bg-white rounded-full shadow-sm transition-all ${
-                            workspaceOpen ? 'left-[18px]' : 'left-0.5'
-                          }`} />
+                        <span
+                          className={`w-8 h-4 rounded-full transition-colors relative ${
+                            workspaceOpen ? 'bg-accent' : 'bg-border'
+                          }`}
+                        >
+                          <span
+                            className={`absolute top-0.5 w-3 h-3 bg-white rounded-full shadow-sm transition-all ${
+                              workspaceOpen ? 'left-[18px]' : 'left-0.5'
+                            }`}
+                          />
                         </span>
                       </button>
                       <button
@@ -118,12 +133,16 @@ export default function ChatInput() {
                           <Brain className="w-4 h-4 text-text-secondary" />
                           Reasoning
                         </span>
-                        <span className={`w-8 h-4 rounded-full transition-colors relative ${
-                          reasoningEnabled ? 'bg-accent' : 'bg-border'
-                        }`}>
-                          <span className={`absolute top-0.5 w-3 h-3 bg-white rounded-full shadow-sm transition-all ${
-                            reasoningEnabled ? 'left-[18px]' : 'left-0.5'
-                          }`} />
+                        <span
+                          className={`w-8 h-4 rounded-full transition-colors relative ${
+                            reasoningEnabled ? 'bg-accent' : 'bg-border'
+                          }`}
+                        >
+                          <span
+                            className={`absolute top-0.5 w-3 h-3 bg-white rounded-full shadow-sm transition-all ${
+                              reasoningEnabled ? 'left-[18px]' : 'left-0.5'
+                            }`}
+                          />
                         </span>
                       </button>
                     </div>

@@ -2,21 +2,20 @@ import { Router } from 'express';
 import { z } from 'zod';
 import fs from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { prisma } from '../index.js';
 import { isAuthenticated, isNotBanned, isAdmin, AuthRequest } from '../middleware/auth.js';
 import { hashPassword } from '../services/authService.js';
-import { reloadConfig } from '../config.js';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const configPath = path.join(__dirname, '../../../config.json');
+import { reloadConfig, configPath } from '../config.js';
 
 const router = Router();
 
 const createUserSchema = z.object({
   email: z.string().email(),
-  username: z.string().min(3).max(30).regex(/^[a-zA-Z0-9_]+$/),
+  username: z
+    .string()
+    .min(3)
+    .max(30)
+    .regex(/^[a-zA-Z0-9_]+$/),
   password: z.string().min(8),
   role: z.enum(['USER', 'ADMIN']).default('USER'),
 });
@@ -51,9 +50,14 @@ router.get('/stats', async (req, res) => {
 
     let dateRange: string;
     switch (period) {
-      case '7d': dateRange = '-7 days'; break;
-      case '1y': dateRange = '-1 year'; break;
-      default: dateRange = '-30 days';
+      case '7d':
+        dateRange = '-7 days';
+        break;
+      case '1y':
+        dateRange = '-1 year';
+        break;
+      default:
+        dateRange = '-30 days';
     }
 
     const [totalUsers, activeToday, totalConversations, messagesToday] = await Promise.all([
@@ -115,10 +119,7 @@ router.get('/users', async (req: AuthRequest, res) => {
 
     const where: any = search
       ? {
-          OR: [
-            { username: { contains: search } },
-            { email: { contains: search } },
-          ],
+          OR: [{ username: { contains: search } }, { email: { contains: search } }],
         }
       : {};
 
@@ -300,10 +301,7 @@ router.get('/conversations', async (req: AuthRequest, res) => {
 
     const where: any = search
       ? {
-          OR: [
-            { title: { contains: search } },
-            { user: { username: { contains: search } } },
-          ],
+          OR: [{ title: { contains: search } }, { user: { username: { contains: search } } }],
         }
       : {};
 
@@ -334,10 +332,12 @@ router.get('/conversations/:id/messages', async (req: AuthRequest, res) => {
     const conversation = await prisma.conversation.findUnique({ where: { id: convId } });
     if (!conversation) return res.status(404).json({ error: 'Conversation not found' });
 
-    const messages = (await prisma.message.findMany({
-      where: { conversationId: convId },
-      orderBy: { createdAt: 'asc' },
-    })).map(m => ({
+    const messages = (
+      await prisma.message.findMany({
+        where: { conversationId: convId },
+        orderBy: { createdAt: 'asc' },
+      })
+    ).map((m) => ({
       ...m,
       webSearchSources: m.webSearchSources ? JSON.parse(m.webSearchSources) : null,
     }));
@@ -358,17 +358,19 @@ router.get('/config', async (req, res) => {
 });
 
 const writableConfigSchema = z.object({
-  models: z.array(z.object({
-    id: z.string().min(1),
-    name: z.string().min(1),
-    baseUrl: z.string().min(1),
-    endpoint: z.string().min(1),
-    modelId: z.string().min(1),
-    apiKeyEnv: z.string().min(1),
-    streaming: z.boolean(),
-    contextWindow: z.number().int().positive(),
-    description: z.string(),
-  })),
+  models: z.array(
+    z.object({
+      id: z.string().min(1),
+      name: z.string().min(1),
+      baseUrl: z.string().min(1),
+      endpoint: z.string().min(1),
+      modelId: z.string().min(1),
+      apiKeyEnv: z.string().min(1),
+      streaming: z.boolean(),
+      contextWindow: z.number().int().positive(),
+      description: z.string(),
+    }),
+  ),
   defaultModelId: z.string().min(1),
 });
 

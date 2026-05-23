@@ -7,9 +7,12 @@ export default function ToastContainer() {
 
   const getIcon = (type: string) => {
     switch (type) {
-      case 'success': return <CheckCircle className="w-4 h-4 flex-shrink-0" />;
-      case 'error': return <AlertCircle className="w-4 h-4 flex-shrink-0" />;
-      default: return <Info className="w-4 h-4 flex-shrink-0" />;
+      case 'success':
+        return <CheckCircle className="w-4 h-4 flex-shrink-0" />;
+      case 'error':
+        return <AlertCircle className="w-4 h-4 flex-shrink-0" />;
+      default:
+        return <Info className="w-4 h-4 flex-shrink-0" />;
     }
   };
 
@@ -22,8 +25,8 @@ export default function ToastContainer() {
             toast.type === 'success'
               ? 'bg-success'
               : toast.type === 'error'
-              ? 'bg-danger'
-              : 'bg-accent'
+                ? 'bg-danger'
+                : 'bg-accent'
           }`}
         >
           {getIcon(toast.type)}

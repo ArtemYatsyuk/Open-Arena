@@ -114,20 +114,26 @@ router.put('/admin/:id', isAuthenticated, isNotBanned, isAdmin, async (req: Auth
 });
 
 // Admin: delete filter
-router.delete('/admin/:id', isAuthenticated, isNotBanned, isAdmin, async (req: AuthRequest, res) => {
-  try {
-    const id = getId(req);
-    const existing = await prisma.filter.findUnique({ where: { id } });
-    if (!existing) return res.status(404).json({ error: 'Filter not found' });
+router.delete(
+  '/admin/:id',
+  isAuthenticated,
+  isNotBanned,
+  isAdmin,
+  async (req: AuthRequest, res) => {
+    try {
+      const id = getId(req);
+      const existing = await prisma.filter.findUnique({ where: { id } });
+      if (!existing) return res.status(404).json({ error: 'Filter not found' });
 
-    await prisma.filter.delete({ where: { id } });
-    await reloadFilters();
+      await prisma.filter.delete({ where: { id } });
+      await reloadFilters();
 
-    res.json({ success: true });
-  } catch (e: any) {
-    res.status(500).json({ error: 'Failed to delete filter: ' + e.message });
-  }
-});
+      res.json({ success: true });
+    } catch (e: any) {
+      res.status(500).json({ error: 'Failed to delete filter: ' + e.message });
+    }
+  },
+);
 
 // Admin: test compile filter code without saving
 router.post('/admin/test', isAuthenticated, isNotBanned, isAdmin, async (req: AuthRequest, res) => {

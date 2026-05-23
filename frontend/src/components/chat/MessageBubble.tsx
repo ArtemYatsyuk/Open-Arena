@@ -4,7 +4,22 @@ import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
-import { Copy, Check, Clock, Brain, Globe, ChevronDown, ChevronRight, ChevronLeft, RotateCcw, ExternalLink, Speaker, ThumbsUp, ThumbsDown, Bot } from 'lucide-react';
+import {
+  Copy,
+  Check,
+  Clock,
+  Brain,
+  Globe,
+  ChevronDown,
+  ChevronRight,
+  ChevronLeft,
+  RotateCcw,
+  ExternalLink,
+  Speaker,
+  ThumbsUp,
+  ThumbsDown,
+  Bot,
+} from 'lucide-react';
 import { useChatStore } from '../../stores/chatStore';
 import type { Message } from '../../stores/chatStore';
 
@@ -12,11 +27,14 @@ function tryExtract(str: string, quote: string): string | null {
   const escaped = quote === '"' ? '\\"' : "'";
   const pattern = new RegExp(
     `^\\s*\\[\\s*\\{?['"]type['"]\\s*:\\s*['"]text['"]\\s*,\\s*['"]text['"]\\s*:\\s*${quote}((?:[^${escaped}\\\\]|\\\\.)*)${quote}\\s*\\}?\\s*\\]\\s*$`,
-    'gm'
+    'gm',
   );
   const matches = [...str.matchAll(pattern)];
   if (matches.length === 0) return null;
-  return matches.map((m) => m[1]).join('\n\n').trim();
+  return matches
+    .map((m) => m[1])
+    .join('\n\n')
+    .trim();
 }
 
 function cleanContent(str: string): string {
@@ -32,7 +50,7 @@ function speak(text: string) {
     .replace(/```[\s\S]*?```/g, '')
     .replace(/`([^`]+)`/g, '$1')
     .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
-    .replace(/[*#_~>|`\-]/g, '')
+    .replace(/[*#_~>|`-]/g, '')
     .replace(/\n{2,}/g, '. ')
     .replace(/\n/g, ' ')
     .replace(/\s+/g, ' ')
@@ -53,7 +71,7 @@ function speak(text: string) {
   } else {
     const voices = window.speechSynthesis.getVoices();
     const preferred = voices.find(
-      (v) => v.lang.startsWith('en') && (v.name.includes('Google') || v.name.includes('Natural'))
+      (v) => v.lang.startsWith('en') && (v.name.includes('Google') || v.name.includes('Natural')),
     );
     if (preferred) utterance.voice = preferred;
   }
@@ -90,9 +108,13 @@ function CodeBlock({ language, code }: { language: string; code: string }) {
           className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg hover:bg-white/10 transition text-xs"
         >
           {copied ? (
-            <><Check className="w-3 h-3" /> Copied!</>
+            <>
+              <Check className="w-3 h-3" /> Copied!
+            </>
           ) : (
-            <><Copy className="w-3 h-3" /> Copy</>
+            <>
+              <Copy className="w-3 h-3" /> Copy
+            </>
           )}
         </button>
       </div>
@@ -196,9 +218,7 @@ export default function MessageBubble({ message, isStreaming, modelName, modelIm
               <Bot className="w-3.5 h-3.5 text-text-secondary" />
             </div>
           )}
-          <span className="text-sm font-medium text-text-primary">
-            {displayModelName}
-          </span>
+          <span className="text-sm font-medium text-text-primary">{displayModelName}</span>
         </div>
 
         {hasReasoning && (
@@ -258,8 +278,12 @@ export default function MessageBubble({ message, isStreaming, modelName, modelIm
                       {src.index}
                     </span>
                     <div className="flex-1 min-w-0">
-                      <span className="text-text-primary font-medium group-hover:text-blue-500 transition">{src.title}</span>
-                      <p className="text-text-secondary text-xs mt-0.5 line-clamp-2">{src.snippet}</p>
+                      <span className="text-text-primary font-medium group-hover:text-blue-500 transition">
+                        {src.title}
+                      </span>
+                      <p className="text-text-secondary text-xs mt-0.5 line-clamp-2">
+                        {src.snippet}
+                      </p>
                     </div>
                     <ExternalLink className="w-3.5 h-3.5 text-text-secondary/50 flex-shrink-0 mt-1 opacity-0 group-hover:opacity-100 transition" />
                   </a>
@@ -276,16 +300,23 @@ export default function MessageBubble({ message, isStreaming, modelName, modelIm
                 a({ href, children, ...props }: any) {
                   const text = Array.isArray(children) ? children.join('') : String(children || '');
                   if (href && /^https?:\/\//.test(href) && /^\[\d+\]$/.test(text)) {
-                    const num = text.replace(/[\[\]]/g, '');
+                    const num = text.replace(/\[|\]/g, '');
                     return (
-                      <a href={href} target="_blank" rel="noopener noreferrer"
-                         className="inline-flex items-center justify-center w-5 h-5 rounded bg-blue-500/10 text-blue-500 text-xs font-bold mx-0.5 hover:bg-blue-500/20 hover:scale-110 transition-all"
+                      <a
+                        href={href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center justify-center w-5 h-5 rounded bg-blue-500/10 text-blue-500 text-xs font-bold mx-0.5 hover:bg-blue-500/20 hover:scale-110 transition-all"
                       >
                         {num}
                       </a>
                     );
                   }
-                  return <a href={href} {...props}>{children}</a>;
+                  return (
+                    <a href={href} {...props}>
+                      {children}
+                    </a>
+                  );
                 },
                 code({ className, children, ...props }: any) {
                   const match = /language-(\w+)/.exec(className || '');
@@ -297,7 +328,10 @@ export default function MessageBubble({ message, isStreaming, modelName, modelIm
                   }
 
                   return (
-                    <code className="px-1.5 py-0.5 bg-bg-secondary border border-border rounded-md text-sm font-mono" {...props}>
+                    <code
+                      className="px-1.5 py-0.5 bg-bg-secondary border border-border rounded-md text-sm font-mono"
+                      {...props}
+                    >
                       {children}
                     </code>
                   );
@@ -308,9 +342,7 @@ export default function MessageBubble({ message, isStreaming, modelName, modelIm
             </ReactMarkdown>
           </div>
 
-          {isStreaming && (
-            <span className="streaming-cursor text-accent text-lg leading-none" />
-          )}
+          {isStreaming && <span className="streaming-cursor text-accent text-lg leading-none" />}
         </div>
 
         {/* Toolbar - appears on hover */}

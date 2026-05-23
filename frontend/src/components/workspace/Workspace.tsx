@@ -70,7 +70,8 @@ function extractHtml(content: string): string {
   if (htmlMatch) return htmlMatch[1];
 
   const jsxMatch = content.match(/```(?:jsx|tsx)\n?([\s\S]*?)```/);
-  if (jsxMatch) return `<!DOCTYPE html><html><head><script src="https://unpkg.com/react@18/umd/react.development.js"></script><script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script><script src="https://unpkg.com/@babel/standalone/babel.min.js"></script></head><body><div id="root"></div><script type="text/babel">${jsxMatch[1]}</script></body></html>`;
+  if (jsxMatch)
+    return `<!DOCTYPE html><html><head><script src="https://unpkg.com/react@18/umd/react.development.js"></script><script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script><script src="https://unpkg.com/@babel/standalone/babel.min.js"></script></head><body><div id="root"></div><script type="text/babel">${jsxMatch[1]}</script></body></html>`;
 
   return content;
 }
