@@ -144,13 +144,13 @@ Open **http://localhost:5173** and log in as `admin@openarena.local` / `admin123
 
 ## ⭐ Star History
 
-<a href="https://star-history.com/#ArtemYatsyuk/Open-Arena&Date">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=ArtemYatsyuk/Open-Arena&type=Date&theme=dark" />
-    <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=ArtemYatsyuk/Open-Arena&type=Date" />
-    <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=ArtemYatsyuk/Open-Arena&type=Date" width="100%" />
-  </picture>
-</a>
+<p align="center">
+  <a href="https://star-history.com/#ArtemYatsyuk/Open-Arena&Date">
+    <img src="https://img.shields.io/github/stars/ArtemYatsyuk/Open-Arena?style=for-the-badge&label=Stars&color=18181b&logo=github" alt="Stars">
+  </a>
+</p>
+
+Track growth on <a href="https://star-history.com/#ArtemYatsyuk/Open-Arena&Date">star-history.com</a>.
 
 ---
 
