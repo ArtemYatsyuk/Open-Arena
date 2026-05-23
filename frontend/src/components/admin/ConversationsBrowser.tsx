@@ -268,11 +268,11 @@ export default function ConversationsBrowser() {
               messages.map((msg) => (
                 <div
                   key={msg.id}
-                  className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                  className={`flex ${msg.role === 'USER' ? 'justify-end' : 'justify-start'}`}
                 >
                   <div
                     className={`max-w-[80%] p-3 rounded-xl text-sm ${
-                      msg.role === 'user'
+                      msg.role === 'USER'
                         ? 'bg-accent/10 border border-accent/20'
                         : 'bg-bg-secondary border border-border'
                     }`}

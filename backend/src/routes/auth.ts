@@ -23,7 +23,7 @@ const registerSchema = z.object({
     .string()
     .min(3)
     .max(30)
-    .regex(/^[a-zA-Z0-9_]+$/),
+    .regex(/^[a-zA-Z0-9_-]+$/),
   password: z.string().min(8),
   invitationToken: z.string().optional(),
 });

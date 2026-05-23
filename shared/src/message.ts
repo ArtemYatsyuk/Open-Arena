@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { cuidSchema, isoDateSchema } from './common.js';
+import { attachmentResponseSchema } from './attachment.js';
 
 export const messageRoleSchema = z.enum(['USER', 'ASSISTANT', 'SYSTEM', 'TOOL']);
 export type MessageRole = z.infer<typeof messageRoleSchema>;
@@ -38,3 +39,8 @@ export const messageSchema = z.object({
   createdAt: isoDateSchema,
 });
 export type Message = z.infer<typeof messageSchema>;
+
+export const messageWithAttachmentsSchema = messageSchema.extend({
+  attachments: z.array(attachmentResponseSchema).optional(),
+});
+export type MessageWithAttachments = z.infer<typeof messageWithAttachmentsSchema>;

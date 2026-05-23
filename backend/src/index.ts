@@ -17,6 +17,7 @@ import conversationRoutes from './routes/conversations.js';
 import adminRoutes from './routes/admin.js';
 import filterRoutes from './routes/filters.js';
 import oauthRoutes from './routes/oauth.js';
+import attachmentRoutes from './routes/attachments.js';
 
 dotenv.config();
 
@@ -79,6 +80,13 @@ app.use('/api/auth', authLimiter);
 
 initConfigWatcher();
 
+// In dev mode, redirect root to frontend
+if (isDev) {
+  app.get('/', (req, res) => {
+    res.redirect('http://localhost:5173');
+  });
+}
+
 app.get('/api/health', (req, res) => {
   const { app: appConfig } = getConfig();
   res.json({ status: 'ok', app: appConfig.name });
@@ -91,6 +99,7 @@ app.use('/api/chat', chatRoutes);
 app.use('/api/conversations', conversationRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/filters', filterRoutes);
+app.use('/api/attachments', attachmentRoutes);
 
 // Serve frontend static files in production
 if (!isDev) {

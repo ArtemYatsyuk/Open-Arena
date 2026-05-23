@@ -2,31 +2,124 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --bg-primary: #ffffff;
-  --bg-secondary: #f0ede8;
-  --bg-reverse: #1c1b1a;
-  --border-color: rgba(0, 0, 0, 0.06);
-  --text-primary: #1c1b1a;
-  --text-secondary: #8b8a84;
-  --text-reverse: #ffffff;
-  --font-size-base: 16px;
-  --color-accent: 91 154 101;
-  --color-accent-hover: 76 139 86;
-  --color-accent-light: 180 210 190;
+@font-face {
+  font-family: 'Geist Variable';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('@fontsource-variable/geist/files/geist-latin-wght-normal.woff2')
+    format('woff2-variations');
 }
 
-.dark {
-  --bg-primary: #313338;
-  --bg-secondary: #2b2d31;
-  --bg-reverse: #ffffff;
-  --border-color: rgba(255, 255, 255, 0.06);
-  --text-primary: #dbdee1;
-  --text-secondary: #a6a8ab;
-  --text-reverse: #1c1b1a;
-  --color-accent: 91 154 101;
-  --color-accent-hover: 76 139 86;
-  --color-accent-light: 180 210 190;
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 30 3% 11%;
+    --card: 0 0% 100%;
+    --card-foreground: 30 3% 11%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 30 3% 11%;
+    --primary: 30 3% 11%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 35 12% 93%;
+    --secondary-foreground: 30 3% 11%;
+    --muted: 35 12% 93%;
+    --muted-foreground: 43 3% 53%;
+    --accent: 35 12% 93%;
+    --accent-foreground: 30 3% 11%;
+    --destructive: 0 73% 59%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 30 3% 91%;
+    --input: 30 3% 91%;
+    --ring: 43 3% 53%;
+    --radius: 0.625rem;
+    --chart-1: 30 3% 11%;
+    --chart-2: 43 3% 53%;
+    --chart-3: 35 12% 93%;
+    --chart-4: 30 3% 30%;
+    --chart-5: 30 3% 70%;
+    --sidebar: 0 0% 100%;
+    --sidebar-foreground: 30 3% 11%;
+    --sidebar-primary: 30 3% 11%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 35 12% 93%;
+    --sidebar-accent-foreground: 30 3% 11%;
+    --sidebar-border: 30 3% 91%;
+    --sidebar-ring: 43 3% 53%;
+
+    --bg-primary: #ffffff;
+    --bg-secondary: #f0ede8;
+    --bg-reverse: #1c1b1a;
+    --border-color: rgba(0, 0, 0, 0.06);
+    --text-primary: #1c1b1a;
+    --text-secondary: #8b8a84;
+    --text-reverse: #ffffff;
+    --font-size-base: 16px;
+    --color-accent: 91 154 101;
+    --color-accent-hover: 76 139 86;
+    --color-accent-light: 180 210 190;
+  }
+
+  .dark {
+    --background: 220 7% 20%;
+    --foreground: 210 11% 87%;
+    --card: 220 7% 18%;
+    --card-foreground: 210 11% 87%;
+    --popover: 220 7% 18%;
+    --popover-foreground: 210 11% 87%;
+    --primary: 210 11% 87%;
+    --primary-foreground: 30 3% 11%;
+    --secondary: 220 7% 18%;
+    --secondary-foreground: 210 11% 87%;
+    --muted: 220 7% 18%;
+    --muted-foreground: 225 3% 66%;
+    --accent: 220 7% 18%;
+    --accent-foreground: 210 11% 87%;
+    --destructive: 0 73% 59%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 220 7% 22%;
+    --input: 220 7% 25%;
+    --ring: 225 3% 66%;
+    --chart-1: 210 11% 87%;
+    --chart-2: 225 3% 66%;
+    --chart-3: 220 7% 18%;
+    --chart-4: 210 11% 70%;
+    --chart-5: 220 7% 35%;
+    --sidebar: 220 7% 18%;
+    --sidebar-foreground: 210 11% 87%;
+    --sidebar-primary: 210 11% 87%;
+    --sidebar-primary-foreground: 30 3% 11%;
+    --sidebar-accent: 220 7% 18%;
+    --sidebar-accent-foreground: 210 11% 87%;
+    --sidebar-border: 220 7% 22%;
+    --sidebar-ring: 225 3% 66%;
+
+    --bg-primary: #313338;
+    --bg-secondary: #2b2d31;
+    --bg-reverse: #ffffff;
+    --border-color: rgba(255, 255, 255, 0.06);
+    --text-primary: #dbdee1;
+    --text-secondary: #a6a8ab;
+    --text-reverse: #1c1b1a;
+    --color-accent: 91 154 101;
+    --color-accent-hover: 76 139 86;
+    --color-accent-light: 180 210 190;
+  }
+
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans;
+    font-size: var(--font-size-base);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  html {
+    @apply font-sans;
+  }
 }
 
 * {
@@ -42,21 +135,6 @@ body,
   overflow: hidden;
 }
 
-body {
-  font-family:
-    'Inter',
-    system-ui,
-    -apple-system,
-    sans-serif;
-  font-size: var(--font-size-base);
-  line-height: 1.6;
-  color: var(--text-primary);
-  background: var(--bg-primary);
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-/* Ensure minimum touch target size for interactive elements */
 button,
 a,
 input,
@@ -67,7 +145,6 @@ textarea,
   touch-action: manipulation;
 }
 
-/* Focus visible styles for accessibility */
 *:focus-visible {
   outline: 2px solid rgb(var(--color-accent));
   outline-offset: 2px;
@@ -96,7 +173,6 @@ textarea,
   background: rgb(var(--color-accent) / 0.15);
 }
 
-/* Markdown content styling */
 .markdown-content h1 {
   font-size: 1.5em;
   font-weight: 600;
@@ -134,8 +210,8 @@ textarea,
   border-left: 3px solid rgb(var(--color-accent) / 0.3);
   padding: 0.5em 1em;
   margin: 0.75em 0;
-  color: var(--text-secondary);
-  background: var(--bg-secondary);
+  color: hsl(var(--muted-foreground));
+  background: hsl(var(--muted));
   border-radius: 0 8px 8px 0;
 }
 .markdown-content table {
@@ -144,17 +220,17 @@ textarea,
   margin: 1em 0;
   border-radius: 8px;
   overflow: hidden;
-  border: 1px solid var(--border-color);
+  border: 1px solid hsl(var(--border));
 }
 .markdown-content th,
 .markdown-content td {
   padding: 0.6em 0.75em;
-  border: 1px solid var(--border-color);
+  border: 1px solid hsl(var(--border));
   text-align: left;
 }
 .markdown-content th {
   font-weight: 600;
-  background: var(--bg-secondary);
+  background: hsl(var(--muted));
 }
 .markdown-content a {
   color: rgb(var(--color-accent));
@@ -167,37 +243,21 @@ textarea,
 }
 .markdown-content hr {
   border: none;
-  border-top: 1px solid var(--border-color);
+  border-top: 1px solid hsl(var(--border));
   margin: 1.5em 0;
 }
 .markdown-content code:not(pre code) {
-  background: var(--bg-secondary);
+  background: hsl(var(--muted));
   padding: 0.15em 0.4em;
   border-radius: 4px;
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.88em;
-  border: 1px solid var(--border-color);
+  border: 1px solid hsl(var(--border));
 }
 .markdown-content pre {
   margin: 0.75em 0;
   border-radius: 12px;
   overflow: hidden;
-}
-
-/* Animations */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.animate-fadeIn {
-  animation: fadeIn 200ms ease-out;
 }
 
 @keyframes spin {
@@ -291,7 +351,6 @@ textarea,
   animation: gradientShift 3s ease infinite;
 }
 
-/* Bubble tail for user messages */
 .bubble-tail-user::after {
   content: '';
   position: absolute;
@@ -303,7 +362,6 @@ textarea,
   clip-path: path('M 0 0 Q 12 0 12 12 Q 12 0 0 0 Z');
 }
 
-/* Bubble tail for assistant messages */
 .bubble-tail-assistant::after {
   content: '';
   position: absolute;
@@ -315,15 +373,13 @@ textarea,
   clip-path: path('M 12 0 Q 0 0 0 12 Q 0 0 12 0 Z');
 }
 
-/* Streaming cursor */
 .streaming-cursor::after {
-  content: '▍';
+  content: '\258D';
   animation: blink 0.8s step-end infinite;
   color: rgb(var(--color-accent));
   margin-left: 1px;
 }
 
-/* Line clamp utility */
 .line-clamp-1 {
   display: -webkit-box;
   -webkit-line-clamp: 1;
@@ -331,7 +387,6 @@ textarea,
   overflow: hidden;
 }
 
-/* Custom utility classes for theme-aware colors */
 .bg-bg-reverse {
   background-color: var(--bg-reverse);
 }

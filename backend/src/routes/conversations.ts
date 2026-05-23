@@ -144,11 +144,32 @@ router.get('/:id/messages', isAuthenticated, isNotBanned, async (req: AuthReques
       await prisma.message.findMany({
         where: { conversationId: id },
         orderBy: { createdAt: 'asc' },
+        include: {
+          attachments: {
+            select: {
+              id: true,
+              fileName: true,
+              mimeType: true,
+              size: true,
+              conversationId: true,
+            },
+          },
+        },
       })
-    ).map((m) => ({
-      ...m,
-      webSearchSources: m.webSearchSources ? JSON.parse(m.webSearchSources) : null,
-    }));
+    ).map((m) => {
+      let webSearchSources = null;
+      try {
+        webSearchSources = m.webSearchSources ? JSON.parse(m.webSearchSources) : null;
+      } catch {}
+      return {
+        ...m,
+        webSearchSources,
+        attachments: m.attachments.map((a) => ({
+          ...a,
+          url: `/api/attachments/${a.id}/file`,
+        })),
+      };
+    });
     res.json(messages);
   } catch (e: any) {
     console.error('[Conversations] Messages error:', e);

@@ -36,10 +36,3 @@ export const verifyEmailSchema = z.object({
   token: z.string().min(16),
 });
 export type VerifyEmailRequest = z.infer<typeof verifyEmailSchema>;
-
-/* ---------- Responses ---------- */
-
-export const authResponseSchema = z.object({
-  user: userSchema,
-});
-export type AuthResponse = z.infer<typeof authResponseSchema>;

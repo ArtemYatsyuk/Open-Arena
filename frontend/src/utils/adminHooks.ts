@@ -40,7 +40,7 @@ export function useBanUser() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: ({ userId, reason }: { userId: string; reason?: string }) =>
-      patch(`/admin/users/${userId}/ban`, { reason }),
+      patch(`/admin/users/${userId}/ban`, { ban: true, reason }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['admin', 'users'] }),
   });
 }
@@ -48,7 +48,8 @@ export function useBanUser() {
 export function useUnbanUser() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ userId }: { userId: string }) => del(`/admin/users/${userId}/ban`),
+    mutationFn: ({ userId }: { userId: string }) =>
+      patch(`/admin/users/${userId}/ban`, { ban: false }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['admin', 'users'] }),
   });
 }

@@ -11,14 +11,19 @@ import { sseSend } from '../utils/sse.js';
 
 const router = Router();
 
-const chatSchema = z.object({
-  conversationId: z.string().optional(),
-  content: z.string().min(1).max(100000),
-  modelId: z.string(),
-  webSearch: z.boolean().optional(),
-  reasoning: z.boolean().optional(),
-  regenerateMessageId: z.string().optional(),
-});
+const chatSchema = z
+  .object({
+    conversationId: z.string().optional(),
+    content: z.string().min(1).max(100000),
+    modelId: z.string(),
+    webSearch: z.boolean().optional(),
+    reasoning: z.boolean().optional(),
+    regenerateMessageId: z.string().optional(),
+    attachmentIds: z.array(z.string()).max(10).optional(),
+  })
+  .refine((data) => data.content.length > 0 || (data.attachmentIds?.length ?? 0) > 0, {
+    message: 'Message must have content or attachments',
+  });
 
 router.post('/', isAuthenticated, isNotBanned, async (req: AuthRequest, res) => {
   try {
@@ -72,9 +77,17 @@ router.post('/', isAuthenticated, isNotBanned, async (req: AuthRequest, res) => 
     }
 
     if (!isRegenerate) {
-      await prisma.message.create({
+      const userMsg = await prisma.message.create({
         data: { conversationId: convId, role: 'USER', content },
       });
+
+      const { attachmentIds } = req.body as { attachmentIds?: string[] };
+      if (attachmentIds?.length) {
+        await prisma.attachment.updateMany({
+          where: { id: { in: attachmentIds }, conversationId: convId },
+          data: { messageId: userMsg.id },
+        });
+      }
     }
 
     const messages = await prisma.message.findMany({
@@ -152,6 +165,8 @@ router.post('/', isAuthenticated, isNotBanned, async (req: AuthRequest, res) => 
           webSearchSources: searchSources ? JSON.stringify(searchSources) : null,
         },
       });
+
+      createdMessageId = targetMessage.id;
 
       sseSend(res, {
         type: 'alternative',

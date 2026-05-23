@@ -8,6 +8,7 @@ interface Toast {
 
 interface UIState {
   sidebarOpen: boolean;
+  mobileSidebarOpen: boolean;
   workspaceOpen: boolean;
   workspaceWidth: number;
   sidebarWidth: number;
@@ -17,6 +18,7 @@ interface UIState {
   toasts: Toast[];
 
   toggleSidebar: () => void;
+  setMobileSidebarOpen: (open: boolean) => void;
   toggleWorkspace: () => void;
   setWorkspaceWidth: (w: number) => void;
   setSidebarWidth: (w: number) => void;
@@ -35,6 +37,7 @@ function getSystemTheme(): 'light' | 'dark' {
 
 export const useUIStore = create<UIState>((set, get) => ({
   sidebarOpen: window.innerWidth >= 768,
+  mobileSidebarOpen: false,
   workspaceOpen: false,
   workspaceWidth: parseInt(localStorage.getItem('workspaceWidth') || '480'),
   sidebarWidth: parseInt(localStorage.getItem('sidebarWidth') || '260'),
@@ -43,7 +46,15 @@ export const useUIStore = create<UIState>((set, get) => ({
   workspaceContent: '',
   toasts: [],
 
-  toggleSidebar: () => set((state) => ({ sidebarOpen: !state.sidebarOpen })),
+  toggleSidebar: () => {
+    const isMobile = window.innerWidth < 768;
+    if (isMobile) {
+      set((state) => ({ mobileSidebarOpen: !state.mobileSidebarOpen }));
+    } else {
+      set((state) => ({ sidebarOpen: !state.sidebarOpen }));
+    }
+  },
+  setMobileSidebarOpen: (open) => set({ mobileSidebarOpen: open }),
 
   toggleWorkspace: () => set((state) => ({ workspaceOpen: !state.workspaceOpen })),
 

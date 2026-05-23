@@ -14,3 +14,12 @@ export const attachmentSchema = z.object({
   createdAt: isoDateSchema,
 });
 export type Attachment = z.infer<typeof attachmentSchema>;
+
+export const attachmentResponseSchema = z.object({
+  id: cuidSchema,
+  fileName: z.string(),
+  mimeType: z.string(),
+  size: z.number().int().nonnegative(),
+  url: z.string(),
+});
+export type AttachmentResponse = z.infer<typeof attachmentResponseSchema>;

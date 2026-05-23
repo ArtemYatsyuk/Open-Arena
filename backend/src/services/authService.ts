@@ -54,5 +54,5 @@ export function clearAuthCookies(res: any) {
   const secure = process.env.SECURE_COOKIES === 'true';
   res.clearCookie('accessToken', { httpOnly: true, secure, sameSite: 'lax', path: '/' });
   res.clearCookie('refreshToken', { httpOnly: true, secure, sameSite: 'lax', path: '/' });
-  res.clearCookie('csrfToken', { secure, sameSite: 'lax', path: '/' });
+  // csrfToken is intentionally NOT cleared — it persists across sessions
 }

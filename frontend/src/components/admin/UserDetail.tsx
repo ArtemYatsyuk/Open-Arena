@@ -212,11 +212,11 @@ export default function UserDetail() {
                   {conv.messages.map((msg, i) => (
                     <div
                       key={i}
-                      className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                      className={`flex ${msg.role === 'USER' ? 'justify-end' : 'justify-start'}`}
                     >
                       <div
                         className={`max-w-[80%] p-3 rounded-xl text-sm ${
-                          msg.role === 'user'
+                          msg.role === 'USER'
                             ? 'bg-accent-light text-text-primary'
                             : 'bg-bg-primary border border-border'
                         }`}

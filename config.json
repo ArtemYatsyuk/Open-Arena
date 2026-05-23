@@ -10,17 +10,6 @@
       "streaming": true,
       "contextWindow": 32000,
       "description": "NVIDIA's Nemotron Nano 30B reasoning model"
-    },
-    {
-      "id": "qwen-3-max",
-      "name": "Qwen 3 Max",
-      "baseUrl": "https://llm.atxp.ai",
-      "endpoint": "/v1/chat/completions",
-      "modelId": "openrouter/qwen/qwen3-max",
-      "apiKeyEnv": "MWCSZ1jPCAyBUMBlHLU5a&account_id=atxp_acct_zIHIHpvCRXGtSY42naPuE",
-      "streaming": true,
-      "contextWindow": 32768,
-      "description": "Qwen 3 Max via ATXP gateway"
     }
   ],
   "defaultModelId": "nemotron-nano",

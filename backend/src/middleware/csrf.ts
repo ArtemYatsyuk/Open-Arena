@@ -27,6 +27,8 @@ export function csrfProtection(req: Request, res: Response, next: NextFunction) 
       sameSite: 'lax',
       maxAge: 24 * 60 * 60 * 1000,
     });
+    // No token existed — set it and skip validation for this request
+    return next();
   }
 
   // Only check on state-changing methods
@@ -34,10 +36,9 @@ export function csrfProtection(req: Request, res: Response, next: NextFunction) 
     return next();
   }
 
-  const cookieToken = req.cookies?.csrfToken;
   const headerToken = req.headers['x-csrf-token'] as string | undefined;
 
-  if (!cookieToken || !headerToken || cookieToken !== headerToken) {
+  if (!headerToken || existingToken !== headerToken) {
     return res.status(403).json({ error: 'Invalid CSRF token' });
   }
 

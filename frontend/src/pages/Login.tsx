@@ -1,8 +1,11 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { useAuthStore } from '../stores/authStore';
-import { useUIStore } from '../stores/uiStore';
+import { useAuthStore } from '@/stores/authStore';
+import { useUIStore } from '@/stores/uiStore';
 import { Mail, Lock, AlertCircle, Loader2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card, CardHeader, CardContent } from '@/components/ui/card';
 
 export default function Login() {
   const theme = useUIStore((s) => s.theme);
@@ -18,10 +21,10 @@ export default function Login() {
     setError('');
     setLoading(true);
     try {
-      await login(email, password);
+      await login(email.trim(), password);
       navigate('/');
     } catch (err: any) {
-      if (err.message && err.message.toLowerCase().includes('banned')) {
+      if (err.message?.toLowerCase().includes('banned')) {
         navigate('/banned');
       } else {
         setError(err.message);
@@ -31,75 +34,75 @@ export default function Login() {
   };
 
   return (
-    <div className="flex items-center justify-center h-screen bg-bg-primary animate-fadeIn">
-      <div className="w-full max-w-sm p-8">
+    <div className="flex min-h-screen items-center justify-center bg-background">
+      <div className="w-full max-w-sm px-4">
         <div className="text-center mb-8">
-          <div className="w-16 h-16 rounded-2xl bg-bg-secondary border border-border flex items-center justify-center mx-auto mb-4 shadow-lg">
+          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-muted ring-1 ring-border">
             <img
               src={theme === 'dark' ? '/OpenArena-Black.png' : '/favicon.png'}
               alt="Open Arena"
-              className="w-10 h-10 rounded-xl"
+              className="h-9 w-9 rounded-lg"
             />
           </div>
-          <h1 className="text-2xl font-semibold mb-1">Welcome back</h1>
-          <p className="text-text-secondary text-sm">Sign in to Open Arena</p>
+          <h1 className="text-2xl font-semibold tracking-tight">Welcome back</h1>
+          <p className="mt-1 text-sm text-muted-foreground">Sign in to Open Arena</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {error && (
-            <div className="p-3 bg-danger/10 text-danger text-sm rounded-xl border border-danger/20 flex items-center gap-2">
-              <AlertCircle className="w-4 h-4 flex-shrink-0" />
-              {error}
-            </div>
-          )}
-          <div>
-            <label className="block text-sm text-text-secondary mb-1.5">Email</label>
-            <div className="relative">
-              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-secondary" />
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full pl-10 pr-3 py-2.5 bg-bg-secondary border border-border rounded-xl text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-accent/50"
-                required
-              />
-            </div>
-          </div>
-          <div>
-            <label className="block text-sm text-text-secondary mb-1.5">Password</label>
-            <div className="relative">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-secondary" />
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full pl-10 pr-3 py-2.5 bg-bg-secondary border border-border rounded-xl text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-accent/50"
-                required
-              />
-            </div>
-          </div>
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full py-3 bg-accent text-white rounded-xl text-sm font-medium hover:bg-accent-hover transition disabled:opacity-50 shadow-lg shadow-accent/20 flex items-center justify-center gap-2"
-          >
-            {loading ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin" />
-                Signing in...
-              </>
-            ) : (
-              'Sign in'
-            )}
-          </button>
-        </form>
+        <Card>
+          <CardContent className="px-6 py-6">
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {error && (
+                <div className="flex items-center gap-2 rounded-lg bg-destructive/10 p-3 text-sm text-destructive ring-1 ring-destructive/20">
+                  <AlertCircle className="h-4 w-4 shrink-0" />
+                  {error}
+                </div>
+              )}
+              <div className="space-y-1.5">
+                <label className="text-sm text-muted-foreground">Email</label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="pl-9 h-9"
+                    required
+                  />
+                </div>
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-sm text-muted-foreground">Password</label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="pl-9 h-9"
+                    required
+                  />
+                </div>
+              </div>
+              <Button type="submit" disabled={loading} className="w-full h-9">
+                {loading ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Signing in...
+                  </>
+                ) : (
+                  'Sign in'
+                )}
+              </Button>
+            </form>
 
-        <p className="text-center text-sm text-text-secondary mt-6">
-          Don't have an account?{' '}
-          <Link to="/register" className="text-accent hover:underline font-medium">
-            Sign up
-          </Link>
-        </p>
+            <p className="mt-6 text-center text-sm text-muted-foreground">
+              Don't have an account?{' '}
+              <Link to="/register" className="font-medium text-foreground hover:underline">
+                Sign up
+              </Link>
+            </p>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

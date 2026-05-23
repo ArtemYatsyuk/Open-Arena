@@ -1,12 +1,13 @@
 import { useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { useAuthStore } from './stores/authStore';
-import { useUIStore } from './stores/uiStore';
-import Login from './pages/Login';
-import Register from './pages/Register';
-import ChatLayout from './pages/ChatLayout';
-import AdminPanel from './pages/AdminPanel';
-import BannedPage from './pages/BannedPage';
+import { useAuthStore } from '@/stores/authStore';
+import { useUIStore } from '@/stores/uiStore';
+import { TooltipProvider } from '@/components/ui/tooltip';
+import Login from '@/pages/Login';
+import Register from '@/pages/Register';
+import ChatLayout from '@/pages/ChatLayout';
+import AdminPanel from '@/pages/AdminPanel';
+import BannedPage from '@/pages/BannedPage';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading } = useAuthStore();
@@ -42,35 +43,37 @@ export default function App() {
   }, []);
 
   return (
-    <Routes>
-      <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
-      <Route path="/banned" element={<BannedPage />} />
-      <Route
-        path="/"
-        element={
-          <ProtectedRoute>
-            <ChatLayout />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/c/:id"
-        element={
-          <ProtectedRoute>
-            <ChatLayout />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/admin/*"
-        element={
-          <AdminRoute>
-            <AdminPanel />
-          </AdminRoute>
-        }
-      />
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+    <TooltipProvider>
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/banned" element={<BannedPage />} />
+        <Route
+          path="/"
+          element={
+            <ProtectedRoute>
+              <ChatLayout />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/c/:id"
+          element={
+            <ProtectedRoute>
+              <ChatLayout />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/*"
+          element={
+            <AdminRoute>
+              <AdminPanel />
+            </AdminRoute>
+          }
+        />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </TooltipProvider>
   );
 }

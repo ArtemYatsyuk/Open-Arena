@@ -7,16 +7,25 @@ export interface WebSearchSource {
   snippet: string;
 }
 
+export interface FileAttachment {
+  id: string;
+  fileName: string;
+  mimeType: string;
+  size: number;
+  url: string;
+}
+
 export interface Message {
   id: string;
   conversationId: string;
-  role: 'user' | 'assistant';
+  role: 'USER' | 'ASSISTANT';
   content: string;
   reasoning?: string | null;
   webSearchSources?: WebSearchSource[] | null;
   alternatives?: string | null;
   tokenCount?: number;
   createdAt: string;
+  attachments?: FileAttachment[];
 }
 
 export interface Conversation {
@@ -41,6 +50,7 @@ interface ChatState {
   reasoningEnabled: boolean;
   webSearchCount: number;
   pendingWebSearchSources: WebSearchSource[] | null;
+  pendingUploads: FileAttachment[];
   error: string | null;
   selectedModelId: string;
 
@@ -49,13 +59,21 @@ interface ChatState {
   createConversation: (title: string, modelId: string) => Promise<string>;
   deleteConversation: (id: string) => Promise<void>;
   updateConversation: (id: string, data: { title?: string; isStarred?: boolean }) => Promise<void>;
-  sendMessage: (content: string, modelId: string, conversationId?: string) => Promise<void>;
+  sendMessage: (
+    content: string,
+    modelId: string,
+    conversationId?: string,
+    attachmentIds?: string[],
+  ) => Promise<void>;
   regenerateMessage: (messageId: string) => Promise<void>;
   toggleWebSearch: () => void;
   setReasoningEnabled: (val: boolean) => void;
   setSelectedModelId: (id: string) => void;
   stopStreaming: () => void;
   setError: (error: string | null) => void;
+  addPendingUpload: (file: FileAttachment) => void;
+  clearPendingUploads: () => void;
+  removePendingUpload: (id: string) => void;
 }
 
 let abortController: AbortController | null = null;
@@ -99,6 +117,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
   reasoningEnabled: true,
   webSearchCount: 0,
   pendingWebSearchSources: null,
+  pendingUploads: [],
   error: null,
   selectedModelId: 'nemotron-nano',
 
@@ -177,14 +196,19 @@ export const useChatStore = create<ChatState>((set, get) => ({
     }
   },
 
-  sendMessage: async (content, modelId, conversationId) => {
+  sendMessage: async (content, modelId, conversationId, attachmentIds?: string[]) => {
     const convId = conversationId || get().currentConversation?.id;
+
+    const uploadedAttachments = attachmentIds?.length
+      ? get().pendingUploads.filter((a) => attachmentIds.includes(a.id))
+      : [];
 
     const userMsg: Message = {
       id: `temp-${Date.now()}`,
       conversationId: convId || '',
-      role: 'user',
+      role: 'USER',
       content,
+      attachments: uploadedAttachments,
       createdAt: new Date().toISOString(),
     };
 
@@ -193,21 +217,27 @@ export const useChatStore = create<ChatState>((set, get) => ({
       isStreaming: true,
       streamingContent: '',
       error: null,
+      pendingUploads: [],
     }));
 
     abortController = new AbortController();
 
     try {
+      const body: Record<string, any> = {
+        conversationId: convId,
+        content,
+        modelId,
+        webSearch: get().webSearchEnabled,
+        reasoning: get().reasoningEnabled,
+      };
+      if (attachmentIds?.length) {
+        body.attachmentIds = attachmentIds;
+      }
+
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          conversationId: convId,
-          content,
-          modelId,
-          webSearch: get().webSearchEnabled,
-          reasoning: get().reasoningEnabled,
-        }),
+        body: JSON.stringify(body),
         credentials: 'include',
         signal: abortController.signal,
       });
@@ -252,18 +282,18 @@ export const useChatStore = create<ChatState>((set, get) => ({
           try {
             const parsed = JSON.parse(data);
             if (parsed.type === 'reasoning') {
-              assistantReasoning += parsed.content;
+              assistantReasoning += parsed.delta;
               set({ reasoningContent: assistantReasoning });
             } else if (parsed.type === 'chunk') {
-              assistantContent += parsed.content;
+              assistantContent += parsed.delta;
               set({ streamingContent: assistantContent });
             } else if (parsed.type === 'websearch') {
               set({
-                webSearchCount: parsed.count,
+                webSearchCount: parsed.sources?.length || 0,
                 pendingWebSearchSources: parsed.sources || null,
               });
             } else if (parsed.type === 'conversation') {
-              newConvId = parsed.id;
+              newConvId = parsed.conversationId;
             } else if (parsed.type === 'error') {
               throw new Error(parsed.message);
             } else if (parsed.type === 'done') {
@@ -283,7 +313,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
       const assistantMsg: Message = {
         id: doneMessageId || `temp-asst-${Date.now()}`,
         conversationId: newConvId || convId || '',
-        role: 'assistant',
+        role: 'ASSISTANT',
         content: assistantContent,
         reasoning: assistantReasoning || null,
         webSearchSources: pendingSources,
@@ -338,10 +368,10 @@ export const useChatStore = create<ChatState>((set, get) => ({
   regenerateMessage: async (messageId) => {
     const state = get();
     const msg = state.messages.find((m) => m.id === messageId);
-    if (!msg || msg.role !== 'assistant') return;
+    if (!msg || msg.role !== 'ASSISTANT') return;
     const msgIndex = state.messages.indexOf(msg);
     const userMsg =
-      msgIndex > 0 && state.messages[msgIndex - 1].role === 'user'
+      msgIndex > 0 && state.messages[msgIndex - 1].role === 'USER'
         ? state.messages[msgIndex - 1]
         : null;
     if (!userMsg) return;
@@ -414,8 +444,8 @@ export const useChatStore = create<ChatState>((set, get) => ({
                     alts.push({ content: m.content, reasoning: m.reasoning || undefined });
                     return {
                       ...m,
-                      content: parsed.content,
-                      reasoning: parsed.reasoning || null,
+                      content: parsed.alternative.content,
+                      reasoning: parsed.alternative.reasoning || null,
                       alternatives: JSON.stringify(alts),
                     };
                   }
@@ -426,6 +456,13 @@ export const useChatStore = create<ChatState>((set, get) => ({
               }));
             } else if (parsed.type === 'chunk') {
               // ignore chunks during regenerate (content comes via 'alternative')
+            } else if (parsed.type === 'websearch') {
+              set({
+                webSearchCount: parsed.sources?.length || 0,
+                pendingWebSearchSources: parsed.sources || null,
+              });
+            } else if (parsed.type === 'conversation') {
+              // conversationId used for context but during regenerate we keep existing conv
             } else if (parsed.type === 'error') {
               throw new Error(parsed.message);
             } else if (parsed.type === 'done') {
@@ -456,4 +493,10 @@ export const useChatStore = create<ChatState>((set, get) => ({
   toggleWebSearch: () => set((state) => ({ webSearchEnabled: !state.webSearchEnabled })),
   setReasoningEnabled: (val) => set({ reasoningEnabled: val }),
   setSelectedModelId: (id) => set({ selectedModelId: id }),
+  addPendingUpload: (file) => set((state) => ({ pendingUploads: [...state.pendingUploads, file] })),
+  clearPendingUploads: () => set({ pendingUploads: [] }),
+  removePendingUpload: (id) =>
+    set((state) => ({
+      pendingUploads: state.pendingUploads.filter((f) => f.id !== id),
+    })),
 }));

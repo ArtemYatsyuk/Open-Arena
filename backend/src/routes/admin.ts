@@ -169,7 +169,7 @@ router.get('/users', async (req: AuthRequest, res) => {
       prisma.user.count({ where }),
     ]);
 
-    res.json({ users, total, page, totalPages: Math.ceil(total / limit) });
+    res.json({ items: users, pagination: { page, pageSize: limit, total } });
   } catch (e: any) {
     console.error('[Admin] Users error:', e);
     res.status(500).json({ error: 'Failed to load users' });
@@ -343,7 +343,7 @@ router.get('/conversations', async (req: AuthRequest, res) => {
       prisma.conversation.count({ where }),
     ]);
 
-    res.json({ conversations, total, page, totalPages: Math.ceil(total / limit) });
+    res.json({ items: conversations, pagination: { page, pageSize: limit, total } });
   } catch (e: any) {
     console.error('[Admin] Conversations error:', e);
     res.status(500).json({ error: 'Failed to load conversations' });

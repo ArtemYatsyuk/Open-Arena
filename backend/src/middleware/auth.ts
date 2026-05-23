@@ -7,6 +7,11 @@ export interface AuthRequest extends Request {
   userRole?: string;
 }
 
+const banCache = new Map<
+  string,
+  { isBanned: boolean; banReason: string | null; timestamp: number }
+>();
+const BAN_CACHE_TTL = 5000;
 let lastActiveUpdates: Map<string, number> = new Map();
 
 export function isAuthenticated(req: AuthRequest, res: Response, next: NextFunction) {
@@ -29,12 +34,25 @@ export function isAuthenticated(req: AuthRequest, res: Response, next: NextFunct
 export async function isNotBanned(req: AuthRequest, res: Response, next: NextFunction) {
   if (!req.userId) return res.status(401).json({ error: 'Not authenticated' });
 
-  const user = await prisma.user.findUnique({ where: { id: req.userId } });
-  if (!user) return res.status(401).json({ error: 'User not found' });
-  if (user.isBanned)
-    return res.status(403).json({ error: 'Account banned', reason: user.banReason });
-
   const now = Date.now();
+  const cached = banCache.get(req.userId);
+  if (cached && now - cached.timestamp < BAN_CACHE_TTL) {
+    if (cached.isBanned) {
+      return res.status(403).json({ error: 'Account banned', reason: cached.banReason });
+    }
+  } else {
+    const user = await prisma.user.findUnique({ where: { id: req.userId } });
+    if (!user) return res.status(401).json({ error: 'User not found' });
+
+    banCache.set(req.userId, {
+      isBanned: user.isBanned,
+      banReason: user.banReason,
+      timestamp: now,
+    });
+
+    if (user.isBanned)
+      return res.status(403).json({ error: 'Account banned', reason: user.banReason });
+  }
   const lastUpdate = lastActiveUpdates.get(req.userId) || 0;
   if (now - lastUpdate > 300000) {
     lastActiveUpdates.set(req.userId, now);

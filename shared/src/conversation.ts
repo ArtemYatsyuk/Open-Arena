@@ -39,5 +39,6 @@ export const sendChatMessageSchema = z.object({
   reasoning: z.boolean().optional(),
   webSearch: z.boolean().optional(),
   regenerateMessageId: cuidSchema.optional(),
+  attachmentIds: z.array(cuidSchema).max(10).optional(),
 });
 export type SendChatMessageRequest = z.infer<typeof sendChatMessageSchema>;

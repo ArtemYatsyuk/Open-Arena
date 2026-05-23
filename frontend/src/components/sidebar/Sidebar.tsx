@@ -9,15 +9,19 @@ import {
   MoreHorizontal,
   Trash2,
   Edit3,
-  User,
   X,
   Settings,
   Layers,
 } from 'lucide-react';
-import { useChatStore } from '../../stores/chatStore';
-import { useUIStore } from '../../stores/uiStore';
-import { useAuthStore } from '../../stores/authStore';
-import SettingsModal from '../ui/SettingsModal';
+import { useChatStore } from '@/stores/chatStore';
+import { useUIStore } from '@/stores/uiStore';
+import { useAuthStore } from '@/stores/authStore';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Separator } from '@/components/ui/separator';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import SettingsModal from '@/components/ui/SettingsModal';
 
 function formatRelativeTime(dateStr: string): string {
   const now = new Date();
@@ -44,7 +48,6 @@ export default function Sidebar() {
   const updateConversation = useChatStore((s) => s.updateConversation);
   const user = useAuthStore((s) => s.user);
   const toggleSidebar = useUIStore((s) => s.toggleSidebar);
-  const theme = useUIStore((s) => s.theme);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState('');
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -103,7 +106,7 @@ export default function Sidebar() {
     if (items.length === 0) return null;
     return (
       <div className="mb-1">
-        <h3 className="text-[11px] font-semibold text-text-secondary/60 uppercase tracking-wider px-3 py-1.5">
+        <h3 className="text-[11px] font-semibold text-muted-foreground/60 uppercase tracking-wider px-3 py-1.5">
           {title}
         </h3>
         {items.map((conv) => (
@@ -112,11 +115,11 @@ export default function Sidebar() {
             className={`group relative flex items-center gap-2 px-3 py-2 mx-2 rounded-lg cursor-pointer transition-all duration-150 text-sm ${
               currentConv?.id === conv.id
                 ? 'bg-accent/10 ring-1 ring-accent/30'
-                : 'hover:bg-white/[0.04]'
+                : 'hover:bg-muted/50'
             }`}
             onClick={() => navigate('/c/' + conv.id)}
           >
-            <span className="w-2 h-2 rounded-full bg-blue-500 flex-shrink-0" />
+            <span className="w-2 h-2 rounded-full bg-blue-500 shrink-0" />
             <div className="flex-1 min-w-0 flex items-center gap-2">
               {editingId === conv.id ? (
                 <input
@@ -127,7 +130,7 @@ export default function Sidebar() {
                     if (e.key === 'Enter') saveEdit(conv.id);
                     if (e.key === 'Escape') setEditingId(null);
                   }}
-                  className="w-full bg-bg-primary border border-border rounded-lg px-2 py-0.5 text-sm focus:outline-none focus:ring-2 focus:ring-accent/50"
+                  className="w-full bg-background border border-border rounded-lg px-2 py-0.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring/50"
                   autoFocus
                   onClick={(e) => e.stopPropagation()}
                 />
@@ -135,29 +138,29 @@ export default function Sidebar() {
                 <span className="truncate text-[13px]">{conv.title}</span>
               )}
             </div>
-            <span className="text-[11px] text-text-secondary/60 flex-shrink-0">
+            <span className="text-[11px] text-muted-foreground/60 shrink-0">
               {formatRelativeTime(conv.updatedAt)}
             </span>
-            <div className="relative flex-shrink-0">
+            <div className="relative shrink-0">
               <button
                 onClick={(e) => {
                   e.stopPropagation();
                   setMenuOpenId(menuOpenId === conv.id ? null : conv.id);
                 }}
-                className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-white/[0.06] transition"
+                className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-muted/50 transition"
               >
                 <MoreHorizontal className="w-3.5 h-3.5" />
               </button>
               {menuOpenId === conv.id && (
                 <>
                   <div className="fixed inset-0 z-40" onClick={() => setMenuOpenId(null)} />
-                  <div className="absolute right-0 top-full mt-1 z-50 w-28 bg-bg-primary border border-border rounded-lg shadow-xl p-1">
+                  <div className="absolute right-0 top-full mt-1 z-50 w-28 bg-popover border border-border rounded-lg shadow-xl p-1">
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
                         startEdit(conv);
                       }}
-                      className="w-full flex items-center gap-2 px-2.5 py-1.5 text-xs rounded-md hover:bg-bg-secondary transition text-left"
+                      className="w-full flex items-center gap-2 px-2.5 py-1.5 text-xs rounded-md hover:bg-accent/50 transition text-left"
                     >
                       <Edit3 className="w-3 h-3" />
                       Rename
@@ -167,7 +170,7 @@ export default function Sidebar() {
                         e.stopPropagation();
                         handleDelete(conv.id);
                       }}
-                      className="w-full flex items-center gap-2 px-2.5 py-1.5 text-xs rounded-md hover:bg-danger/10 hover:text-danger transition text-left"
+                      className="w-full flex items-center gap-2 px-2.5 py-1.5 text-xs rounded-md hover:bg-destructive/10 hover:text-destructive transition text-left"
                     >
                       <Trash2 className="w-3 h-3" />
                       Delete
@@ -183,51 +186,55 @@ export default function Sidebar() {
   };
 
   return (
-    <div className="flex flex-col h-full bg-bg-secondary w-full overflow-hidden">
-      {/* Header */}
-      <div className="p-4 border-b border-border flex-shrink-0">
+    <div className="flex flex-col h-full bg-sidebar w-full overflow-hidden">
+      <div className="p-4 border-b border-sidebar-border shrink-0">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
-            <Building2 className="w-5 h-5 text-text-primary" />
-            <h1 className="text-sm font-semibold tracking-tight">Open Arena</h1>
+            <Building2 className="w-5 h-5 text-sidebar-foreground" />
+            <h1 className="text-sm font-semibold tracking-tight text-sidebar-foreground">
+              Open Arena
+            </h1>
           </div>
-          <button
+          <Button
+            variant="ghost"
+            size="icon-sm"
             onClick={toggleSidebar}
-            className="p-1 hover:bg-white/[0.06] rounded-lg transition"
             title="Close sidebar"
+            className="text-sidebar-foreground/60 hover:text-sidebar-foreground"
           >
-            <PanelLeftClose className="w-4 h-4 text-text-secondary" />
-          </button>
+            <PanelLeftClose className="w-4 h-4" />
+          </Button>
         </div>
 
         <div className="space-y-0.5">
-          <button
+          <Button
+            variant="ghost"
+            className="w-full justify-start gap-3 h-8 text-sm text-sidebar-foreground/60 hover:text-sidebar-foreground"
             onClick={handleNewChat}
-            className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-text-secondary hover:text-text-primary hover:bg-white/[0.04] transition"
           >
             <Pencil className="w-4 h-4" />
             New Chat
-          </button>
-          <button
+          </Button>
+          <Button
+            variant="ghost"
+            className="w-full justify-start gap-3 h-8 text-sm text-sidebar-foreground/60 hover:text-sidebar-foreground"
             onClick={() => setSearchOpen(!searchOpen)}
-            className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-text-secondary hover:text-text-primary hover:bg-white/[0.04] transition"
           >
             <Search className="w-4 h-4" />
             Search
-          </button>
+          </Button>
         </div>
       </div>
 
-      {/* Search bar */}
       {searchOpen && (
-        <div className="px-3 py-2 border-b border-border">
+        <div className="px-3 py-2 border-b border-sidebar-border">
           <div className="relative">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-secondary/60" />
-            <input
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground/60" />
+            <Input
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search conversations..."
-              className="w-full bg-bg-primary border border-border rounded-lg pl-8 pr-8 py-1.5 text-xs text-text-primary focus:outline-none focus:ring-2 focus:ring-accent/50 placeholder:text-text-secondary/50"
+              className="pl-8 pr-8 h-7 text-xs"
               autoFocus
             />
             {searchQuery && (
@@ -238,22 +245,16 @@ export default function Sidebar() {
                 }}
                 className="absolute right-2 top-1/2 -translate-y-1/2"
               >
-                <X className="w-3 h-3 text-text-secondary/60" />
+                <X className="w-3 h-3 text-muted-foreground/60" />
               </button>
             )}
           </div>
         </div>
       )}
 
-      {/* Conversations */}
       <div className="flex-1 overflow-y-auto py-1 min-h-0">
         <div className="px-3 py-1.5">
-          <h3 className="text-[11px] font-semibold text-text-secondary/60 uppercase tracking-wider">
-            Folders
-          </h3>
-        </div>
-        <div className="px-3 py-1.5">
-          <h3 className="text-[11px] font-semibold text-text-secondary/60 uppercase tracking-wider">
+          <h3 className="text-[11px] font-semibold text-muted-foreground/60 uppercase tracking-wider">
             Chats
           </h3>
         </div>
@@ -263,41 +264,43 @@ export default function Sidebar() {
         {renderGroup('Older', groups.older)}
       </div>
 
-      {/* Footer */}
-      <div className="p-3 border-t border-border flex-shrink-0">
+      <div className="p-3 border-t border-sidebar-border shrink-0">
         <div className="flex items-center gap-2.5 px-1">
-          <div
-            className="relative flex-shrink-0 cursor-pointer hover:opacity-80"
+          <Avatar
+            className="h-8 w-8 cursor-pointer hover:opacity-80"
             onClick={() => setSettingsOpen(true)}
           >
-            <div className="w-8 h-8 rounded-full bg-[#3a3c43] flex items-center justify-center">
-              <User className="w-4 h-4 text-text-secondary" />
-            </div>
-            <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-green-500 border-2 border-bg-secondary" />
-          </div>
+            <AvatarFallback className="bg-muted text-muted-foreground text-xs">
+              {user?.username?.charAt(0).toUpperCase() || 'U'}
+            </AvatarFallback>
+          </Avatar>
           <span
-            className="text-sm font-medium truncate cursor-pointer hover:text-text-secondary transition flex-1"
+            className="text-sm font-medium truncate cursor-pointer hover:text-muted-foreground transition flex-1 text-sidebar-foreground"
             onClick={() => setSettingsOpen(true)}
           >
             {user?.username || 'Admin'}
           </span>
-          <div className="flex items-center gap-0.5 flex-shrink-0">
+          <div className="flex items-center gap-0.5 shrink-0">
             {user?.role === 'ADMIN' && (
-              <button
+              <Button
+                variant="ghost"
+                size="icon-sm"
                 onClick={() => navigate('/admin')}
-                className="p-1.5 hover:bg-white/[0.06] rounded-lg transition text-text-secondary/70 hover:text-text-secondary"
                 title="Admin Panel"
+                className="text-sidebar-foreground/60 hover:text-sidebar-foreground"
               >
                 <Layers className="w-4 h-4" />
-              </button>
+              </Button>
             )}
-            <button
+            <Button
+              variant="ghost"
+              size="icon-sm"
               onClick={() => setSettingsOpen(true)}
-              className="p-1.5 hover:bg-white/[0.06] rounded-lg transition text-text-secondary/70 hover:text-text-secondary"
               title="Settings"
+              className="text-sidebar-foreground/60 hover:text-sidebar-foreground"
             >
               <Settings className="w-4 h-4" />
-            </button>
+            </Button>
           </div>
         </div>
       </div>

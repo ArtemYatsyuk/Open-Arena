@@ -19,9 +19,14 @@ import {
   ThumbsUp,
   ThumbsDown,
   Bot,
+  FileText,
+  Image,
+  Download,
 } from 'lucide-react';
-import { useChatStore } from '../../stores/chatStore';
-import type { Message } from '../../stores/chatStore';
+import { useChatStore } from '@/stores/chatStore';
+import type { Message } from '@/stores/chatStore';
+import { Button } from '@/components/ui/button';
+import { formatFileSize } from '@/lib/utils';
 
 function tryExtract(str: string, quote: string): string | null {
   const escaped = quote === '"' ? '\\"' : "'";
@@ -96,8 +101,8 @@ interface Props {
 function CodeBlock({ language, code }: { language: string; code: string }) {
   const [copied, setCopied] = useState(false);
   return (
-    <div className="relative my-4 rounded-xl overflow-hidden border border-border shadow-lg">
-      <div className="flex items-center justify-between px-4 py-2 bg-[#1e1e1e] text-xs text-text-secondary">
+    <div className="relative my-4 rounded-xl overflow-hidden ring-1 ring-border shadow-lg">
+      <div className="flex items-center justify-between px-4 py-2 bg-[#1e1e1e] text-xs text-muted-foreground">
         <span className="font-mono">{language}</span>
         <button
           onClick={() => {
@@ -131,7 +136,7 @@ function CodeBlock({ language, code }: { language: string; code: string }) {
 }
 
 export default function MessageBubble({ message, isStreaming, modelName, modelImage }: Props) {
-  const isUser = message.role === 'user';
+  const isUser = message.role === 'USER';
   const [copied, setCopied] = useState(false);
   const [thoughtOpen, setThoughtOpen] = useState(isStreaming);
   const [searchResultsOpen, setSearchResultsOpen] = useState(isStreaming);
@@ -183,21 +188,32 @@ export default function MessageBubble({ message, isStreaming, modelName, modelIm
     return (
       <div className="flex gap-3 justify-end group animate-slideUp">
         <div className="max-w-[85%] sm:max-w-[75%]">
-          <div className="relative bg-bg-secondary border border-border/60 rounded-2xl px-4 py-3">
-            <p className="text-sm whitespace-pre-wrap leading-relaxed">{displayContent}</p>
+          <div className="relative bg-muted border border-border/60 rounded-2xl px-4 py-3">
+            {displayContent && (
+              <p className="text-sm whitespace-pre-wrap leading-relaxed mb-2">{displayContent}</p>
+            )}
+            {message.attachments && message.attachments.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {message.attachments.map((file) => (
+                  <AttachmentPreview key={file.id} file={file} />
+                ))}
+              </div>
+            )}
           </div>
           <div className="flex items-center gap-2 mt-1.5 justify-end">
-            <span className="flex items-center gap-1 text-[11px] text-text-secondary/60">
+            <span className="flex items-center gap-1 text-[11px] text-muted-foreground/60">
               <Clock className="w-3 h-3" />
               {formatTime(message.createdAt)}
             </span>
-            <button
-              onClick={handleCopy}
-              className="p-1 hover:bg-white/[0.06] rounded-lg transition text-text-secondary/60 hover:text-text-secondary"
-              title="Copy"
-            >
-              {copied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
-            </button>
+            {displayContent && (
+              <button
+                onClick={handleCopy}
+                className="p-1 hover:bg-muted/50 rounded-lg transition text-muted-foreground/60 hover:text-muted-foreground"
+                title="Copy"
+              >
+                {copied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -209,38 +225,37 @@ export default function MessageBubble({ message, isStreaming, modelName, modelIm
   return (
     <div className="flex group animate-slideUp">
       <div className="flex-1 min-w-0">
-        {/* AI model header */}
         <div className="flex items-center gap-2 mb-2">
           {modelImage ? (
             <img src={modelImage} alt="" className="w-6 h-6 rounded object-contain" />
           ) : (
-            <div className="w-6 h-6 rounded-md bg-bg-secondary border border-border flex items-center justify-center">
-              <Bot className="w-3.5 h-3.5 text-text-secondary" />
+            <div className="w-6 h-6 rounded-md bg-muted border border-border flex items-center justify-center">
+              <Bot className="w-3.5 h-3.5 text-muted-foreground" />
             </div>
           )}
-          <span className="text-sm font-medium text-text-primary">{displayModelName}</span>
+          <span className="text-sm font-medium text-foreground">{displayModelName}</span>
         </div>
 
         {hasReasoning && (
           <div className="mb-2">
             <button
               onClick={() => setThoughtOpen(!thoughtOpen)}
-              className="flex items-center gap-2 w-full text-left px-4 py-2 bg-accent/5 border border-accent/20 rounded-xl hover:bg-accent/10 transition group/reason"
+              className="flex items-center gap-2 w-full text-left px-4 py-2 bg-muted/50 border border-border rounded-xl hover:bg-muted transition"
             >
-              <div className="w-6 h-6 rounded-lg bg-accent/10 flex items-center justify-center flex-shrink-0">
-                <Brain className="w-3.5 h-3.5 text-accent" />
+              <div className="w-6 h-6 rounded-lg bg-muted flex items-center justify-center shrink-0">
+                <Brain className="w-3.5 h-3.5 text-muted-foreground" />
               </div>
-              <span className="text-sm font-medium text-accent flex-1">
+              <span className="text-sm font-medium text-foreground flex-1">
                 {isStreaming ? 'Thinking...' : 'Thinking Process'}
               </span>
               {thoughtOpen ? (
-                <ChevronDown className="w-4 h-4 text-accent" />
+                <ChevronDown className="w-4 h-4 text-muted-foreground" />
               ) : (
-                <ChevronRight className="w-4 h-4 text-accent" />
+                <ChevronRight className="w-4 h-4 text-muted-foreground" />
               )}
             </button>
             {thoughtOpen && (
-              <div className="mt-1 p-3 bg-accent/[0.03] border border-accent/10 rounded-xl text-sm text-text-secondary leading-relaxed whitespace-pre-wrap animate-slideUp">
+              <div className="mt-1 p-3 bg-muted/30 border border-border rounded-xl text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap animate-slideUp">
                 {displayReasoning}
               </div>
             )}
@@ -250,18 +265,18 @@ export default function MessageBubble({ message, isStreaming, modelName, modelIm
           <div className="mb-2">
             <button
               onClick={() => setSearchResultsOpen(!searchResultsOpen)}
-              className="flex items-center gap-2 w-full text-left px-4 py-2 bg-blue-500/5 border border-blue-500/20 rounded-xl hover:bg-blue-500/10 transition group/reason"
+              className="flex items-center gap-2 w-full text-left px-4 py-2 bg-muted/50 border border-border rounded-xl hover:bg-muted transition"
             >
-              <div className="w-6 h-6 rounded-lg bg-blue-500/10 flex items-center justify-center flex-shrink-0">
-                <Globe className="w-3.5 h-3.5 text-blue-500" />
+              <div className="w-6 h-6 rounded-lg bg-muted flex items-center justify-center shrink-0">
+                <Globe className="w-3.5 h-3.5 text-muted-foreground" />
               </div>
-              <span className="text-sm font-medium text-blue-600 dark:text-blue-400 flex-1">
+              <span className="text-sm font-medium text-foreground flex-1">
                 Search results ({message.webSearchSources.length})
               </span>
               {searchResultsOpen ? (
-                <ChevronDown className="w-4 h-4 text-blue-400" />
+                <ChevronDown className="w-4 h-4 text-muted-foreground" />
               ) : (
-                <ChevronRight className="w-4 h-4 text-blue-400" />
+                <ChevronRight className="w-4 h-4 text-muted-foreground" />
               )}
             </button>
             {searchResultsOpen && (
@@ -272,27 +287,27 @@ export default function MessageBubble({ message, isStreaming, modelName, modelIm
                     href={src.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-start gap-2 p-3 bg-blue-500/[0.03] border border-blue-500/10 rounded-xl text-sm hover:bg-blue-500/[0.06] transition group"
+                    className="flex items-start gap-2 p-3 bg-muted/30 border border-border rounded-xl text-sm hover:bg-muted/50 transition group"
                   >
-                    <span className="w-5 h-5 rounded bg-blue-500/10 text-blue-500 text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <span className="w-5 h-5 rounded bg-muted text-muted-foreground text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">
                       {src.index}
                     </span>
                     <div className="flex-1 min-w-0">
-                      <span className="text-text-primary font-medium group-hover:text-blue-500 transition">
+                      <span className="text-foreground font-medium group-hover:text-foreground transition">
                         {src.title}
                       </span>
-                      <p className="text-text-secondary text-xs mt-0.5 line-clamp-2">
+                      <p className="text-muted-foreground text-xs mt-0.5 line-clamp-2">
                         {src.snippet}
                       </p>
                     </div>
-                    <ExternalLink className="w-3.5 h-3.5 text-text-secondary/50 flex-shrink-0 mt-1 opacity-0 group-hover:opacity-100 transition" />
+                    <ExternalLink className="w-3.5 h-3.5 text-muted-foreground/50 shrink-0 mt-1 opacity-0 group-hover:opacity-100 transition" />
                   </a>
                 ))}
               </div>
             )}
           </div>
         ) : null}
-        <div className="relative bg-bg-secondary/50 border border-border/50 rounded-2xl pl-3 pr-5 py-3 shadow-sm">
+        <div className="relative bg-muted/30 border border-border/50 rounded-2xl pl-3 pr-5 py-3 shadow-sm">
           <div className="markdown-content text-sm leading-relaxed">
             <ReactMarkdown
               remarkPlugins={[remarkGfm, remarkMath]}
@@ -306,7 +321,7 @@ export default function MessageBubble({ message, isStreaming, modelName, modelIm
                         href={href}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center justify-center w-5 h-5 rounded bg-blue-500/10 text-blue-500 text-xs font-bold mx-0.5 hover:bg-blue-500/20 hover:scale-110 transition-all"
+                        className="inline-flex items-center justify-center w-5 h-5 rounded bg-muted text-muted-foreground text-xs font-bold mx-0.5 hover:bg-muted/80 hover:scale-110 transition-all"
                       >
                         {num}
                       </a>
@@ -329,7 +344,7 @@ export default function MessageBubble({ message, isStreaming, modelName, modelIm
 
                   return (
                     <code
-                      className="px-1.5 py-0.5 bg-bg-secondary border border-border rounded-md text-sm font-mono"
+                      className="px-1.5 py-0.5 bg-muted border border-border rounded-md text-sm font-mono"
                       {...props}
                     >
                       {children}
@@ -342,82 +357,132 @@ export default function MessageBubble({ message, isStreaming, modelName, modelIm
             </ReactMarkdown>
           </div>
 
-          {isStreaming && <span className="streaming-cursor text-accent text-lg leading-none" />}
+          {isStreaming && <span className="streaming-cursor text-lg leading-none" />}
         </div>
 
-        {/* Toolbar - appears on hover */}
         <div className="flex items-center gap-1 mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
-          <button
+          <Button
+            variant="ghost"
+            size="icon-xs"
             onClick={handleCopy}
-            className="p-1.5 rounded-lg hover:bg-white/[0.06] transition text-text-secondary/60 hover:text-text-secondary"
             title="Copy"
+            className="text-muted-foreground/60 hover:text-muted-foreground"
           >
             {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
-          </button>
-          <button
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon-xs"
             onClick={() => speak(displayContent)}
-            className="p-1.5 rounded-lg hover:bg-white/[0.06] transition text-text-secondary/60 hover:text-text-secondary"
             title="Read aloud"
+            className="text-muted-foreground/60 hover:text-muted-foreground"
           >
             <Speaker className="w-3.5 h-3.5" />
-          </button>
-          <button
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon-xs"
             onClick={() => setThumbs(thumbs === 'up' ? null : 'up')}
-            className={`p-1.5 rounded-lg transition ${
-              thumbs === 'up'
-                ? 'text-accent bg-accent/10'
-                : 'text-text-secondary/60 hover:text-text-secondary hover:bg-white/[0.06]'
-            }`}
             title="Good response"
+            className={
+              thumbs === 'up'
+                ? 'text-foreground bg-accent/50'
+                : 'text-muted-foreground/60 hover:text-muted-foreground'
+            }
           >
             <ThumbsUp className="w-3.5 h-3.5" />
-          </button>
-          <button
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon-xs"
             onClick={() => setThumbs(thumbs === 'down' ? null : 'down')}
-            className={`p-1.5 rounded-lg transition ${
-              thumbs === 'down'
-                ? 'text-danger bg-danger/10'
-                : 'text-text-secondary/60 hover:text-text-secondary hover:bg-white/[0.06]'
-            }`}
             title="Bad response"
+            className={
+              thumbs === 'down'
+                ? 'text-destructive bg-destructive/10'
+                : 'text-muted-foreground/60 hover:text-muted-foreground'
+            }
           >
             <ThumbsDown className="w-3.5 h-3.5" />
-          </button>
-          <button
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon-xs"
             onClick={() => regenerateMessage(message.id)}
             disabled={isRegenerating}
-            className="p-1.5 rounded-lg hover:bg-white/[0.06] transition text-text-secondary/60 hover:text-text-secondary disabled:opacity-30"
             title="Regenerate"
+            className="text-muted-foreground/60 hover:text-muted-foreground disabled:opacity-30"
           >
             <RotateCcw className="w-3.5 h-3.5" />
-          </button>
+          </Button>
           {allVersions.length > 1 && (
-            <div className="flex items-center gap-0.5 ml-2 px-1.5 py-0.5 bg-bg-secondary rounded-md">
+            <div className="flex items-center gap-0.5 ml-2 px-1.5 py-0.5 bg-muted rounded-md">
               <button
                 onClick={() => setVersionIdx(Math.max(0, versionIdx - 1))}
                 disabled={versionIdx === 0}
-                className="p-0.5 hover:text-text-primary disabled:opacity-30 transition"
+                className="p-0.5 hover:text-foreground disabled:opacity-30 transition"
               >
                 <ChevronLeft className="w-3 h-3" />
               </button>
-              <span className="text-[11px] font-medium tabular-nums min-w-[1.5rem] text-center text-text-secondary">
+              <span className="text-[11px] font-medium tabular-nums min-w-[1.5rem] text-center text-muted-foreground">
                 {versionIdx + 1}/{allVersions.length}
               </span>
               <button
                 onClick={() => setVersionIdx(Math.min(allVersions.length - 1, versionIdx + 1))}
                 disabled={versionIdx === allVersions.length - 1}
-                className="p-0.5 hover:text-text-primary disabled:opacity-30 transition"
+                className="p-0.5 hover:text-foreground disabled:opacity-30 transition"
               >
                 <ChevronRight className="w-3 h-3" />
               </button>
             </div>
           )}
-          <span className="ml-auto text-[11px] text-text-secondary/60">
+          <span className="ml-auto text-[11px] text-muted-foreground/60">
             {isStreaming ? 'Generating...' : formatTime(message.createdAt)}
           </span>
         </div>
       </div>
     </div>
+  );
+}
+
+function AttachmentPreview({
+  file,
+}: {
+  file: { id: string; fileName: string; mimeType: string; size: number; url: string };
+}) {
+  const isImage = file.mimeType.startsWith('image/');
+
+  if (isImage) {
+    return (
+      <a
+        href={file.url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="block rounded-lg overflow-hidden ring-1 ring-border hover:ring-ring transition max-w-[240px]"
+      >
+        <img
+          src={file.url}
+          alt={file.fileName}
+          className="w-full h-auto max-h-48 object-cover"
+          loading="lazy"
+        />
+      </a>
+    );
+  }
+
+  return (
+    <a
+      href={file.url}
+      target="_blank"
+      rel="noopener noreferrer"
+      download={file.fileName}
+      className="flex items-center gap-2 px-3 py-2 bg-background border border-border rounded-lg text-xs hover:bg-muted transition group"
+    >
+      <FileText className="h-4 w-4 text-muted-foreground shrink-0" />
+      <span className="flex-1 min-w-0 truncate text-foreground">{file.fileName}</span>
+      <span className="text-muted-foreground shrink-0">{formatFileSize(file.size)}</span>
+      <Download className="h-3 w-3 text-muted-foreground/60 opacity-0 group-hover:opacity-100 transition shrink-0" />
+    </a>
   );
 }
 
