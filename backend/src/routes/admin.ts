@@ -2,10 +2,34 @@ import { Router } from 'express';
 import { z } from 'zod';
 import fs from 'node:fs';
 import path from 'node:path';
+import crypto from 'node:crypto';
 import { prisma } from '../index.js';
 import { isAuthenticated, isNotBanned, isAdmin, AuthRequest } from '../middleware/auth.js';
 import { hashPassword } from '../services/authService.js';
 import { reloadConfig, configPath } from '../config.js';
+
+/** Write an audit log entry (fire-and-forget, never throws). */
+async function auditLog(
+  actorId: string | undefined,
+  action: string,
+  targetType?: string | null,
+  targetId?: string | null,
+  details?: Record<string, unknown> | null,
+) {
+  try {
+    await prisma.auditLog.create({
+      data: {
+        actorId,
+        action,
+        targetType: targetType ?? null,
+        targetId: targetId ?? null,
+        details: details ? JSON.stringify(details) : null,
+      },
+    });
+  } catch (e) {
+    console.error('[Admin] Audit log write failed:', e);
+  }
+}
 
 const router = Router();
 
@@ -162,7 +186,7 @@ router.post('/users', async (req: AuthRequest, res) => {
     if (existing) return res.status(409).json({ error: 'Email or username already exists' });
 
     const user = await prisma.user.create({
-      data: { email, username, passwordHash: hashPassword(password), role },
+      data: { email, username, passwordHash: await hashPassword(password), role },
       select: { id: true, email: true, username: true, role: true, avatarColor: true },
     });
 
@@ -407,6 +431,85 @@ router.post('/config/backup', async (req, res) => {
     res.json({ success: true, filename, message: `Config backed up as ${filename}` });
   } catch (e: any) {
     res.status(500).json({ error: 'Failed to backup config: ' + e.message });
+  }
+});
+
+/* ───── Audit Log ───── */
+
+router.get('/audit-log', async (req: AuthRequest, res) => {
+  try {
+    const page = getQueryInt(req, 'page', 1);
+    const limit = getQueryInt(req, 'pageSize', 50);
+    const skip = (page - 1) * limit;
+
+    const [items, total] = await Promise.all([
+      prisma.auditLog.findMany({
+        skip,
+        take: limit,
+        orderBy: { createdAt: 'desc' },
+        include: { actor: { select: { id: true, username: true } } },
+      }),
+      prisma.auditLog.count(),
+    ]);
+
+    res.json({ items, pagination: { page, pageSize: limit, total } });
+  } catch (e: any) {
+    res.status(500).json({ error: 'Failed to load audit log: ' + e.message });
+  }
+});
+
+/* ───── Invitations ───── */
+
+router.get('/invitations', async (req: AuthRequest, res) => {
+  try {
+    const invitations = await prisma.invitation.findMany({
+      orderBy: { createdAt: 'desc' },
+      include: { creator: { select: { id: true, username: true } } },
+    });
+    res.json(invitations);
+  } catch (e: any) {
+    res.status(500).json({ error: 'Failed to load invitations: ' + e.message });
+  }
+});
+
+router.post('/invitations', async (req: AuthRequest, res) => {
+  try {
+    const { email, role, expiresInDays } = z
+      .object({
+        email: z.string().email().optional(),
+        role: z.enum(['USER', 'ADMIN']).default('USER'),
+        expiresInDays: z.number().int().min(1).max(90).default(7),
+      })
+      .parse(req.body);
+
+    const token = crypto.randomBytes(24).toString('hex');
+
+    const invitation = await prisma.invitation.create({
+      data: {
+        email,
+        role,
+        token,
+        createdBy: req.userId!,
+        expiresAt: new Date(Date.now() + expiresInDays * 24 * 60 * 60 * 1000),
+      },
+    });
+
+    await auditLog(req.userId!, 'invitation.create', 'Invitation', invitation.id, { email, role });
+
+    res.status(201).json(invitation);
+  } catch (e: any) {
+    if (e instanceof z.ZodError) return res.status(400).json({ error: e.errors });
+    res.status(500).json({ error: 'Failed to create invitation: ' + e.message });
+  }
+});
+
+router.delete('/invitations/:id', async (req: AuthRequest, res) => {
+  try {
+    await prisma.invitation.delete({ where: { id: getId(req) } });
+    await auditLog(req.userId!, 'invitation.delete', 'Invitation', getId(req));
+    res.json({ success: true });
+  } catch (e: any) {
+    res.status(500).json({ error: 'Failed to delete invitation: ' + e.message });
   }
 });
 

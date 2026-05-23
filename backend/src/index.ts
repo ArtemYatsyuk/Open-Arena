@@ -7,6 +7,8 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { PrismaClient } from '@prisma/client';
 import { initConfigWatcher, getConfig } from './config.js';
+import { globalLimiter, authLimiter } from './middleware/rateLimiter.js';
+import { csrfProtection } from './middleware/csrf.js';
 
 import authRoutes from './routes/auth.js';
 import modelRoutes from './routes/models.js';
@@ -14,6 +16,7 @@ import chatRoutes from './routes/chat.js';
 import conversationRoutes from './routes/conversations.js';
 import adminRoutes from './routes/admin.js';
 import filterRoutes from './routes/filters.js';
+import oauthRoutes from './routes/oauth.js';
 
 dotenv.config();
 
@@ -38,7 +41,7 @@ app.use(
     contentSecurityPolicy: {
       directives: {
         defaultSrc: ["'self'"],
-        scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+        scriptSrc: ["'self'", "'unsafe-inline'"],
         styleSrc: [
           "'self'",
           "'unsafe-inline'",
@@ -65,6 +68,15 @@ app.use(
 app.use(express.json({ limit: '20mb' }));
 app.use(cookieParser());
 
+// Global rate limiter (applied after static middleware, before routes)
+app.use('/api', globalLimiter);
+
+// CSRF protection for mutating endpoints
+app.use(csrfProtection);
+
+// Auth-specific rate limiter (tighter than global)
+app.use('/api/auth', authLimiter);
+
 initConfigWatcher();
 
 app.get('/api/health', (req, res) => {
@@ -73,6 +85,7 @@ app.get('/api/health', (req, res) => {
 });
 
 app.use('/api/auth', authRoutes);
+app.use('/api/oauth', oauthRoutes);
 app.use('/api/models', modelRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/conversations', conversationRoutes);

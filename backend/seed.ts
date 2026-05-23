@@ -14,7 +14,7 @@ async function main() {
     data: {
       email: 'admin@openarena.local',
       username: 'admin',
-      passwordHash: hashPassword('admin123'),
+      passwordHash: await hashPassword('admin123'),
       role: 'ADMIN',
       avatarColor: '#6C4FF6',
     },
