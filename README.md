@@ -1,8 +1,8 @@
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="frontend/public/OpenArena-Black.png" />
-    <source media="(prefers-color-scheme: light)" srcset="OpenArena-Rounded.png" />
-    <img src="OpenArena-Rounded.png" alt="Open Arena — self-hosted multi-model AI chat platform" width="480">
+    <source media="(prefers-color-scheme: light)" srcset="OpenArena.png" />
+    <img src="OpenArena.png" alt="Open Arena — self-hosted multi-model AI chat platform" width="480">
   </picture>
 </p>
 
