@@ -10,4 +10,6 @@
 **/pnpm-lock.yaml
 config.json
 config.backup.*.json
+*.tsbuildinfo
+*.log
 backend/prisma/migrations/**

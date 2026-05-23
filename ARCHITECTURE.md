@@ -10,22 +10,22 @@ open-arena/
 ├── shared/         - Types & Zod schemas used by both apps (@open-arena/shared)
 ├── backend/        - Express API server (@open-arena/backend)
 ├── frontend/       - Vite + React SPA (@open-arena/frontend)
-└── data/           - Runtime config, database, backups (gitignored)
+└── data/           - User uploads (gitignored)
 ```
 
 ## Stack
 
-| Layer      | Tech                                                        |
-| ---------- | ----------------------------------------------------------- |
-| API server | Express 4 + TypeScript (strict)                             |
-| Database   | SQLite via Prisma 6 (JSON columns for complex data)         |
-| Frontend   | React 19 + TypeScript, Vite 6                               |
-| State      | Zustand (client) + React Query (server cache)               |
-| Styling    | Tailwind 3 + Radix UI primitives (shadcn/ui conventions)    |
-| Validation | Zod — same schemas used server- & client-side via `shared/` |
-| Streaming  | Server-Sent Events (SSE) for chat responses                 |
-| Auth       | JWT in httpOnly cookies (access+refresh)                    |
-| Config     | Hot-reloaded `data/config.json` via `fs.watch`              |
+| Layer      | Tech                                                                                     |
+| ---------- | ---------------------------------------------------------------------------------------- |
+| API server | Express 4 + TypeScript (strict)                                                          |
+| Database   | SQLite via Prisma 6 (JSON columns for complex data)                                      |
+| Frontend   | React 19 + TypeScript, Vite 6                                                            |
+| State      | Zustand (client) + React Query (server cache)                                            |
+| Styling    | Tailwind 3 + Radix UI primitives (shadcn/ui conventions)                                 |
+| Validation | Zod — same schemas used server- & client-side via `shared/`                              |
+| Streaming  | Server-Sent Events (SSE) for chat responses                                              |
+| Auth       | JWT in httpOnly cookies (access+refresh)                                                 |
+| Config     | Hot-reloaded `config.json` (project root; fallback to `data/config.json`) via `fs.watch` |
 
 ## Key Design Decisions
 
@@ -66,4 +66,6 @@ In production the Vite proxy is replaced by Express serving the built SPA
 - `frontend/src/pages/` — Top-level route components
 - `frontend/src/components/`— Reusable UI (by domain: chat, admin, sidebar, etc.)
 - `frontend/src/stores/` — Zustand state slices
+- `frontend/src/lib/` — Tailwind utility helpers (`cn`, `formatFileSize`)
+- `frontend/src/utils/` — API client, React Query hooks, model cache
 - `shared/src/` — Zod schemas + TypeScript types, grouped by domain

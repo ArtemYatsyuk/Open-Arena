@@ -41,29 +41,41 @@
   </a>
 </p>
 
+<br>
+
 <p align="center">
   <code>pnpm install && pnpm --filter @open-arena/backend db:generate db:push db:seed && pnpm dev</code>
 </p>
 
+<br>
+
 ---
+
+<br>
 
 <details>
   <summary><b>📑 Table of Contents</b></summary>
   <ol>
-    <li><a href="#features">Features</a></li>
-    <li><a href="#tech-stack">Tech Stack</a></li>
-    <li><a href="#quick-start">Quick Start</a></li>
-    <li><a href="#star-history">Star History</a></li>
-    <li><a href="#project-structure">Project Structure</a></li>
-    <li><a href="#configuration">Configuration</a></li>
-    <li><a href="#environment-variables">Environment Variables</a></li>
-    <li><a href="#development">Development</a></li>
-    <li><a href="#admin-panel">Admin Panel</a></li>
-    <li><a href="#deployment">Deployment</a></li>
-    <li><a href="#security">Security</a></li>
-    <li><a href="#license">License</a></li>
+    <li><a href="#features">✨ Features</a></li>
+    <li><a href="#tech-stack">🏗️ Tech Stack</a></li>
+    <li><a href="#quick-start">🚀 Quick Start</a></li>
+    <li><a href="#star-history">⭐ Star History</a></li>
+    <li><a href="#project-structure">📂 Project Structure</a></li>
+    <li><a href="#configuration">⚙️ Configuration</a></li>
+    <li><a href="#environment-variables">🌐 Environment Variables</a></li>
+    <li><a href="#development">🛠️ Development</a></li>
+    <li><a href="#admin-panel">👑 Admin Panel</a></li>
+    <li><a href="#deployment">🚢 Deployment</a></li>
+    <li><a href="#security">🔒 Security</a></li>
+    <li><a href="#license">📄 License</a></li>
   </ol>
 </details>
+
+<br>
+
+---
+
+<br>
 
 ## ✨ Features
 
@@ -110,7 +122,15 @@
   </tr>
 </table>
 
+<p align="right">
+  <a href="#">⬆️ Back to top</a>
+</p>
+
+<br>
+
 ---
+
+<br>
 
 ## 🏗️ Tech Stack
 
@@ -127,7 +147,15 @@
 
 See [ARCHITECTURE.md](ARCHITECTURE.md) for detailed design decisions.
 
+<p align="right">
+  <a href="#">⬆️ Back to top</a>
+</p>
+
+<br>
+
 ---
+
+<br>
 
 ## 🚀 Quick Start
 
@@ -142,6 +170,16 @@ pnpm dev
 
 Open **http://localhost:5173** and log in as `admin@openarena.local` / `admin123`.
 
+<p align="right">
+  <a href="#">⬆️ Back to top</a>
+</p>
+
+<br>
+
+---
+
+<br>
+
 ## ⭐ Star History
 
 <p align="center">
@@ -152,38 +190,54 @@ Open **http://localhost:5173** and log in as `admin@openarena.local` / `admin123
 
 Track growth on <a href="https://star-history.com/#ArtemYatsyuk/Open-Arena&Date">star-history.com</a>.
 
+<p align="right">
+  <a href="#">⬆️ Back to top</a>
+</p>
+
+<br>
+
 ---
+
+<br>
 
 ## 📂 Project Structure
 
 ```
 open-arena/
-├── backend/              # Express 4 API server
+├── backend/                   # Express 4 API server
 │   ├── src/
-│   │   ├── routes/           # auth, chat, conversations, admin, attachments, oauth, filters, models
-│   │   ├── middleware/       # isAuthenticated, isAdmin, isNotBanned, CSRF
-│   │   ├── services/         # auth, chat, webSearch, filterEngine
-│   │   │   └── providers/     # openai.ts, anthropic.ts, base.ts (adapter pattern)
-│   │   ├── index.ts          # Express app + middleware setup
-│   │   └── config.ts         # config.json watcher + Zod validation
+│   │   ├── routes/            # auth, chat, conversations, admin, attachments, oauth, filters, models
+│   │   ├── middleware/        # isAuthenticated, isAdmin, isNotBanned, CSRF
+│   │   ├── services/          # auth, chat, webSearch, filterEngine
+│   │   │   └── providers/    # openai.ts, anthropic.ts, base.ts (adapter pattern)
+│   │   ├── index.ts           # Express app + middleware setup
+│   │   └── config.ts          # config.json watcher + Zod validation
 │   ├── prisma/
-│   │   └── schema.prisma     # 18 models + 2 enums
-│   └── seed.ts               # Admin user + sample data
-├── frontend/             # React 19 + Vite 6
+│   │   └── schema.prisma      # 18 models + 2 enums
+│   └── seed.ts                # Admin user + sample data
+├── frontend/                  # React 19 + Vite 6
 │   ├── src/
-│   │   ├── pages/            # Login, Register, ChatLayout, AdminPanel, BannedPage
-│   │   ├── components/       # chat/, sidebar/, admin/, workspace/, ui/
-│   │   ├── stores/           # Zustand: authStore, chatStore, uiStore
-│   │   └── lib/              # apiClient.ts, utils.ts, adminHooks.ts
-│   └── vite.config.ts        # Dev proxy → localhost:4000
-├── shared/               # Zod schemas + TypeScript types (shared across packages)
-│   └── src/                  # message, conversation, auth, config, sse, attachment, etc.
+│   │   ├── pages/             # Login, Register, ChatLayout, AdminPanel, BannedPage
+│   │   ├── components/        # chat/, sidebar/, admin/, workspace/, ui/
+│   │   ├── stores/            # Zustand: authStore, chatStore, uiStore
+│   │   └── lib/               # apiClient.ts, utils.ts, adminHooks.ts
+│   └── vite.config.ts         # Dev proxy → localhost:4000
+├── shared/                    # Zod schemas + TypeScript types (shared across packages)
+│   └── src/                   # message, conversation, auth, config, sse, attachment, etc.
 ├── data/
-│   └── uploads/              # File upload storage
-└── config.json               # Models + app configuration
+│   └── uploads/               # File upload storage
+└── config.json                # Models + app configuration
 ```
 
+<p align="right">
+  <a href="#">⬆️ Back to top</a>
+</p>
+
+<br>
+
 ---
+
+<br>
 
 ## ⚙️ Configuration
 
@@ -235,7 +289,15 @@ The adapter is selected automatically based on `baseUrl`:
 - `*anthropic.com*` → Claude adapter (`messages` API, `thinking` blocks)
 - Everything else → OpenAI-compatible adapter (`chat/completions`, optional `reasoning_content`)
 
+<p align="right">
+  <a href="#">⬆️ Back to top</a>
+</p>
+
+<br>
+
 ---
+
+<br>
 
 ## 🌐 Environment Variables
 
@@ -307,7 +369,15 @@ The adapter is selected automatically based on `baseUrl`:
 </details>
 <!-- End OAuth -->
 
+<p align="right">
+  <a href="#">⬆️ Back to top</a>
+</p>
+
+<br>
+
 ---
+
+<br>
 
 ## 🛠️ Development
 
@@ -338,7 +408,15 @@ pnpm dev
 | `pnpm --filter @open-arena/backend db:studio`  | Open Prisma Studio (database GUI)       |
 | `pnpm --filter @open-arena/backend db:migrate` | Create a migration after schema changes |
 
+<p align="right">
+  <a href="#">⬆️ Back to top</a>
+</p>
+
+<br>
+
 ---
+
+<br>
 
 ## 👑 Admin Panel
 
@@ -360,7 +438,15 @@ Password: admin123
 - **Audit log** — All admin actions with actor, target, and timestamp
 - **Models** — Health check pings for all configured endpoints
 
+<p align="right">
+  <a href="#">⬆️ Back to top</a>
+</p>
+
+<br>
+
 ---
+
+<br>
 
 ## 🚢 Deployment
 
@@ -380,7 +466,15 @@ NODE_ENV=production \
 > We recommend running behind a reverse proxy (nginx, Caddy) that handles TLS
 > termination. Set `SECURE_COOKIES=true` when behind HTTPS.
 
+<p align="right">
+  <a href="#">⬆️ Back to top</a>
+</p>
+
+<br>
+
 ---
+
+<br>
 
 ## 🔒 Security
 
@@ -392,9 +486,29 @@ NODE_ENV=production \
 - **No secrets in config** — API keys from env vars, referenced by name
 - **Filter sandbox** — User-defined JS filters run in `node:vm` with timeout
 
-<p align="center">
+<p align="right">
   <a href="#">⬆️ Back to top</a>
 </p>
+
+<br>
+
+---
+
+<br>
+
+## 📄 License
+
+This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.
+
+<p align="right">
+  <a href="#">⬆️ Back to top</a>
+</p>
+
+<br>
+
+---
+
+<br>
 
 <p align="center">
   Built with ❤️ using TypeScript, React, and Express &middot;

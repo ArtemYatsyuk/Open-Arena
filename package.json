@@ -37,7 +37,7 @@
     "format:check": "prettier --check .",
     "typecheck": "pnpm -r --parallel typecheck",
     "test": "pnpm -r --parallel test",
-    "test:e2e": "playwright test",
+    "test:e2e": "echo 'No e2e tests configured. See CONTRIBUTING.md for details.'",
     "prepare": "husky"
   },
   "devDependencies": {

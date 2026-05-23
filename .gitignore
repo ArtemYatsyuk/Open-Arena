@@ -1,4 +1,6 @@
 .env
+.env.local
+.env.production
 node_modules/
 dist/
 backend/prisma/data.db
@@ -9,6 +11,7 @@ config.backup.*.json
 # Runtime data directory (config, database, backups)
 data/*
 !data/.gitkeep
+!data/uploads/.gitkeep
 
 # Testing & coverage
 coverage/
@@ -23,6 +26,10 @@ coverage/
 # OS
 Thumbs.db
 .DS_Store
+
+# Logs
+*.log
+.pnpm-debug.log*
 
 # Husky generated files
 .husky/_

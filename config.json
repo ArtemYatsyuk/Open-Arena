@@ -22,6 +22,6 @@
   "webSearch": {
     "enabled": true,
     "provider": "searxng",
-    "searxngUrl": "http://192.168.88.32:8080/"
+    "searxngUrl": "http://localhost:8080/"
   }
 }
